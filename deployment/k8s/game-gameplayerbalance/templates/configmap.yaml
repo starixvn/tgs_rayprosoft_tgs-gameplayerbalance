@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: configmap-{{ include "game-gamerecord-sbo-manualservice.name" . }}
+  name: configmap-{{ include "game-gameplayerbalance.name" . }}
   namespace: {{ .Values.namespace }}
 data:
   appsettings.json: |
