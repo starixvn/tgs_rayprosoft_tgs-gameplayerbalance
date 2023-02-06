@@ -1,5 +1,4 @@
 ﻿using NSubstitute;
-using NSubstitute.ReceivedExtensions;
 using Tgs.GameCommand.Client;
 
 namespace Tgs.GamePlayerBalance.Repositories.UnitTest;

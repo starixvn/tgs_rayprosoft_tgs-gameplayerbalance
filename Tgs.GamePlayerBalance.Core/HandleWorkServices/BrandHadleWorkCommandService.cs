@@ -10,32 +10,23 @@ internal class BrandHadleWorkCommandService : ICommandService<BrandHadleWorkComm
 {
     private readonly IBrandRepository _brandRepository;
     private readonly IGameCommandClient _client;
-    private readonly IGameProviderRepository _gameProviderRepository;
     private readonly ILogger<AwcAelottoHadleWorkCommandService> _logger;
-    private readonly ICommandService<PlayerBakancesCommand> _service;
+    private readonly ICommandService<PlayerCommand> _service;
 
     public BrandHadleWorkCommandService(
         ILogger<AwcAelottoHadleWorkCommandService> logger,
         IGameCommandClient client,
-        IGameProviderRepository gameProviderRepository,
         IBrandRepository brandRepository,
-        ICommandService<PlayerBakancesCommand> service)
+        ICommandService<PlayerCommand> service)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _client = client ?? throw new ArgumentNullException(nameof(client));
-        _gameProviderRepository = gameProviderRepository ?? throw new ArgumentNullException(nameof(gameProviderRepository));
         _brandRepository = brandRepository ?? throw new ArgumentNullException(nameof(brandRepository));
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
 
     public async ValueTask ExecuteAsync(BrandHadleWorkCommand command, CancellationToken cancellationToken = default)
     {
-        var gameProviderId = await _gameProviderRepository
-            .GetIdAsync(
-                command.GameProviderCode,
-                cancellationToken)
-            .ConfigureAwait(false);
-
         var brandId = await _brandRepository
             .GetIdAsync(
                 code: command.BrandCode,
@@ -61,18 +52,30 @@ internal class BrandHadleWorkCommandService : ICommandService<BrandHadleWorkComm
                 break;
             }
 
-            var playerBakancesCommand = new PlayerBakancesCommand(
-                GameProviderId: gameProviderId,
-                GameProviderCode: command.GameProviderCode,
-                PlayerInfos: players);
-
-            await _service
-                .ExecuteAsync(
-                    playerBakancesCommand,
-                    cancellationToken)
-                .ConfigureAwait(false);
-
             pageIndex++;
+
+            foreach (var player in players)
+            {
+                try
+                {
+                    var playerCommand = new PlayerCommand(
+                        command.GameProviderCode,
+                        player.BrandCode,
+                        player.PlayerCode,
+                        player.DefaultWalletId,
+                        player.DefaultWalletCurrencyCode);
+
+                    await _service
+                         .ExecuteAsync(
+                             command: playerCommand,
+                             cancellationToken: cancellationToken)
+                         .ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "The player's balance withdrawal process failed.({playerCode})", player.PlayerCode);
+                }
+            }
         }
     }
 }
