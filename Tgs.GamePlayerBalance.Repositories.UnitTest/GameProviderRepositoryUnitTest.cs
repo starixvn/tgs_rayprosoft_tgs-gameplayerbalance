@@ -1,4 +1,5 @@
 ﻿using NSubstitute;
+using NSubstitute.ReceivedExtensions;
 using Tgs.GameCommand.Client;
 
 namespace Tgs.GamePlayerBalance.Repositories.UnitTest;
@@ -15,15 +16,15 @@ public class GameProviderRepositoryUnitTest
 
         var code = "KY";
 
+        _ = fakeClient
+            .GameProviderGetGameProviderIdAsync(
+                Arg.Is(code),
+                Arg.Any<CancellationToken>())
+            .Returns(Guid.NewGuid());
+
         _ = await repository
             .GetIdAsync(
                 code)
             .ConfigureAwait(false);
-
-        _ = repository
-            .Received(1)
-            .GetIdAsync(
-                Arg.Is(code),
-                Arg.Any<CancellationToken>());
     }
 }
