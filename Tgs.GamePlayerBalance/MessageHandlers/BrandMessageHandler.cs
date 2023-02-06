@@ -17,6 +17,7 @@ public class BrandMessageHandler : IMessageHandler
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
+
     public ValueTask HandleAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
     {
         var request = BrandMessageRequest.Parser.ParseFrom(data.Span) ??

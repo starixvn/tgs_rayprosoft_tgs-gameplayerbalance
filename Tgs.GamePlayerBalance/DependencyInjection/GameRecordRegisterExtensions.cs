@@ -30,8 +30,6 @@ public static class GameRecordRegisterExtensions
                         .ConfigureAwait(false);
                 }
             }
-
-
         }
         return app;
     }

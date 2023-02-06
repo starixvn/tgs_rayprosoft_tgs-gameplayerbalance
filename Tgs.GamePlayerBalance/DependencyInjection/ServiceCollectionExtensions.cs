@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Tgs.GameCommand.Client;
+﻿using Tgs.GameCommand.Client;
 using Tgs.GameFundTransfer.Client;
 using Tgs.GameProviders.Client;
 

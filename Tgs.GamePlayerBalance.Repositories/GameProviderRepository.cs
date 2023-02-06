@@ -1,11 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using Tgs.GameCommand.Client;
-using Tgs.GameCommand.Common;
 using Tgs.GamePlayerBalance.Core;
-using Tgs.GameProviders.Domains;
-using Tgs.GameProviders.Domains.ConfigurationData;
-using Tgs.GameProviders.Domains.SettingConfiguration;
 
 namespace Tgs.GameProviders.Repositories;
 

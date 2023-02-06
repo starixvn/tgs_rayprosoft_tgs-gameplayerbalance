@@ -6,9 +6,9 @@ namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
 internal class PlayerBakanceCommandService : ICommandService<PlayerBakanceCommand>
 {
-    private readonly ILogger<PlayerBakanceCommandService> _logger;
     private readonly IGameCommandClient _client;
     private readonly IGameProviderRepository _gameProviderRepository;
+    private readonly ILogger<PlayerBakanceCommandService> _logger;
     private readonly ICommandService<FundsTransferInCommand> _service;
 
     public PlayerBakanceCommandService(
@@ -43,7 +43,6 @@ internal class PlayerBakanceCommandService : ICommandService<PlayerBakanceComman
             return;
         }
 
-
         var fundsTransferInCommand = new FundsTransferInCommand(
             gameProviderId,
             command.GameProviderCode,
@@ -56,6 +55,5 @@ internal class PlayerBakanceCommandService : ICommandService<PlayerBakanceComman
                  command: fundsTransferInCommand,
                  cancellationToken: cancellationToken)
              .ConfigureAwait(false);
-
     }
 }

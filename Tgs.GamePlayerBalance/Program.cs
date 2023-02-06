@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net.Mime;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using System.Net.Mime;
-using System.Text.Json.Serialization;
 using Tgs.GamePlayerBalance.MessageHandlers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -76,15 +76,15 @@ builder.Services
             var configuration = sp.GetRequiredService<IConfiguration>();
             options.Url = configuration.GetConnectionString("Nats")!;
         })
-        .AddHandler<BrandAwcAelottoMessageHandler>("tgs.game.player.balance.awc.aelotto", "tgs.game.playerbalance")
-        .AddHandler<BrandAwcAwsMessageHandler>("tgs.game.player.balance.awc.aws", "tgs.game.playerbalance")
-        .AddHandler<BrandMessageHandler>("tgs.game.player.balance", "tgs.game.playerbalance");
+        .AddHandler<BrandAwcAelottoMessageHandler>("game.playerbalance.brand.awc.aelotto", "tgs.game.playerbalance")
+        .AddHandler<BrandAwcAwsMessageHandler>("game.playerbalance.brand.awc.aws", "tgs.game.playerbalance")
+        .AddHandler<BrandMessageHandler>("game.playerbalance.brand", "tgs.game.playerbalance");
     })
 
     .ClearAllExchanges()
-    .AddNatsGlobPatternExchange("tgs.game.player.balance.awc.aelotto")
-    .AddNatsGlobPatternExchange("tgs.game.player.balance.awc.aws")
-    .AddNatsGlobPatternExchange("tgs.game.player.balance");
+    .AddNatsGlobPatternExchange("game.playerbalance.brand.awc.aelotto")
+    .AddNatsGlobPatternExchange("game.playerbalance.brand.awc.aws")
+    .AddNatsGlobPatternExchange("game.playerbalance.brand");
 
 builder.Services
      .AddSingleton<IConfigureOptions<OtlpExporterOptions>>(

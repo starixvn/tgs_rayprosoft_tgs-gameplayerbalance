@@ -7,8 +7,8 @@ namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
 internal class FundsTransferInCommandService : ICommandService<FundsTransferInCommand>
 {
-    private readonly ILogger<FundsTransferInCommandService> _logger;
     private readonly IGameFundTransferClient _client;
+    private readonly ILogger<FundsTransferInCommandService> _logger;
 
     public FundsTransferInCommandService(
         ILogger<FundsTransferInCommandService> logger,

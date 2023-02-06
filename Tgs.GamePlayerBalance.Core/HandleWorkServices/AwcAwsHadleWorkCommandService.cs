@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Tgs.GamePlayerBalance.Core.ApplicationServices;
 using Tgs.GameProviders.Client;
 using Tgs.ServiceUtility;
 
 namespace Tgs.GamePlayerBalance.Core.HandleWorkServices;
 
-internal class AwcAwsHadleWorkCommandService : ICommandService<AwcAelottoHadleWorkCommand>
+internal class AwcAwsHadleWorkCommandService : ICommandService<AwcAwsHadleWorkCommand>
 {
-    private readonly ILogger<AwcAelottoHadleWorkCommandService> _logger;
     private readonly IGameProvidersBalancesClient _client;
+    private readonly ILogger<AwcAelottoHadleWorkCommandService> _logger;
     private readonly ICommandService<PlayerBakanceCommand> _service;
 
     public AwcAwsHadleWorkCommandService(
@@ -26,9 +21,8 @@ internal class AwcAwsHadleWorkCommandService : ICommandService<AwcAelottoHadleWo
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
 
-    public async ValueTask ExecuteAsync(AwcAelottoHadleWorkCommand command, CancellationToken cancellationToken = default)
+    public async ValueTask ExecuteAsync(AwcAwsHadleWorkCommand command, CancellationToken cancellationToken = default)
     {
-
         var balances = await _client
              .AwcAwsGetBalances(
                 brandCode: command.BrandCode,

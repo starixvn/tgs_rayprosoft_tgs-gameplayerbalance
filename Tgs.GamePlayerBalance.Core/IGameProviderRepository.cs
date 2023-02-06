@@ -1,8 +1,4 @@
-﻿using Tgs.GameCommand.Common;
-using Tgs.GameProviders.Domains.ConfigurationData;
-using Tgs.GameProviders.Domains.SettingConfiguration;
-
-namespace Tgs.GamePlayerBalance.Core;
+﻿namespace Tgs.GamePlayerBalance.Core;
 
 public interface IGameProviderRepository
 {

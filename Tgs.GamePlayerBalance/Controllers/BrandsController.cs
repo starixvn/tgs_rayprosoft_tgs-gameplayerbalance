@@ -1,8 +1,5 @@
 ﻿using Google.Protobuf;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using OpenTelemetry;
-using Tgs.GameCommand.Common;
 using Tgs.GamePlayerBalance.Common.Protos;
 using Tgs.GamePlayerBalance.ViewModels;
 using Tgs.GameProviders.Domains;
@@ -32,7 +29,7 @@ public class BrandsController : ControllerBase
         };
         return _messageSender
             .PublishAsync(
-                subject: "tgs.game.player.balance.awc.aelotto",
+                subject: "game.playerbalance.brand.awc.aelotto",
                 data: request.ToByteArray(),
                 cancellationToken: HttpContext.RequestAborted);
     }
@@ -48,7 +45,7 @@ public class BrandsController : ControllerBase
         };
         return _messageSender
             .PublishAsync(
-                subject: "tgs.game.player.balance.awc.aws",
+                subject: "game.playerbalance.brand.awc.aws",
                 data: request.ToByteArray(),
                 cancellationToken: HttpContext.RequestAborted);
     }

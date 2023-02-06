@@ -7,16 +7,17 @@ namespace Tgs.GamePlayerBalance.MessageHandlers;
 
 public class BrandAwcAwsMessageHandler : IMessageHandler
 {
-    private readonly ILogger<BrandAwcAelottoMessageHandler> _logger;
+    private readonly ILogger<BrandAwcAwsMessageHandler> _logger;
     private readonly ICommandService<AwcAwsHadleWorkCommand> _service;
 
     public BrandAwcAwsMessageHandler(
-        ILogger<BrandAwcAelottoMessageHandler> logger,
+        ILogger<BrandAwcAwsMessageHandler> logger,
         ICommandService<AwcAwsHadleWorkCommand> service)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
+
     public ValueTask HandleAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
     {
         var request = BrandAwcAwsMessageRequest.Parser.ParseFrom(data.Span) ??
