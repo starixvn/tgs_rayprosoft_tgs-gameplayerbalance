@@ -8,7 +8,7 @@ data:
     {
         "GamePlayerBalance": {
              "GameCommandClientBaseUrl": "http://game-gamecommand/",
-             "GameProvidersClientBaseUrl": "https://game-gameproviders/",
+             "GameProvidersClientBaseUrl": "http://game-gameproviders/",
              "GameFundTransferClientBaseUrl": "http://game-gamefundtransfer:9090/"
         }
     }
