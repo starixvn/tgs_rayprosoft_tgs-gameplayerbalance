@@ -8,11 +8,11 @@ namespace Tgs.GamePlayerBalance.MessageHandlers;
 public class BrandMessageHandler : IMessageHandler
 {
     private readonly ILogger<BrandMessageHandler> _logger;
-    private readonly ICommandService<AwcAwsHadleWorkCommand> _service;
+    private readonly ICommandService<BrandHadleWorkCommand> _service;
 
     public BrandMessageHandler(
         ILogger<BrandMessageHandler> logger,
-        ICommandService<AwcAwsHadleWorkCommand> service)
+        ICommandService<BrandHadleWorkCommand> service)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _service = service ?? throw new ArgumentNullException(nameof(service));
@@ -25,7 +25,7 @@ public class BrandMessageHandler : IMessageHandler
 
         _logger.LogInformation("LogOn:{logOn} Information Request:{receive}", DateTime.Now.ToString("o"), request);
 
-        var command = new AwcAwsHadleWorkCommand(
+        var command = new BrandHadleWorkCommand(
             GameProviderCode: request.GameProviderCode,
             BrandCode: request.BrandCode);
 

@@ -12,14 +12,14 @@ internal class BrandHadleWorkCommandService : ICommandService<BrandHadleWorkComm
     private readonly IGameCommandClient _client;
     private readonly IGameProviderRepository _gameProviderRepository;
     private readonly ILogger<AwcAelottoHadleWorkCommandService> _logger;
-    private readonly ICommandService<PlayerBakanceCommand> _service;
+    private readonly ICommandService<PlayerBakancesCommand> _service;
 
     public BrandHadleWorkCommandService(
         ILogger<AwcAelottoHadleWorkCommandService> logger,
         IGameCommandClient client,
         IGameProviderRepository gameProviderRepository,
         IBrandRepository brandRepository,
-        ICommandService<PlayerBakanceCommand> service)
+        ICommandService<PlayerBakancesCommand> service)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _client = client ?? throw new ArgumentNullException(nameof(client));
@@ -60,6 +60,18 @@ internal class BrandHadleWorkCommandService : ICommandService<BrandHadleWorkComm
             {
                 break;
             }
+
+            var playerBakancesCommand = new PlayerBakancesCommand(
+                GameProviderId: gameProviderId,
+                GameProviderCode: command.GameProviderCode,
+                PlayerInfos: players);
+
+            await _service
+                .ExecuteAsync(
+                    playerBakancesCommand,
+                    cancellationToken)
+                .ConfigureAwait(false);
+
             pageIndex++;
         }
     }
