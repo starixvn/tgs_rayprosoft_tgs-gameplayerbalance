@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using Tgs.GameCommand.Client;
 using Tgs.GamePlayerBalance.Core;
 
-namespace Tgs.GameProviders.Repositories;
+namespace Tgs.GamePlayerBalance.Repositories;
 
 internal class GameProviderRepository : IGameProviderRepository
 {

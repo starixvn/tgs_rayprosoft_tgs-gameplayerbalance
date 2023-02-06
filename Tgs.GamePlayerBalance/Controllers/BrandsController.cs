@@ -18,7 +18,7 @@ public class BrandsController : ControllerBase
         _messageSender = messageSender ?? throw new ArgumentNullException(nameof(messageSender));
     }
 
-    [HttpPost("awc-aelotto")]
+    [HttpPost("awc-aelotto", Name = "AwcAelotto")]
     public ValueTask AwcAelottoAsync(
         AwcAelottoViewModel model)
     {
@@ -34,9 +34,9 @@ public class BrandsController : ControllerBase
                 cancellationToken: HttpContext.RequestAborted);
     }
 
-    [HttpPost("awc-aws")]
+    [HttpPost("awc-aws", Name = "AwcAws")]
     public ValueTask AwcAwsAsync(
-           AwcAelottoViewModel model)
+        AwcAwsViewModel model)
     {
         var request = new BrandAwcAelottoMessageRequest
         {
@@ -46,6 +46,22 @@ public class BrandsController : ControllerBase
         return _messageSender
             .PublishAsync(
                 subject: "game.playerbalance.brand.awc.aws",
+                data: request.ToByteArray(),
+                cancellationToken: HttpContext.RequestAborted);
+    }
+
+    [HttpPost(Name = "brand")]
+    public ValueTask BrandAsync(
+        BrandViewModel model)
+    {
+        var request = new BrandMessageRequest
+        {
+            GameProviderCode = model.GameProviderCode,
+            BrandCode = model.BrandCode
+        };
+        return _messageSender
+            .PublishAsync(
+                subject: "game.playerbalance.brand",
                 data: request.ToByteArray(),
                 cancellationToken: HttpContext.RequestAborted);
     }

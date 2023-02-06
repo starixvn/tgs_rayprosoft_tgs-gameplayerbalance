@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Tgs.GamePlayerBalance.Core;
 
-namespace Tgs.GameProviders.Repositories;
+namespace Tgs.GamePlayerBalance.Repositories;
 
 internal class GameProviderCacheRepository : IGameProviderRepository
 {
@@ -20,7 +20,7 @@ internal class GameProviderCacheRepository : IGameProviderRepository
         string code,
         CancellationToken cancellationToken = default)
     {
-        var key = $"game:gameproviders:gameprovidercache:get:gameproviderid:{code}";
+        var key = $"game:gameplayerbalance:gameprovidercache:get:gameproviderid:{code}";
         if (!_memoryCache.TryGetValue(key, out Guid? gameProviderId))
         {
             gameProviderId = await _repository
