@@ -34,6 +34,13 @@ internal class FundsTransferInCommandService : ICommandService<FundsTransferInCo
         _logger.LogInformation("LoggerOn:{loggerOn} | Command:{command} | Result:{result}",
             DateTimeOffset.UtcNow.ToString("u"),
             JsonSerializer.Serialize(command),
-            JsonSerializer.Serialize(reply));
+            JsonSerializer.Serialize(new
+            {
+                reply.State,
+                reply.Message,
+                FundTransactionId = reply.FundTransactionId.ToGuid(),
+                TransactionId = reply.TransactionId.ToGuid(),
+                reply.ExternalTransactionId
+            }));
     }
 }
