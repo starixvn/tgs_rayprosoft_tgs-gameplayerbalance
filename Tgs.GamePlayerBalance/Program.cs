@@ -91,7 +91,8 @@ builder.Services
         })
         .AddHandler<BrandAwcAelottoMessageHandler>("game.playerbalance.brand.awc.aelotto", "tgs.game.playerbalance")
         .AddHandler<BrandAwcAwsMessageHandler>("game.playerbalance.brand.awc.aws", "tgs.game.playerbalance")
-        .AddHandler<BrandMessageHandler>("game.playerbalance.brand", "tgs.game.playerbalance");
+        .AddHandler<BrandMessageHandler>("game.playerbalance.brand", "tgs.game.playerbalance")
+        .AddHandler<PlayerFormQueuedMessageHandler>("game.playerbalance.player.form", "tgs.game.playerbalance");
     })
 
     .ClearAllExchanges()
