@@ -7,12 +7,21 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="MongoDB.Bson" Version="2.19.0" />
+		<PackageReference Include="MongoDB.Driver" Version="2.19.0" />
+		<PackageReference Include="MongoDB.Driver.Core" Version="2.19.0" />
 		<PackageReference Include="Scrutor" Version="4.2.0" />
+		<PackageReference Include="Snowflake.Core" Version="2.0.0" />
 		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
 		<PackageReference Include="Tgs.GameCommand.Client" Version="0.0.6" />
 		<PackageReference Include="Tgs.GameFundTransfer.Client" Version="0.0.6" />
 		<PackageReference Include="Tgs.GameProviders.Client" Version="0.0.53" />
+		<PackageReference Include="Tgs.MessageQueue" Version="2.1.1" />
 		<PackageReference Include="TGS.ServiceUtility" Version="0.2.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Tgs.GamePlayerBalance.Common\Tgs.GamePlayerBalance.Common.csproj" />
 	</ItemGroup>
 
 </Project>

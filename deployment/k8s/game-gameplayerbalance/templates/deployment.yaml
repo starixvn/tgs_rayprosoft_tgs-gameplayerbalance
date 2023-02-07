@@ -40,16 +40,29 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.hostIP
+            - name: POD_IP
+              valueFrom:
+               fieldRef:
+                fieldPath: status.podIP
             - name: ConnectionStrings__Nats
               valueFrom:
                 secretKeyRef:
                   name: tgs-connections
                   key: nats
+            - name: ConnectionStrings__Mongo
+              valueFrom:
+                secretKeyRef:
+                  name: tgs-connections
+                  key: mongo-gameplayerbalance
           volumeMounts:
             - mountPath: /config/appsettings.json
               name: appsettings
               readOnly: true
               subPath: appsettings.json
+            - mountPath: /etc/ssl/certs/rds-combined-ca-bundle.pem
+              name: rds-combined-ca-bundle
+              readOnly: true
+              subPath: rds-combined-ca-bundle.pem
           ports:
             - name: http
               containerPort: 80
@@ -101,6 +114,9 @@ spec:
         - name: appsettings
           configMap:
             name: configmap-{{ include "game-gameplayerbalance.fullname" . }}
+        - name: rds-combined-ca-bundle
+          secret:
+            secretName: rds-combined-ca-bundle
         - name: diagvol
           emptyDir: {}
         - name: dumpsvol

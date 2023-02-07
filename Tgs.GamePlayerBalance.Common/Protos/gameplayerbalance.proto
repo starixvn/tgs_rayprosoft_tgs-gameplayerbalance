@@ -25,5 +25,9 @@ message BrandMessageRequest {
     string brand_code = 2;
 }
 
+message PlayerFormModelRequest {
+    int64 id = 1;
+}
+
 
 // The response message containing the greetings.

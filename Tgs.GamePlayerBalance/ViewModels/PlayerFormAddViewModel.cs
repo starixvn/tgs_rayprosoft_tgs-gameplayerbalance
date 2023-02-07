@@ -2,7 +2,7 @@
 
 namespace Tgs.GamePlayerBalance.ViewModels;
 
-public record PlayersViewModel
+public record PlayerFormAddViewModel
 {
     [Required]
     public string PlayerCode { get; init; } = default!;

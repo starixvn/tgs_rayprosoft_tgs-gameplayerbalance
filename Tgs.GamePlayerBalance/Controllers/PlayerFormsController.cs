@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Tgs.GamePlayerBalance.Core.HandleWorkServices;
+using Tgs.GamePlayerBalance.Core.ApplicationServices;
 using Tgs.GamePlayerBalance.ViewModels;
 using Tgs.ServiceUtility;
 
@@ -7,14 +7,14 @@ namespace Tgs.GamePlayerBalance.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class PlayersController : ControllerBase
+public class PlayerFormsController : ControllerBase
 {
-    [HttpPost(Name = "Player")]
-    public ValueTask PlayerAsync(
-        [FromServices] ICommandService<PlayerHadleWorkCommand> service,
-        PlayersViewModel model)
+    [HttpPost(Name = "PlayerFormAdd")]
+    public ValueTask PlayerFormAddAsync(
+        [FromServices] ICommandService<PlayerFormAddCommand> service,
+        PlayerFormAddViewModel model)
     {
-        var command = new PlayerHadleWorkCommand(
+        var command = new PlayerFormAddCommand(
             GameProviderCode: model.GameProviderCode,
             PlayerCode: model.PlayerCode);
         return service

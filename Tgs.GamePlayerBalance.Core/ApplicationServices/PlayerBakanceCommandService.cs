@@ -9,13 +9,13 @@ internal class PlayerBakanceCommandService : ICommandService<PlayerBakanceComman
     private readonly IGameCommandClient _client;
     private readonly IGameProviderRepository _gameProviderRepository;
     private readonly ILogger<PlayerBakanceCommandService> _logger;
-    private readonly ICommandService<FundsTransferInCommand> _service;
+    private readonly IGetService<FundsTransferInQuery, FundsTransferInResult> _service;
 
     public PlayerBakanceCommandService(
         ILogger<PlayerBakanceCommandService> logger,
         IGameCommandClient client,
         IGameProviderRepository gameProviderRepository,
-        ICommandService<FundsTransferInCommand> service)
+        IGetService<FundsTransferInQuery, FundsTransferInResult> service)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _client = client ?? throw new ArgumentNullException(nameof(client));
@@ -43,17 +43,17 @@ internal class PlayerBakanceCommandService : ICommandService<PlayerBakanceComman
             return;
         }
 
-        var fundsTransferInCommand = new FundsTransferInCommand(
+        var query = new FundsTransferInQuery(
             gameProviderId,
             command.GameProviderCode,
             BrandCode: player.BrandCode,
             PlayerCode: player.PlayerCode,
             WalletId: player.DefaultWalletId,
             CurrencyCode: player.DefaultWalletCurrencyCode);
-        await _service
-             .ExecuteAsync(
-                 command: fundsTransferInCommand,
-                 cancellationToken: cancellationToken)
-             .ConfigureAwait(false);
+        _ = await _service
+           .GetAsync(
+               query: query,
+               cancellationToken: cancellationToken)
+           .ConfigureAwait(false);
     }
 }

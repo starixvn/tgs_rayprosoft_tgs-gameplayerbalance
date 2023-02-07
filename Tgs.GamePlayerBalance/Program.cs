@@ -1,4 +1,6 @@
-﻿using System.Net.Mime;
+﻿using System.Net;
+using System.Net.Mime;
+using System.Net.Sockets;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -53,6 +55,17 @@ builder.Services.AddGamePlayerBalance(
     (options, sp) =>
     {
         var configuration = sp.GetRequiredService<IConfiguration>();
+        options.ConnectionString = configuration.GetConnectionString("Mongo")!;
+    },
+    (options, sp) =>
+    {
+        var configuration = sp.GetRequiredService<IConfiguration>();
+        options.IPAddress = builder.Configuration.GetSection("POD_IP").Value
+        ?? Dns.GetHostEntry(Dns.GetHostName()).AddressList.Where(ip => ip.AddressFamily == AddressFamily.InterNetwork).Single().ToString();
+    },
+    (options, sp) =>
+    {
+        var configuration = sp.GetRequiredService<IConfiguration>();
         options.BaseUrl = configuration.GetValue<Uri>("GamePlayerBalance:GameCommandClientBaseUrl");
     },
     (options, sp) =>
@@ -84,7 +97,8 @@ builder.Services
     .ClearAllExchanges()
     .AddNatsGlobPatternExchange("game.playerbalance.brand.awc.aelotto")
     .AddNatsGlobPatternExchange("game.playerbalance.brand.awc.aws")
-    .AddNatsGlobPatternExchange("game.playerbalance.brand");
+    .AddNatsGlobPatternExchange("game.playerbalance.brand")
+    .AddNatsGlobPatternExchange("game.playerbalance.player.form");
 
 builder.Services
      .AddSingleton<IConfigureOptions<OtlpExporterOptions>>(

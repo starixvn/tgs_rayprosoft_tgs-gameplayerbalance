@@ -9,6 +9,13 @@ namespace Tgs.GamePlayerBalance.Controllers;
 [ApiController]
 public class InfoController : ControllerBase
 {
+    private readonly IConfiguration _configuration;
+
+    public InfoController(IConfiguration configuration)
+    {
+        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+    }
+
     /// <summary>
     /// Gets the asynchronous.
     /// </summary>
@@ -31,7 +38,8 @@ public class InfoController : ControllerBase
                 Environment = _hostingEnvironment.EnvironmentName,
                 OsVersion = $"{Environment.OSVersion}",
                 Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(),
-                ProcessCount = Environment.ProcessorCount
+                ProcessCount = Environment.ProcessorCount,
+                POD_IP = _configuration.GetValue<string>("POD_IP")
             }
         };
     }

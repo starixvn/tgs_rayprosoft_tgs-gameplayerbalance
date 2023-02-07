@@ -1,6 +1,7 @@
 ﻿namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
-public record PlayerCommand(
+public record FundsTransferInQuery(
+    Guid GameProviderId,
     string GameProviderCode,
     string BrandCode,
     string PlayerCode,
