@@ -89,17 +89,13 @@ builder.Services
             var configuration = sp.GetRequiredService<IConfiguration>();
             options.Url = configuration.GetConnectionString("Nats")!;
         })
-        .AddHandler<BrandAwcAelottoMessageHandler>("game.playerbalance.brand.awc.aelotto", "tgs.game.playerbalance")
-        .AddHandler<BrandAwcAwsMessageHandler>("game.playerbalance.brand.awc.aws", "tgs.game.playerbalance")
-        .AddHandler<BrandMessageHandler>("game.playerbalance.brand", "tgs.game.playerbalance")
-        .AddHandler<PlayerFormQueuedMessageHandler>("game.playerbalance.player.form", "tgs.game.playerbalance");
+        .AddHandler<BrandFormQueuedMessageHandler>("game.playerbalance.brand.form.queued", "tgs.game.playerbalance.brand.form")
+        .AddHandler<PlayerFormQueuedMessageHandler>("game.playerbalance.player.form.queued", "tgs.game.playerbalance.player.form");
     })
 
     .ClearAllExchanges()
-    .AddNatsGlobPatternExchange("game.playerbalance.brand.awc.aelotto")
-    .AddNatsGlobPatternExchange("game.playerbalance.brand.awc.aws")
-    .AddNatsGlobPatternExchange("game.playerbalance.brand")
-    .AddNatsGlobPatternExchange("game.playerbalance.player.form");
+    .AddNatsGlobPatternExchange("game.playerbalance.brand.form.queued")
+    .AddNatsGlobPatternExchange("game.playerbalance.player.form.queued");
 
 builder.Services
      .AddSingleton<IConfigureOptions<OtlpExporterOptions>>(

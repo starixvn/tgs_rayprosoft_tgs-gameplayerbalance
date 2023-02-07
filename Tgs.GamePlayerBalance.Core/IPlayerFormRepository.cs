@@ -16,8 +16,8 @@ public interface IPlayerFormRepository
         string currencyCode,
         CancellationToken cancellationToken = default);
 
-    IAsyncEnumerable<long> BrandAddAsync(
-        IEnumerable<PlayerFormAdd> source,
+    IAsyncEnumerable<long> BrandPlayerFormAddAsync(
+        IEnumerable<BrandPlayerFormAdd> source,
         CancellationToken cancellationToken = default);
 
     ValueTask<PlayerForm?> GetAsync(

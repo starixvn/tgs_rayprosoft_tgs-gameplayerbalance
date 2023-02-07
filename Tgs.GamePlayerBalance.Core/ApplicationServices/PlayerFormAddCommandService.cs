@@ -68,7 +68,7 @@ internal class PlayerFormAddCommandService : ICommandService<PlayerFormAddComman
 
         await _messageSender
             .PublishAsync(
-                subject: "game.playerbalance.player.form",
+                subject: "game.playerbalance.player.form.queued",
                 data: request.ToByteArray(),
                 cancellationToken: cancellationToken)
             .ConfigureAwait(false);

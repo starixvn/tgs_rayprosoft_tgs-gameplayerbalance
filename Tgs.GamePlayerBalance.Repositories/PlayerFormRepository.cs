@@ -72,8 +72,8 @@ internal class PlayerFormRepository : IPlayerFormRepository
         return id;
     }
 
-    public async IAsyncEnumerable<long> BrandAddAsync(
-        IEnumerable<PlayerFormAdd> source,
+    public async IAsyncEnumerable<long> BrandPlayerFormAddAsync(
+        IEnumerable<BrandPlayerFormAdd> source,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var collection = await GetCollectionAsync(

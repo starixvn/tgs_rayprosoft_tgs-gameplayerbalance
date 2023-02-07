@@ -29,5 +29,9 @@ message PlayerFormModelRequest {
     int64 id = 1;
 }
 
+message BrandFormModelRequest {
+    int64 id = 1;
+}
+
 
 // The response message containing the greetings.

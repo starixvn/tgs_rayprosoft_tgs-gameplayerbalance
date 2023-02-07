@@ -1,4 +1,6 @@
-﻿namespace Tgs.GamePlayerBalance.Core;
+﻿using Tgs.GamePlayerBalance.Core.Models;
+
+namespace Tgs.GamePlayerBalance.Core;
 
 public interface IBrandFormRepository
 {
@@ -9,8 +11,12 @@ public interface IBrandFormRepository
         string brandCode,
         CancellationToken cancellationToken = default);
 
-    ValueTask UpdateCompleteAsync(
+    ValueTask<BrandForm?> GetAsync(
         long id,
+        CancellationToken cancellationToken = default);
+
+    ValueTask UpdateCompleteAsync(
+            long id,
         string status = "success",
         CancellationToken cancellationToken = default);
 
@@ -20,6 +26,6 @@ public interface IBrandFormRepository
         CancellationToken cancellationToken = default);
 
     ValueTask UpdateProcessingAsync(
-                long id,
+        long id,
         CancellationToken cancellationToken = default);
 }

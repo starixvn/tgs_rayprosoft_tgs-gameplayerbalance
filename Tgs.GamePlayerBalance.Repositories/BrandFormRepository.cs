@@ -2,6 +2,7 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Tgs.GamePlayerBalance.Core;
+using Tgs.GamePlayerBalance.Core.Models;
 using Tgs.GamePlayerBalance.Repositories.Models;
 
 namespace Tgs.GamePlayerBalance.Repositories;
@@ -58,8 +59,52 @@ internal class BrandFormRepository : IBrandFormRepository
         return id;
     }
 
-    public async ValueTask UpdateCompleteAsync(
+    public async ValueTask<BrandForm?> GetAsync(
         long id,
+        CancellationToken cancellationToken = default)
+    {
+        var collection = await GetCollectionAsync(
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        var builder = Builders<BrandFormModel>.Filter;
+        var filter = builder.Eq(x => x.Id, id);
+        var options = new FindOptions<BrandFormModel>
+        {
+            Skip = 0,
+            Limit = 1
+        };
+        var datas = await collection
+                    .FindAsync(
+                        filter: filter,
+                        options: options,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+        var data = await datas
+                        .FirstOrDefaultAsync(
+                            cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+
+        return data == null
+            ? null
+            : new BrandForm(
+                Id: data.Id,
+                GameProviderId: data.GameProviderId,
+                GameProviderCode: data.GameProviderCode,
+                BrandId: data.BrandId,
+                BrandCode: data.BrandCode,
+                State: data.State,
+                Status: data.Status,
+                CreatedOn: data.CreatedOn,
+                UpdateOn: data.UpdateOn,
+                StartOn: data.StartOn,
+                EndOn: data.EndOn,
+                ExpireOn: data.ExpireOn);
+    }
+
+    public async ValueTask UpdateCompleteAsync(
+            long id,
         string status = "success",
         CancellationToken cancellationToken = default)
     {

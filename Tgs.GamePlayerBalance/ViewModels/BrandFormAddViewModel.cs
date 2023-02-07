@@ -2,7 +2,7 @@
 
 namespace Tgs.GamePlayerBalance.ViewModels;
 
-public record BrandViewModel
+public record BrandFormAddViewModel
 {
     [Required]
     public string BrandCode { get; init; } = default!;
