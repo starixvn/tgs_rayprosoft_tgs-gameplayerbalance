@@ -49,13 +49,14 @@ internal class PlayerFormQueuedCommandService : ICommandService<PlayerFormQueued
                 cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        var balance = await _client
-            .PlayerBalanceAsync(
-                gameProviderCode: form.GameProviderCode,
-                playerCode: form.PlayerCode)
-            .ConfigureAwait(false);
         try
         {
+            var balance = await _client
+                .PlayerBalanceAsync(
+                    gameProviderCode: form.GameProviderCode,
+                    playerCode: form.PlayerCode)
+                .ConfigureAwait(false);
+
             if (balance > 0)
             {
                 var query = new FundsTransferInQuery(
@@ -99,6 +100,7 @@ internal class PlayerFormQueuedCommandService : ICommandService<PlayerFormQueued
             await _repository
                  .UpdateFailedAsync(
                      id: command.Id,
+                     status: ex.Message,
                      cancellationToken: cancellationToken)
                  .ConfigureAwait(false);
         }
