@@ -43,6 +43,7 @@ builder.Services
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
+builder.Services.AddControllersWithViews();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -150,6 +151,11 @@ var app = builder.Build();
 _ = app.UseSwagger();
 _ = app.UseSwaggerUI();
 
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
 _ = app.UseAuthorization();
 
 _ = app.MapControllers();
@@ -159,5 +165,9 @@ app.MapProfileViewer();
 app.MapHealthChecks("/healthz");
 
 _ = app.UseGameRecordRegister();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

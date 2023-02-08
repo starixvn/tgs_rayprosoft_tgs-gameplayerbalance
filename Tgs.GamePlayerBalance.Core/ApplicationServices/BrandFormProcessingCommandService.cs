@@ -75,7 +75,8 @@ internal class BrandFormProcessingCommandService : ICommandService<BrandFormProc
                     id: filterId,
                     pageSize: pageSize,
                     cancellationToken: cancellationToken)
-                .ToArrayAsync()
+                .ToArrayAsync(
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false)
                 ?? Enumerable.Empty<long>();
 

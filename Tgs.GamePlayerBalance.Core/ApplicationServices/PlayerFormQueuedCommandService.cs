@@ -54,7 +54,8 @@ internal class PlayerFormQueuedCommandService : ICommandService<PlayerFormQueued
             var balance = await _client
                 .PlayerBalanceAsync(
                     gameProviderCode: form.GameProviderCode,
-                    playerCode: form.PlayerCode)
+                    playerCode: form.PlayerCode,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
             if (balance > 0)

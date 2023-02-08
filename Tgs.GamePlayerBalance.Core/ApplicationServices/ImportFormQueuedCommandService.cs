@@ -67,7 +67,8 @@ internal class ImportFormQueuedCommandService : ICommandService<ImportFormQueued
         {
             var playerInfo = await _client
                 .PlayerGetAsync(
-                    playerCode: player.PlayerCode)
+                    playerCode: player.PlayerCode,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
             if (playerInfo == null)
@@ -94,7 +95,8 @@ internal class ImportFormQueuedCommandService : ICommandService<ImportFormQueued
                 .ImportPlayerFormAddAsync(
                     playerFormAdds,
                     cancellationToken)
-                .ToArrayAsync()
+                .ToArrayAsync(
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception ex)

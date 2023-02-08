@@ -73,7 +73,8 @@ internal class BrandFormQueuedCommandService : ICommandService<BrandFormQueuedCo
                     pageIndex: pageIndex,
                     pageSize: pageSize,
                     cancellationToken: cancellationToken)
-                .ToArrayAsync()
+                .ToArrayAsync(
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false)
                 ?? Enumerable.Empty<PlayerInfo>();
 
@@ -107,7 +108,8 @@ internal class BrandFormQueuedCommandService : ICommandService<BrandFormQueuedCo
                     .BrandPlayerFormAddAsync(
                         playerFormAdds,
                         cancellationToken)
-                    .ToArrayAsync()
+                    .ToArrayAsync(
+                        cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (Exception ex)
