@@ -47,7 +47,7 @@ internal class BrandFormProcessingCommandService : ICommandService<BrandFormProc
             throw new Exception($"The brand form status is not processing.({command.Id})");
         }
 
-        var pageSize = 1000;
+        var pageSize = 50;
         try
         {
             var filterId = await _playerFormRepository
