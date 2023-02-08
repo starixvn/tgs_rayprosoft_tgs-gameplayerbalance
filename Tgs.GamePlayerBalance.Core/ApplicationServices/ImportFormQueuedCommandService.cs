@@ -107,7 +107,7 @@ internal class ImportFormQueuedCommandService : ICommandService<ImportFormQueued
             Id = form.Id
         };
 
-        var subject = "game.playerbalance.brand.import.processing";
+        var subject = "game.playerbalance.import.form.processing";
 
         await _messageSender
             .PublishAsync(

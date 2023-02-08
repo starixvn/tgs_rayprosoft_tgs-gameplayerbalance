@@ -296,7 +296,7 @@ internal class ImportFormRepository : IImportFormRepository
     private async Task<IMongoCollection<ImportFormModel>> GetCollectionAsync(
         CancellationToken cancellationToken = default)
     {
-        var collectionName = $"brand_forms";
+        var collectionName = $"import_forms";
         var collection = _database.GetCollection<ImportFormModel>(collectionName);
         if (collection.CollectionNamespace == null)
         {
