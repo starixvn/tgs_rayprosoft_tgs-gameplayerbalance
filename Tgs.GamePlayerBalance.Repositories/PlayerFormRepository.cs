@@ -72,6 +72,43 @@ internal class PlayerFormRepository : IPlayerFormRepository
         return id;
     }
 
+    public async ValueTask<long?> BrandGetFirstIdAsync(
+        long expansionFormId,
+        PlayerFormState state,
+        CancellationToken cancellationToken = default)
+    {
+        var collection = await GetCollectionAsync(
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        var builder = Builders<PlayerFormModel>.Filter;
+        var sort = Builders<PlayerFormModel>.Sort.Ascending(x => x.Id);
+        var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
+                    builder.Eq(x => x.Source, PlayerFormSource.Brand) &
+                    builder.Eq(x => x.State, state);
+
+        var options = new FindOptions<PlayerFormModel>
+        {
+            Limit = 1,
+            Sort = sort
+        };
+        var asyncCursor = await collection
+                    .FindAsync(
+                        filter: filter,
+                        options: options,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+        return (await collection
+            .FindAsync(
+                filter: filter,
+                options: options,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false))
+            .FirstOrDefault(
+            cancellationToken: cancellationToken)?.Id;
+    }
+
     public async IAsyncEnumerable<long> BrandPlayerFormAddAsync(
         IEnumerable<BrandPlayerFormAdd> source,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -149,8 +186,49 @@ internal class PlayerFormRepository : IPlayerFormRepository
         }
     }
 
+    public async IAsyncEnumerable<long> BrandQueryIdAsync(
+        long expansionFormId,
+        PlayerFormState state,
+        long id, int pageSize = 1000,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var collection = await GetCollectionAsync(
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        var builder = Builders<PlayerFormModel>.Filter;
+        var sort = Builders<PlayerFormModel>.Sort.Ascending(x => x.Id);
+        var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
+                    builder.Eq(x => x.Source, PlayerFormSource.Brand) &
+                    builder.Eq(x => x.State, state) &
+                    builder.Gt(x => x.Id, id);
+
+        var options = new FindOptions<PlayerFormModel>
+        {
+            Limit = pageSize,
+            Sort = sort
+        };
+        var asyncCursor = await collection
+                    .FindAsync(
+                        filter: filter,
+                        options: options,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+        while (await asyncCursor
+                .MoveNextAsync(
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false))
+        {
+            foreach (var current in asyncCursor.Current)
+            {
+                yield return current.Id;
+            }
+        }
+    }
+
     public async ValueTask<PlayerForm?> GetAsync(
-        long id,
+            long id,
         CancellationToken cancellationToken = default)
 
     {
@@ -275,7 +353,7 @@ internal class PlayerFormRepository : IPlayerFormRepository
     }
 
     public async ValueTask UpdateFailedAsync(
-            long id,
+        long id,
         string status = "fail",
         CancellationToken cancellationToken = default)
     {
@@ -397,6 +475,26 @@ internal class PlayerFormRepository : IPlayerFormRepository
             cancellationToken: cancellationToken);
     }
 
+    private static Task Search_ExpansionFormId_IndexAsync(
+        IMongoCollection<PlayerFormModel> collection,
+        CancellationToken cancellationToken = default)
+    {
+        var index = Builders<PlayerFormModel>.IndexKeys
+            .Ascending(m => m.ExpansionFormId)
+            .Ascending(m => m.Source)
+            .Ascending(m => m.State);
+
+        var createIndexOptions = new CreateIndexOptions
+        {
+            Name = $"ix_search_expansion_id"
+        };
+        var createIndexModel = new CreateIndexModel<PlayerFormModel>(index, createIndexOptions);
+
+        return collection.Indexes.CreateOneAsync(
+            model: createIndexModel,
+            cancellationToken: cancellationToken);
+    }
+
     private static Task Search_IndexAsync(
         IMongoCollection<PlayerFormModel> collection,
         CancellationToken cancellationToken = default)
@@ -470,6 +568,10 @@ internal class PlayerFormRepository : IPlayerFormRepository
             cancellationToken: cancellationToken).ConfigureAwait(false))
         {
             await Search_IndexAsync(
+                collection: collection,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            await Search_ExpansionFormId_IndexAsync(
                 collection: collection,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 

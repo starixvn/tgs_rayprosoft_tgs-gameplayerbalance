@@ -16,12 +16,24 @@ public interface IPlayerFormRepository
         string currencyCode,
         CancellationToken cancellationToken = default);
 
+    ValueTask<long?> BrandGetFirstIdAsync(
+        long expansionFormId,
+        PlayerFormState state,
+        CancellationToken cancellationToken = default);
+
     IAsyncEnumerable<long> BrandPlayerFormAddAsync(
-        IEnumerable<BrandPlayerFormAdd> source,
+            IEnumerable<BrandPlayerFormAdd> source,
+        CancellationToken cancellationToken = default);
+
+    IAsyncEnumerable<long> BrandQueryIdAsync(
+        long expansionFormId,
+        PlayerFormState state,
+        long id,
+        int pageSize = 1000,
         CancellationToken cancellationToken = default);
 
     ValueTask<PlayerForm?> GetAsync(
-        long id,
+            long id,
         CancellationToken cancellationToken = default);
 
     ValueTask UpdateCompleteAsync(

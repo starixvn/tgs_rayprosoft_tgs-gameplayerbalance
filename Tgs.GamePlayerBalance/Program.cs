@@ -90,11 +90,13 @@ builder.Services
             options.Url = configuration.GetConnectionString("Nats")!;
         })
         .AddHandler<BrandFormQueuedMessageHandler>("game.playerbalance.brand.form.queued", "tgs.game.playerbalance.brand.form")
+        .AddHandler<BrandFormProcessingMessageHandler>("game.playerbalance.brand.form.processing", "tgs.game.playerbalance.brand.form")
         .AddHandler<PlayerFormQueuedMessageHandler>("game.playerbalance.player.form.queued", "tgs.game.playerbalance.player.form");
     })
 
     .ClearAllExchanges()
     .AddNatsGlobPatternExchange("game.playerbalance.brand.form.queued")
+    .AddNatsGlobPatternExchange("game.playerbalance.brand.form.processing")
     .AddNatsGlobPatternExchange("game.playerbalance.player.form.queued");
 
 builder.Services
