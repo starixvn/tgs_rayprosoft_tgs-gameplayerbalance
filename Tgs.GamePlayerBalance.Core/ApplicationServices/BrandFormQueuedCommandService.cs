@@ -86,13 +86,13 @@ internal class BrandFormQueuedCommandService : ICommandService<BrandFormQueuedCo
 
             try
             {
-                var playerFormAdds = new List<BrandPlayerFormAdd>();
+                var playerFormAdds = new List<PlayerFormAdd>();
 
                 foreach (var player in players)
                 {
-                    playerFormAdds.Add(new BrandPlayerFormAdd(
+                    playerFormAdds.Add(new PlayerFormAdd(
                         FormId: _snowflake.NextId(),
-                        BrandFormId: form.Id,
+                        ExpansionFormId: form.Id,
                         GameProviderId: form.GameProviderId,
                         GameProviderCode: form.GameProviderCode,
                         BrandId: form.BrandId,

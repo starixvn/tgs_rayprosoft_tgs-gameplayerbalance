@@ -39,10 +39,10 @@ internal class BrandFormRepository : IBrandFormRepository
         var document = new BrandFormModel
         {
             Id = id,
-            BrandId = brandId,
-            BrandCode = brandCode,
             GameProviderId = gameProviderId,
             GameProviderCode = gameProviderCode,
+            BrandId = brandId,
+            BrandCode = brandCode,
             State = BrandFormState.Queued,
             Status = $"{BrandFormState.Queued}...",
             CreatedOn = DateTime.UtcNow,
@@ -104,7 +104,7 @@ internal class BrandFormRepository : IBrandFormRepository
     }
 
     public async ValueTask UpdateCompleteAsync(
-            long id,
+        long id,
         string status = "success",
         CancellationToken cancellationToken = default)
     {
@@ -198,7 +198,7 @@ internal class BrandFormRepository : IBrandFormRepository
     }
 
     private static Task BrandId_IndexAsync(
-            IMongoCollection<BrandFormModel> collection,
+        IMongoCollection<BrandFormModel> collection,
         CancellationToken cancellationToken = default)
     {
         var index = Builders<BrandFormModel>.IndexKeys
@@ -244,6 +244,42 @@ internal class BrandFormRepository : IBrandFormRepository
         {
             ExpireAfter = TimeSpan.FromSeconds(1),
             Name = $"ix_expire_on"
+        };
+        var createIndexModel = new CreateIndexModel<BrandFormModel>(index, createIndexOptions);
+
+        return collection.Indexes.CreateOneAsync(
+            model: createIndexModel,
+            cancellationToken: cancellationToken);
+    }
+
+    private static Task GameProviderCode_IndexAsync(
+        IMongoCollection<BrandFormModel> collection,
+        CancellationToken cancellationToken = default)
+    {
+        var index = Builders<BrandFormModel>.IndexKeys
+            .Ascending(m => m.GameProviderCode);
+
+        var createIndexOptions = new CreateIndexOptions
+        {
+            Name = $"ix_game_provider_code"
+        };
+        var createIndexModel = new CreateIndexModel<BrandFormModel>(index, createIndexOptions);
+
+        return collection.Indexes.CreateOneAsync(
+            model: createIndexModel,
+            cancellationToken: cancellationToken);
+    }
+
+    private static Task GameProviderId_IndexAsync(
+                            IMongoCollection<BrandFormModel> collection,
+        CancellationToken cancellationToken = default)
+    {
+        var index = Builders<BrandFormModel>.IndexKeys
+            .Ascending(m => m.GameProviderId);
+
+        var createIndexOptions = new CreateIndexOptions
+        {
+            Name = $"ix_game_provider_id"
         };
         var createIndexModel = new CreateIndexModel<BrandFormModel>(index, createIndexOptions);
 
@@ -302,6 +338,14 @@ internal class BrandFormRepository : IBrandFormRepository
             collectionName: collectionName,
             cancellationToken: cancellationToken).ConfigureAwait(false))
         {
+            await GameProviderId_IndexAsync(
+                collection: collection,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            await GameProviderCode_IndexAsync(
+                collection: collection,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
             await BrandId_IndexAsync(
                 collection: collection,
                 cancellationToken: cancellationToken).ConfigureAwait(false);

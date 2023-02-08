@@ -110,7 +110,7 @@ internal class PlayerFormRepository : IPlayerFormRepository
     }
 
     public async IAsyncEnumerable<long> BrandPlayerFormAddAsync(
-        IEnumerable<BrandPlayerFormAdd> source,
+        IEnumerable<PlayerFormAdd> source,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var collection = await GetCollectionAsync(
@@ -120,7 +120,7 @@ internal class PlayerFormRepository : IPlayerFormRepository
         var documents = source.Select(x => new PlayerFormModel
         {
             Id = x.FormId,
-            ExpansionFormId = x.BrandFormId,
+            ExpansionFormId = x.ExpansionFormId,
             Source = PlayerFormSource.Brand,
             GameProviderId = x.GameProviderId,
             GameProviderCode = x.GameProviderCode,
@@ -228,7 +228,7 @@ internal class PlayerFormRepository : IPlayerFormRepository
     }
 
     public async ValueTask<PlayerForm?> GetAsync(
-            long id,
+        long id,
         CancellationToken cancellationToken = default)
 
     {
@@ -283,6 +283,164 @@ internal class PlayerFormRepository : IPlayerFormRepository
                     data.Result.FundTransactionId,
                     data.Result.TransactionId,
                     data.Result.ExternalTransactionId));
+    }
+
+    public async ValueTask<long?> ImportGetFirstIdAsync(
+        long expansionFormId,
+        PlayerFormState state,
+        CancellationToken cancellationToken = default)
+
+    {
+        var collection = await GetCollectionAsync(
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        var builder = Builders<PlayerFormModel>.Filter;
+        var sort = Builders<PlayerFormModel>.Sort.Ascending(x => x.Id);
+        var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
+                    builder.Eq(x => x.Source, PlayerFormSource.Import) &
+                    builder.Eq(x => x.State, state);
+
+        var options = new FindOptions<PlayerFormModel>
+        {
+            Limit = 1,
+            Sort = sort
+        };
+        var asyncCursor = await collection
+                    .FindAsync(
+                        filter: filter,
+                        options: options,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+        return (await collection
+            .FindAsync(
+                filter: filter,
+                options: options,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false))
+            .FirstOrDefault(
+            cancellationToken: cancellationToken)?.Id;
+    }
+
+    public async IAsyncEnumerable<long> ImportPlayerFormAddAsync(
+        IEnumerable<PlayerFormAdd> source,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+
+    {
+        var collection = await GetCollectionAsync(
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        var documents = source.Select(x => new PlayerFormModel
+        {
+            Id = x.FormId,
+            ExpansionFormId = x.ExpansionFormId,
+            Source = PlayerFormSource.Import,
+            GameProviderId = x.GameProviderId,
+            GameProviderCode = x.GameProviderCode,
+            BrandId = x.BrandId,
+            BrandCode = x.BrandCode,
+            PlayerCode = x.PlayerCode,
+            Username = x.Username,
+            WalletId = x.WalletId,
+            CurrencyCode = x.CurrencyCode,
+            State = PlayerFormState.Queued,
+            Status = $"{PlayerFormState.Queued}...",
+            CreatedOn = DateTime.UtcNow,
+            UpdateOn = DateTime.UtcNow,
+            ExpireOn = null
+        });
+
+        var options = new InsertManyOptions
+        {
+            //Optional. If true, perform an ordered insert of the documents in the array,
+            //and if an error occurs with one of documents,
+            //MongoDB will return without processing the remaining documents in the array.
+            //
+            //If false, perform an unordered insert,
+            //and if an error occurs with one of documents,
+            //continue processing the remaining documents in the array.
+            //
+            //Defaults to true.
+            IsOrdered = false,
+        };
+
+        try
+        {
+            await collection
+                 .InsertManyAsync(
+                     documents: documents,
+                     options: options,
+                     cancellationToken: cancellationToken)
+                 .ConfigureAwait(false);
+        }
+        catch (MongoBulkWriteException mongoBulkWrite)
+        {
+            _logger.LogError(mongoBulkWrite, "Batch add error occurred");
+
+            foreach (var item in source)
+            {
+                if (mongoBulkWrite.WriteErrors.Where(x => x.Message.Contains(item.PlayerCode, StringComparison.OrdinalIgnoreCase)).Any())
+                {
+                    _logger.LogError("remove existing players.({playerCode})", item.PlayerCode);
+
+                    documents = documents.Where(x => !x.PlayerCode.Equals(item.PlayerCode));
+                }
+            }
+        }
+
+        if (!documents.Any())
+        {
+            yield break;
+        }
+
+        foreach (var document in documents)
+        {
+            yield return document.Id;
+        }
+    }
+
+    public async IAsyncEnumerable<long> ImportQueryIdAsync(
+        long expansionFormId,
+        PlayerFormState state,
+        long id,
+        int pageSize = 1000,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var collection = await GetCollectionAsync(
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        var builder = Builders<PlayerFormModel>.Filter;
+        var sort = Builders<PlayerFormModel>.Sort.Ascending(x => x.Id);
+        var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
+                    builder.Eq(x => x.Source, PlayerFormSource.Import) &
+                    builder.Eq(x => x.State, state) &
+                    builder.Gt(x => x.Id, id);
+
+        var options = new FindOptions<PlayerFormModel>
+        {
+            Limit = pageSize,
+            Sort = sort
+        };
+        var asyncCursor = await collection
+                    .FindAsync(
+                        filter: filter,
+                        options: options,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+        while (await asyncCursor
+                .MoveNextAsync(
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false))
+        {
+            foreach (var current in asyncCursor.Current)
+            {
+                yield return current.Id;
+            }
+        }
     }
 
     public async ValueTask UpdateCompleteAsync(
@@ -475,6 +633,42 @@ internal class PlayerFormRepository : IPlayerFormRepository
             cancellationToken: cancellationToken);
     }
 
+    private static Task GameProviderCode_IndexAsync(
+        IMongoCollection<PlayerFormModel> collection,
+        CancellationToken cancellationToken = default)
+    {
+        var index = Builders<PlayerFormModel>.IndexKeys
+            .Ascending(m => m.GameProviderCode);
+
+        var createIndexOptions = new CreateIndexOptions
+        {
+            Name = $"ix_game_provider_code"
+        };
+        var createIndexModel = new CreateIndexModel<PlayerFormModel>(index, createIndexOptions);
+
+        return collection.Indexes.CreateOneAsync(
+            model: createIndexModel,
+            cancellationToken: cancellationToken);
+    }
+
+    private static Task GameProviderId_IndexAsync(
+        IMongoCollection<PlayerFormModel> collection,
+        CancellationToken cancellationToken = default)
+    {
+        var index = Builders<PlayerFormModel>.IndexKeys
+            .Ascending(m => m.GameProviderId);
+
+        var createIndexOptions = new CreateIndexOptions
+        {
+            Name = $"ix_game_provider_id"
+        };
+        var createIndexModel = new CreateIndexModel<PlayerFormModel>(index, createIndexOptions);
+
+        return collection.Indexes.CreateOneAsync(
+            model: createIndexModel,
+            cancellationToken: cancellationToken);
+    }
+
     private static Task Search_ExpansionFormId_IndexAsync(
         IMongoCollection<PlayerFormModel> collection,
         CancellationToken cancellationToken = default)
@@ -567,6 +761,14 @@ internal class PlayerFormRepository : IPlayerFormRepository
             collectionName: collectionName,
             cancellationToken: cancellationToken).ConfigureAwait(false))
         {
+            await GameProviderId_IndexAsync(
+                collection: collection,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            await GameProviderCode_IndexAsync(
+                collection: collection,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
             await Search_IndexAsync(
                 collection: collection,
                 cancellationToken: cancellationToken).ConfigureAwait(false);

@@ -1,8 +1,8 @@
 ﻿namespace Tgs.GamePlayerBalance.Core.Models;
 
-public record BrandPlayerFormAdd(
+public record PlayerFormAdd(
     long FormId,
-    long BrandFormId,
+    long ExpansionFormId,
     Guid GameProviderId,
     string GameProviderCode,
     Guid BrandId,

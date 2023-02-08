@@ -33,5 +33,9 @@ message BrandFormModelRequest {
     int64 id = 1;
 }
 
+message ImportFormModelRequest {
+    int64 id = 1;
+}
+
 
 // The response message containing the greetings.

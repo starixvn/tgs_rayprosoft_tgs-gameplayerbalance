@@ -91,12 +91,16 @@ builder.Services
         })
         .AddHandler<BrandFormQueuedMessageHandler>("game.playerbalance.brand.form.queued", "tgs.game.playerbalance.brand.form")
         .AddHandler<BrandFormProcessingMessageHandler>("game.playerbalance.brand.form.processing", "tgs.game.playerbalance.brand.form")
+        .AddHandler<ImportFormQueuedMessageHandler>("game.playerbalance.import.form.queued", "tgs.game.playerbalance.import.form")
+        .AddHandler<ImportFormProcessingMessageHandler>("game.playerbalance.import.form.processing", "tgs.game.playerbalance.import.form")
         .AddHandler<PlayerFormQueuedMessageHandler>("game.playerbalance.player.form.queued", "tgs.game.playerbalance.player.form");
     })
 
     .ClearAllExchanges()
     .AddNatsGlobPatternExchange("game.playerbalance.brand.form.queued")
     .AddNatsGlobPatternExchange("game.playerbalance.brand.form.processing")
+    .AddNatsGlobPatternExchange("game.playerbalance.import.form.queued")
+    .AddNatsGlobPatternExchange("game.playerbalance.import.form.processing")
     .AddNatsGlobPatternExchange("game.playerbalance.player.form.queued");
 
 builder.Services
