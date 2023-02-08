@@ -28,6 +28,9 @@ public class PlayerFormQueuedMessageHandler : IMessageHandler
         var command = new PlayerFormQueuedCommand(
             Id: request.Id);
 
-        return _service.ExecuteAsync(command);
+        return _service
+            .ExecuteAsync(
+                command: command,
+                cancellationToken: cancellationToken);
     }
 }

@@ -28,6 +28,9 @@ public class ImportFormQueuedMessageHandler : IMessageHandler
         var command = new ImportFormQueuedCommand(
             Id: request.Id);
 
-        return _service.ExecuteAsync(command);
+        return _service
+            .ExecuteAsync(
+                command: command,
+                cancellationToken: cancellationToken);
     }
 }

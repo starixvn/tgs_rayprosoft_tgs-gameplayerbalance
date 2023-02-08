@@ -28,6 +28,9 @@ public class ImportFormProcessingMessageHandler : IMessageHandler
         var command = new ImportFormProcessingCommand(
             Id: request.Id);
 
-        return _service.ExecuteAsync(command);
+        return _service
+            .ExecuteAsync(
+                command: command,
+                cancellationToken: cancellationToken);
     }
 }

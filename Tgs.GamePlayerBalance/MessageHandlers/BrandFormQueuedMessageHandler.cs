@@ -28,6 +28,9 @@ public class BrandFormQueuedMessageHandler : IMessageHandler
         var command = new BrandFormQueuedCommand(
             Id: request.Id);
 
-        return _service.ExecuteAsync(command);
+        return _service
+            .ExecuteAsync(
+                command: command,
+                cancellationToken: cancellationToken);
     }
 }

@@ -28,6 +28,9 @@ public class BrandFormProcessingMessageHandler : IMessageHandler
         var command = new BrandFormProcessingCommand(
             Id: request.Id);
 
-        return _service.ExecuteAsync(command);
+        return _service
+            .ExecuteAsync(
+                command: command,
+                cancellationToken: cancellationToken);
     }
 }
