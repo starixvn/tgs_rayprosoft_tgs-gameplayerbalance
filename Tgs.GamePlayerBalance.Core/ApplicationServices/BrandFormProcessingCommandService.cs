@@ -123,6 +123,7 @@ internal class BrandFormProcessingCommandService : ICommandService<BrandFormProc
             await _brandFormRepository
                  .UpdateFailedAsync(
                      id: command.Id,
+                     status: ex.Message,
                      cancellationToken: cancellationToken)
                  .ConfigureAwait(false);
         }
