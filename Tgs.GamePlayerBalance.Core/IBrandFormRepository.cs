@@ -1,4 +1,6 @@
-﻿using Tgs.GamePlayerBalance.Core.Models;
+﻿using MongoDB.Driver;
+using System.Runtime.CompilerServices;
+using Tgs.GamePlayerBalance.Core.Models;
 
 namespace Tgs.GamePlayerBalance.Core;
 
@@ -28,4 +30,10 @@ public interface IBrandFormRepository
     ValueTask UpdateProcessingAsync(
         long id,
         CancellationToken cancellationToken = default);
+
+    IAsyncEnumerable<BrandForm> QueryAsync(
+      Guid brandId,
+      BrandFormState? state,
+      int pageSize = 100,
+      CancellationToken cancellationToken = default);
 }

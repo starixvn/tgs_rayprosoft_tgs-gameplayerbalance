@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Tgs.GamePlayerBalance.Core;
@@ -103,8 +104,63 @@ internal class BrandFormRepository : IBrandFormRepository
                 ExpireOn: data.ExpireOn);
     }
 
+    public async IAsyncEnumerable<BrandForm> QueryAsync(
+        Guid brandId,
+        BrandFormState? state,
+        int pageSize = 100,
+       [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var collection = await GetCollectionAsync(
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        var filter = QueryFilter(
+            brandId,
+            state);
+
+        var sort = Builders<BrandFormModel>
+            .Sort
+            .Ascending(x => x.Id);
+
+        var options = new FindOptions<BrandFormModel>
+        {
+            Sort = sort,
+            Limit = pageSize,
+        };
+        var asyncCursor = await collection
+                    .FindAsync(
+                        filter: filter,
+                        options: options,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+        while (await asyncCursor
+                .MoveNextAsync(
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false))
+        {
+            foreach (var current in asyncCursor.Current)
+            {
+                yield return new BrandForm(
+                    current.Id,
+                    current.GameProviderId,
+                    current.GameProviderCode,
+                    current.BrandId,
+                    current.BrandCode,
+                    current.State,
+                    current.Status,
+                    current.CreatedOn,
+                    current.UpdateOn,
+                    current.StartOn,
+                    current.EndOn,
+                    current.ExpireOn);
+            }
+        }
+    }
+
+
     public async ValueTask UpdateCompleteAsync(
-        long id,
+            long id,
         string status = "success",
         CancellationToken cancellationToken = default)
     {
@@ -197,6 +253,21 @@ internal class BrandFormRepository : IBrandFormRepository
             cancellationToken: cancellationToken);
     }
 
+    private static FilterDefinition<BrandFormModel> QueryFilter(
+        Guid brandId,
+        BrandFormState? state)
+    {
+        var builder = Builders<BrandFormModel>.Filter;
+
+        var filter = builder.Eq(x => x.BrandId, brandId);
+        if (state.HasValue)
+        {
+            filter &= builder.Eq(x => x.State, state);
+        }
+
+        return filter;
+    }
+
     private static Task BrandId_IndexAsync(
         IMongoCollection<BrandFormModel> collection,
         CancellationToken cancellationToken = default)
@@ -271,7 +342,7 @@ internal class BrandFormRepository : IBrandFormRepository
     }
 
     private static Task GameProviderId_IndexAsync(
-                            IMongoCollection<BrandFormModel> collection,
+        IMongoCollection<BrandFormModel> collection,
         CancellationToken cancellationToken = default)
     {
         var index = Builders<BrandFormModel>.IndexKeys
