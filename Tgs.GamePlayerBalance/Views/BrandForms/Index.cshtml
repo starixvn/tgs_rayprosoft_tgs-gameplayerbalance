@@ -43,15 +43,10 @@
             </thead>
             <tbody>
                 <tr v-for="(data,index) in tableData">
-                    <td>{{((this.page-1)*pageSize)+ index+1 }}</td>
+                    <td>{{index+1 }}</td>
                     <td>{{data.id }}</td>
-                    <td>{{data.playerCode }}</td>
-                    <td>{{data.username }}</td>
-                    <td align="center">{{localday(data.reportOn)}}</td>
-                    <td align="center">{{localday(data.fromOn)}}<br>~<br>{{localday(data.toOn)}}</td>
-                    <td align="center">{{data.isSeason}}</td>
-                    <td align="center">{{localday(data.seasonFromOn)}}<br>~<br>{{localday(data.seasonToOn)}}</td>
-                    <td>{{stateString( data.state) }}</td>
+                    <td>{{data.gameProviderCode }}</td>
+                    <td>{{stateString(data.state) }}</td>
                     <td>{{localtime(data.createdOn)}}</td>
                     <td>{{localtime(data.startOn)}}</td>
                     <td>{{localtime(data.endOn)}}</td>
