@@ -34,7 +34,7 @@ builder.Logging
 
 builder.Services
     .AddRouting(options => options.LowercaseUrls = true)
-    .AddControllers(options =>
+    .AddControllersWithViews(options =>
     {
         options.Filters.Add(new ProducesAttribute(MediaTypeNames.Application.Json));
         options.Filters.Add(new ConsumesAttribute(MediaTypeNames.Application.Json));
@@ -43,7 +43,6 @@ builder.Services
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
-builder.Services.AddControllersWithViews();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

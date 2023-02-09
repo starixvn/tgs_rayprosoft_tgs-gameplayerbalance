@@ -28,7 +28,7 @@ public class BrandFormsAPIController : ControllerBase
     [HttpGet(Name = "BrandFormQuery")]
     public IAsyncEnumerable<BrandForm> BrandFormQueryAsync(
         [FromServices] IQueryService<BrandFormQuery, BrandForm> service,
-        BrandFormQueryViewModel model)
+        [FromQuery] BrandFormQueryViewModel model)
         => service
         .QueryAsync(
             query: new BrandFormQuery(
