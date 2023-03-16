@@ -1,6 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
-using MongoDB.Bson;
 using MongoDB.Driver;
 using Tgs.GameFundTransfer.Protos;
 using Tgs.GamePlayerBalance.Core;
@@ -39,9 +38,7 @@ internal class PlayerFormRepository : IPlayerFormRepository
     {
         var id = _snowflake.NextId();
 
-        var collection = await GetCollectionAsync(
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        var collection = GetCollection();
 
         var document = new PlayerFormModel
         {
@@ -77,9 +74,7 @@ internal class PlayerFormRepository : IPlayerFormRepository
         PlayerFormState state,
         CancellationToken cancellationToken = default)
     {
-        var collection = await GetCollectionAsync(
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        var collection = GetCollection();
 
         var builder = Builders<PlayerFormModel>.Filter;
         var sort = Builders<PlayerFormModel>.Sort.Ascending(x => x.Id);
@@ -113,9 +108,7 @@ internal class PlayerFormRepository : IPlayerFormRepository
         IEnumerable<PlayerFormAdd> source,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var collection = await GetCollectionAsync(
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        var collection = GetCollection();
 
         var documents = source.Select(x => new PlayerFormModel
         {
@@ -192,9 +185,7 @@ internal class PlayerFormRepository : IPlayerFormRepository
         long id, int pageSize = 1000,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var collection = await GetCollectionAsync(
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        var collection = GetCollection();
 
         var builder = Builders<PlayerFormModel>.Filter;
         var sort = Builders<PlayerFormModel>.Sort.Ascending(x => x.Id);
@@ -232,9 +223,7 @@ internal class PlayerFormRepository : IPlayerFormRepository
         CancellationToken cancellationToken = default)
 
     {
-        var collection = await GetCollectionAsync(
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        var collection = GetCollection();
 
         var builder = Builders<PlayerFormModel>.Filter;
         var filter = builder.Eq(x => x.Id, id);
@@ -291,9 +280,7 @@ internal class PlayerFormRepository : IPlayerFormRepository
         CancellationToken cancellationToken = default)
 
     {
-        var collection = await GetCollectionAsync(
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        var collection = GetCollection();
 
         var builder = Builders<PlayerFormModel>.Filter;
         var sort = Builders<PlayerFormModel>.Sort.Ascending(x => x.Id);
@@ -328,9 +315,7 @@ internal class PlayerFormRepository : IPlayerFormRepository
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
 
     {
-        var collection = await GetCollectionAsync(
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        var collection = GetCollection();
 
         var documents = source.Select(x => new PlayerFormModel
         {
@@ -408,9 +393,7 @@ internal class PlayerFormRepository : IPlayerFormRepository
         int pageSize = 1000,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var collection = await GetCollectionAsync(
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        var collection = GetCollection();
 
         var builder = Builders<PlayerFormModel>.Filter;
         var sort = Builders<PlayerFormModel>.Sort.Ascending(x => x.Id);
@@ -443,8 +426,59 @@ internal class PlayerFormRepository : IPlayerFormRepository
         }
     }
 
+    public async ValueTask InitializeAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var collection = GetCollection();
+
+        await GameProviderId_IndexAsync(
+                collection: collection,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        await GameProviderCode_IndexAsync(
+                collection: collection,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        await Search_IndexAsync(
+                collection: collection,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        await Search_ExpansionFormId_IndexAsync(
+                collection: collection,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        await BrandId_IndexAsync(
+                collection: collection,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        await BrandCode_IndexAsync(
+                collection: collection,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        await State_IndexAsync(
+                collection: collection,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        await CreatedOn_IndexAsync(
+                collection: collection,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        await ExpireOn_IndexAsync(
+                collection: collection,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     public async ValueTask UpdateCompleteAsync(
-        long id,
+            long id,
         StateCode resultStateCode,
         string resultMessage,
         Guid resultFundTransactionId,
@@ -453,9 +487,7 @@ internal class PlayerFormRepository : IPlayerFormRepository
         string status = "success",
         CancellationToken cancellationToken = default)
     {
-        var collection = await GetCollectionAsync(
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        var collection = GetCollection();
 
         var result = new PlayerFormFundResultModel
         {
@@ -489,9 +521,7 @@ internal class PlayerFormRepository : IPlayerFormRepository
         string status = "success",
         CancellationToken cancellationToken = default)
     {
-        var collection = await GetCollectionAsync(
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        var collection = GetCollection();
 
         var builder = Builders<PlayerFormModel>.Filter;
         var filter = builder.Eq(x => x.Id, id);
@@ -515,9 +545,7 @@ internal class PlayerFormRepository : IPlayerFormRepository
         string status = "fail",
         CancellationToken cancellationToken = default)
     {
-        var collection = await GetCollectionAsync(
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        var collection = GetCollection();
 
         var builder = Builders<PlayerFormModel>.Filter;
         var filter = builder.Eq(x => x.Id, id);
@@ -540,9 +568,7 @@ internal class PlayerFormRepository : IPlayerFormRepository
         long id,
         CancellationToken cancellationToken = default)
     {
-        var collection = await GetCollectionAsync(
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        var collection = GetCollection();
 
         var builder = Builders<PlayerFormModel>.Filter;
         var filter = builder.Eq(x => x.Id, id);
@@ -729,75 +755,6 @@ internal class PlayerFormRepository : IPlayerFormRepository
             cancellationToken: cancellationToken);
     }
 
-    private async ValueTask<bool> CollectionExistsAsync(
-        string collectionName,
-        CancellationToken cancellationToken = default)
-    {
-        var options = new ListCollectionsOptions { Filter = new BsonDocument("name", collectionName) };
-
-        var cursor = await _database
-            .ListCollectionsAsync(
-                options: options,
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
-
-        return await cursor
-            .AnyAsync(
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
-    }
-
-    private async Task<IMongoCollection<PlayerFormModel>> GetCollectionAsync(
-        CancellationToken cancellationToken = default)
-    {
-        var collectionName = $"player_forms";
-        var collection = _database.GetCollection<PlayerFormModel>(collectionName);
-        if (collection.CollectionNamespace == null)
-        {
-            return collection;
-        }
-
-        if (!await CollectionExistsAsync(
-            collectionName: collectionName,
-            cancellationToken: cancellationToken).ConfigureAwait(false))
-        {
-            await GameProviderId_IndexAsync(
-                collection: collection,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            await GameProviderCode_IndexAsync(
-                collection: collection,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            await Search_IndexAsync(
-                collection: collection,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            await Search_ExpansionFormId_IndexAsync(
-                collection: collection,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            await BrandId_IndexAsync(
-                collection: collection,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            await BrandCode_IndexAsync(
-                collection: collection,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            await State_IndexAsync(
-                collection: collection,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            await CreatedOn_IndexAsync(
-                collection: collection,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            await ExpireOn_IndexAsync(
-                collection: collection,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-        }
-
-        return collection;
-    }
+    private IMongoCollection<PlayerFormModel> GetCollection()
+        => _database.GetCollection<PlayerFormModel>("player_forms");
 }

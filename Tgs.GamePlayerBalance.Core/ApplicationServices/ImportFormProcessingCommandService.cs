@@ -75,7 +75,8 @@ internal class ImportFormProcessingCommandService : ICommandService<ImportFormPr
                     id: filterId,
                     pageSize: pageSize,
                     cancellationToken: cancellationToken)
-                .ToArrayAsync()
+                .ToArrayAsync(
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false)
                 ?? Enumerable.Empty<long>();
 

@@ -14,8 +14,11 @@ public interface IImportFormRepository
         long id,
         CancellationToken cancellationToken = default);
 
+    ValueTask InitializeAsync(
+        CancellationToken cancellationToken = default);
+
     ValueTask UpdateCompleteAsync(
-            long id,
+                long id,
         string status = "success",
         CancellationToken cancellationToken = default);
 

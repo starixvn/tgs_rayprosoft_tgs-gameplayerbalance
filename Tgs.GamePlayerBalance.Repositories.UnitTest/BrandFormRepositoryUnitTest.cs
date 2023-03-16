@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 using NSubstitute;
 using Tgs.GamePlayerBalance.Core;
 using Tgs.GamePlayerBalance.Repositories.Models;
@@ -12,7 +11,6 @@ public class BrandFormRepositoryUnitTest
     [Test]
     public async Task Add()
     {
-        var fakeLogger = NullLogger<BrandFormRepository>.Instance;
         var fakerMongoDatabase = Substitute.For<IMongoDatabase>();
         var fakerSnowflake = Substitute.For<ISnowflake>();
 
@@ -25,7 +23,6 @@ public class BrandFormRepositoryUnitTest
         _ = fakerSnowflake.NextId().Returns(brandFormId);
 
         var repository = new BrandFormRepository(
-            fakeLogger,
             fakerMongoDatabase,
             fakerSnowflake);
 
@@ -59,12 +56,10 @@ public class BrandFormRepositoryUnitTest
     [Test]
     public async Task UpdateComplete()
     {
-        var fakeLogger = NullLogger<BrandFormRepository>.Instance;
         var fakerMongoDatabase = Substitute.For<IMongoDatabase>();
         var fakerSnowflake = Substitute.For<ISnowflake>();
 
         var repository = new BrandFormRepository(
-            fakeLogger,
             fakerMongoDatabase,
             fakerSnowflake);
 
@@ -96,12 +91,10 @@ public class BrandFormRepositoryUnitTest
     [Test]
     public async Task UpdateFailedAsync()
     {
-        var fakeLogger = NullLogger<BrandFormRepository>.Instance;
         var fakerMongoDatabase = Substitute.For<IMongoDatabase>();
         var fakerSnowflake = Substitute.For<ISnowflake>();
 
         var repository = new BrandFormRepository(
-            fakeLogger,
             fakerMongoDatabase,
             fakerSnowflake);
 
@@ -133,14 +126,12 @@ public class BrandFormRepositoryUnitTest
     [Test]
     public async Task UpdateProcessing()
     {
-        var fakeLogger = NullLogger<BrandFormRepository>.Instance;
         var fakerMongoDatabase = Substitute.For<IMongoDatabase>();
         var fakerSnowflake = Substitute.For<ISnowflake>();
 
         var id = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
         var repository = new BrandFormRepository(
-            fakeLogger,
             fakerMongoDatabase,
             fakerSnowflake);
 

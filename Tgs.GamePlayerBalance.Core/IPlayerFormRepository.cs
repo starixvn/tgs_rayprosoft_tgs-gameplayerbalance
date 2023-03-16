@@ -37,7 +37,7 @@ public interface IPlayerFormRepository
         CancellationToken cancellationToken = default);
 
     ValueTask<long?> ImportGetFirstIdAsync(
-            long expansionFormId,
+        long expansionFormId,
         PlayerFormState state,
         CancellationToken cancellationToken = default);
 
@@ -52,8 +52,11 @@ public interface IPlayerFormRepository
         int pageSize = 1000,
         CancellationToken cancellationToken = default);
 
+    ValueTask InitializeAsync(
+        CancellationToken cancellationToken = default);
+
     ValueTask UpdateCompleteAsync(
-        long id,
+            long id,
         StateCode resultStateCode,
         string resultMessage,
         Guid resultFundTransactionId,

@@ -4,7 +4,7 @@ using Tgs.GamePlayerBalance.Core;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public static class GameRecordRegisterExtensions
+public static class ServiceRegisterExtensions
 {
     public static async Task<WebApplication> UseGameRecordRegister(this WebApplication app)
     {
@@ -30,6 +30,21 @@ public static class GameRecordRegisterExtensions
                         .ConfigureAwait(false);
                 }
             }
+
+            var brandFormRepository = scope.ServiceProvider.GetRequiredService<IBrandFormRepository>();
+            await brandFormRepository
+                 .InitializeAsync()
+                 .ConfigureAwait(false);
+
+            var importFormRepository = scope.ServiceProvider.GetRequiredService<IImportFormRepository>();
+            await importFormRepository
+                 .InitializeAsync()
+                 .ConfigureAwait(false);
+
+            var playerFormRepository = scope.ServiceProvider.GetRequiredService<IPlayerFormRepository>();
+            await playerFormRepository
+                 .InitializeAsync()
+                 .ConfigureAwait(false);
         }
         return app;
     }

@@ -89,6 +89,9 @@ builder.Services
             var configuration = sp.GetRequiredService<IConfiguration>();
             options.Url = configuration.GetConnectionString("Nats")!;
         })
+        .AddHandler<BrandFormByAwcAelottoQueuedMessageHandler>("game.playerbalance.brand.form.queued.awc.aelotto", "tgs.game.playerbalance.brand.form")
+        .AddHandler<BrandFormByAwcAwsQueuedMessageHandler>("game.playerbalance.brand.form.queued.awc.aws", "tgs.game.playerbalance.brand.form")
+        .AddHandler<BrandFormByAwcFacaiQueuedMessageHandler>("game.playerbalance.brand.form.queued.awc.facai", "tgs.game.playerbalance.brand.form")
         .AddHandler<BrandFormQueuedMessageHandler>("game.playerbalance.brand.form.queued", "tgs.game.playerbalance.brand.form")
         .AddHandler<BrandFormProcessingMessageHandler>("game.playerbalance.brand.form.processing", "tgs.game.playerbalance.brand.form")
         .AddHandler<ImportFormQueuedMessageHandler>("game.playerbalance.import.form.queued", "tgs.game.playerbalance.import.form")
