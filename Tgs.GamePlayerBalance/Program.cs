@@ -100,6 +100,9 @@ builder.Services
     })
 
     .ClearAllExchanges()
+    .AddNatsGlobPatternExchange("game.playerbalance.brand.form.queued.awc.aelotto")
+    .AddNatsGlobPatternExchange("game.playerbalance.brand.form.queued.awc.aws")
+    .AddNatsGlobPatternExchange("game.playerbalance.brand.form.queued.awc.facai")
     .AddNatsGlobPatternExchange("game.playerbalance.brand.form.queued")
     .AddNatsGlobPatternExchange("game.playerbalance.brand.form.processing")
     .AddNatsGlobPatternExchange("game.playerbalance.import.form.queued")
