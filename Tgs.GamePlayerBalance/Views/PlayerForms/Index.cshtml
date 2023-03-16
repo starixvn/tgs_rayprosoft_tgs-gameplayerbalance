@@ -33,6 +33,9 @@
             <tbody>
                 <tr v-for="(data,index) in tableData">
                     <td>{{index+1 }}</td>
+                    <td>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" v-on:click="result(data.result)">result</button>
+                    </td>
                     <td>{{data.id }}</td>
                     <td>{{data.brandCode}}</td>
                     <td>{{data.gameProviderCode}}</td>
@@ -49,20 +52,44 @@
     </div>
 </div>
 
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Result</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <pre>{{ jsonstr}}</pre>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Script{
     <script type="text/javascript">
         const App = {
             data() {
                 return {
                     title: "Brand Form",
-                    tableColumn: ["No.", "訂單號","平台","遊戲供應商", "狀態", "創建時間", "處理起始", "處理結束"],
+                    tableColumn: ["No.", "操作", "訂單號", "平台", "遊戲供應商", "狀態", "創建時間", "處理起始", "處理結束"],
                     tableData: [],
                     playerCode: "",
                     pageData: [1],
-                    pageSize: 10
+                    pageSize: 10,
+                    jsonstr: "{}"
                 }
             },
             mounted() {
+            },
+            filters: {
+                pretty: function (value) {
+                    console.log(value);
+                    return JSON.stringify(JSON.parse(value), null, 2);
+                }
             },
             methods: {
                 localday(time) {
@@ -109,6 +136,22 @@
                 search() {
                     this.page = 1
                     this.loadData();
+                },
+                result(value) {
+                    console.log(value);
+                    this.jsonstr = value;
+                    var exampleModal = document.getElementById('exampleModal')
+                    exampleModal.addEventListener('show.bs.modal', function (event) {
+                        // Button that triggered the modal
+                        var button = event.relatedTarget
+                        // Extract info from data-bs-* attributes
+                        var recipient = button.getAttribute('data-bs-whatever')
+                        // If necessary, you could initiate an AJAX request here
+                        // and then do the updating in a callback.
+                        //
+                        // Update the modal's content.
+
+                    })
                 },
                 onPageSizeChange(event) {
                     this.page = 1

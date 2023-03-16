@@ -12,23 +12,30 @@ public static class ServiceRegisterExtensions
         {
             var client = scope.ServiceProvider.GetRequiredService<IGameCommandClient>();
 
-            var gameProviderIdInfos = await client
-                .GameProviderGetGameProviderIdsAsync()
-                .ToArrayAsync()
-                .ConfigureAwait(false)
-                ?? Enumerable.Empty<GameProviderIdInfo>();
-
-            if (gameProviderIdInfos.Any())
+            try
             {
-                var gameProviderRepository = scope.ServiceProvider.GetRequiredService<IGameProviderRepository>();
+                var gameProviderIdInfos = await client
+                    .GameProviderGetGameProviderIdsAsync()
+                    .ToArrayAsync()
+                    .ConfigureAwait(false)
+                    ?? Enumerable.Empty<GameProviderIdInfo>();
 
-                foreach (var gameProviderIdInfo in gameProviderIdInfos)
+                if (gameProviderIdInfos.Any())
                 {
-                    _ = await gameProviderRepository
-                        .GetIdAsync(
-                            gameProviderIdInfo.GameProviderCode)
-                        .ConfigureAwait(false);
+                    var gameProviderRepository = scope.ServiceProvider.GetRequiredService<IGameProviderRepository>();
+
+                    foreach (var gameProviderIdInfo in gameProviderIdInfos)
+                    {
+                        _ = await gameProviderRepository
+                            .GetIdAsync(
+                                gameProviderIdInfo.GameProviderCode)
+                            .ConfigureAwait(false);
+                    }
                 }
+            }
+            catch
+            {
+
             }
 
             var brandFormRepository = scope.ServiceProvider.GetRequiredService<IBrandFormRepository>();
