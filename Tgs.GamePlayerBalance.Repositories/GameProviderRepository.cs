@@ -7,16 +7,6 @@ namespace Tgs.GamePlayerBalance.Repositories;
 
 internal class GameProviderRepository : IGameProviderRepository
 {
-    private static readonly JsonSerializerOptions _SerializerOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        PropertyNameCaseInsensitive = true,
-        Converters =
-        {
-            new JsonStringEnumConverter()
-        }
-    };
-
     private readonly IGameCommandClient _client;
 
     public GameProviderRepository(IGameCommandClient client)

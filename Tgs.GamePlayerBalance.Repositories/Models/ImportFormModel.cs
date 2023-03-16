@@ -28,7 +28,7 @@ public record ImportFormModel
     /// </summary>
     [BsonElement("state")]
     [BsonRepresentation(BsonType.String)]
-    public BrandFormState State { get; set; }
+    public ImportFormState State { get; set; }
     /// <summary>
     /// The status
     /// </summary>

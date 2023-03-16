@@ -5,4 +5,4 @@ namespace Tgs.GamePlayerBalance.ViewModels;
 public record BrandFormQueryViewModel(
     string BrandCode,
     BrandFormState? State,
-    int pageSize = 100);
+    int PageSize = 100);

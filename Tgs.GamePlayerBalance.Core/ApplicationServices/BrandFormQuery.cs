@@ -3,4 +3,4 @@
 public record BrandFormQuery(
     string BrandCode,
     BrandFormState? State,
-    int pageSize = 100);
+    int PageSize = 100);

@@ -36,7 +36,7 @@ internal class BrandFormQueryService : IQueryService<BrandFormQuery, BrandForm>
             .QueryAsync(
                 brandId: brandId.Value,
                 state: query.State,
-                pageSize: query.pageSize,
+                pageSize: query.PageSize,
                 cancellationToken: cancellationToken)
             .ToArrayAsync(
                 cancellationToken: cancellationToken)

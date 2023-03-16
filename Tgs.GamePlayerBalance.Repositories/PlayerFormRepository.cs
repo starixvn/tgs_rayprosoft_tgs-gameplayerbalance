@@ -477,8 +477,73 @@ internal class PlayerFormRepository : IPlayerFormRepository
             .ConfigureAwait(false);
     }
 
+    public async IAsyncEnumerable<PlayerForm> QueryAsync(
+        string playerCode,
+        int pageSize = 100,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var collection = GetCollection();
+
+
+        var builder = Builders<PlayerFormModel>.Filter;
+
+        var filter = builder.Eq(x => x.PlayerCode, playerCode);
+
+        var sort = Builders<PlayerFormModel>
+            .Sort
+            .Ascending(x => x.Id);
+
+        var options = new FindOptions<PlayerFormModel>
+        {
+            Sort = sort,
+            Limit = pageSize,
+        };
+        var asyncCursor = await collection
+                    .FindAsync(
+                        filter: filter,
+                        options: options,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+        while (await asyncCursor
+                .MoveNextAsync(
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false))
+        {
+            foreach (var current in asyncCursor.Current)
+            {
+                yield return new PlayerForm(
+                    Id: current.Id,
+                    ExpansionFormId: current.ExpansionFormId,
+                    GameProviderId: current.GameProviderId,
+                    GameProviderCode: current.GameProviderCode,
+                    BrandId: current.BrandId,
+                    BrandCode: current.BrandCode,
+                    PlayerCode: current.PlayerCode,
+                    Username: current.Username,
+                    WalletId: current.WalletId,
+                    CurrencyCode: current.CurrencyCode,
+                    State: current.State,
+                    Status: current.Status,
+                    CreatedOn: current.CreatedOn,
+                    UpdateOn: current.UpdateOn,
+                    StartOn: current.StartOn,
+                    EndOn: current.EndOn,
+                    ExpireOn: current.ExpireOn,
+                    Result: current.Result == null
+                    ? null
+                    : new PlayerFormFundResult(
+                        current.Result.State,
+                        current.Result.Message,
+                        current.Result.FundTransactionId,
+                        current.Result.TransactionId,
+                        current.Result.ExternalTransactionId));
+            }
+        }
+    }
+
     public async ValueTask UpdateCompleteAsync(
-            long id,
+                long id,
         StateCode resultStateCode,
         string resultMessage,
         Guid resultFundTransactionId,

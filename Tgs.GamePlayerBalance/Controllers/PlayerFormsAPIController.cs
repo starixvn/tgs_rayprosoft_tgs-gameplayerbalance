@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Tgs.GamePlayerBalance.Core.ApplicationServices;
+using Tgs.GamePlayerBalance.Core.Models;
 using Tgs.GamePlayerBalance.ViewModels;
 using Tgs.ServiceUtility;
 
@@ -22,4 +23,15 @@ public class PlayerFormsAPIController : ControllerBase
                 command: command,
                 cancellationToken: HttpContext.RequestAborted);
     }
+
+    [HttpGet(Name = "PlayerFormQuery")]
+    public IAsyncEnumerable<PlayerForm> BrandFormQueryAsync(
+        [FromServices] IQueryService<PlayerFormQuery, PlayerForm> service,
+        [FromQuery] PlayerFormQueryViewModel model)
+        => service
+        .QueryAsync(
+            query: new PlayerFormQuery(
+                model.PlayerCode,
+                model.PageSize),
+                cancellationToken: HttpContext.RequestAborted);
 }

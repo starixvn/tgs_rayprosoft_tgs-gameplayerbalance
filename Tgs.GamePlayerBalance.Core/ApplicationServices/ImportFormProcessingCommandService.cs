@@ -41,7 +41,7 @@ internal class ImportFormProcessingCommandService : ICommandService<ImportFormPr
             throw new Exception($"This brand form does not exist.({command.Id})");
         }
 
-        if (form.State != BrandFormState.Processing)
+        if (form.State != ImportFormState.Processing)
         {
             _logger.LogError("The brand form status is not processing.({id})", command.Id);
             throw new Exception($"The brand form status is not processing.({command.Id})");

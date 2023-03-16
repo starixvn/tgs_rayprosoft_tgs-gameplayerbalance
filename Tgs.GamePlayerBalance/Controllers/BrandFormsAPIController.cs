@@ -34,7 +34,7 @@ public class BrandFormsAPIController : ControllerBase
             query: new BrandFormQuery(
                 model.BrandCode,
                 model.State,
-                model.pageSize),
+                model.PageSize),
                 cancellationToken: HttpContext.RequestAborted);
 
     [HttpGet("state")]

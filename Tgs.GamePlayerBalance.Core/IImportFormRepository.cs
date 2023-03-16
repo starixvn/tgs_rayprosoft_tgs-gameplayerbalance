@@ -17,8 +17,14 @@ public interface IImportFormRepository
     ValueTask InitializeAsync(
         CancellationToken cancellationToken = default);
 
+    IAsyncEnumerable<ImportForm> QueryAsync(
+        Guid gameProviderId,
+        ImportFormState? state,
+        int pageSize = 100,
+        CancellationToken cancellationToken = default);
+
     ValueTask UpdateCompleteAsync(
-                long id,
+        long id,
         string status = "success",
         CancellationToken cancellationToken = default);
 

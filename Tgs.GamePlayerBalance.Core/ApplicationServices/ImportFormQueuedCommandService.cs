@@ -49,7 +49,7 @@ internal class ImportFormQueuedCommandService : ICommandService<ImportFormQueued
             throw new Exception($"This brand form does not exist.({command.Id})");
         }
 
-        if (form.State != BrandFormState.Queued)
+        if (form.State != ImportFormState.Queued)
         {
             _logger.LogError("The brand form status is not queued.({id})", command.Id);
             throw new Exception($"The brand form status is not queued.({command.Id})");

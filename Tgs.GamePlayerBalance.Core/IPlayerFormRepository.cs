@@ -55,8 +55,13 @@ public interface IPlayerFormRepository
     ValueTask InitializeAsync(
         CancellationToken cancellationToken = default);
 
+    IAsyncEnumerable<PlayerForm> QueryAsync(
+        string playerCode,
+        int pageSize = 100,
+        CancellationToken cancellationToken = default);
+
     ValueTask UpdateCompleteAsync(
-            long id,
+        long id,
         StateCode resultStateCode,
         string resultMessage,
         Guid resultFundTransactionId,
