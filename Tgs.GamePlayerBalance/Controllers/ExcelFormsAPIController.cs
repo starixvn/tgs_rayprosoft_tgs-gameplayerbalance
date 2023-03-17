@@ -12,16 +12,43 @@ namespace Tgs.GamePlayerBalance.Controllers;
 public class ExcelFormsAPIController : ControllerBase
 {
     [HttpGet(Name = "ImportFormQuery")]
-    public IAsyncEnumerable<ImportForm> BrandFormQueryAsync(
+    public async IAsyncEnumerable<ImportFormViewModel> BrandFormQueryAsync(
         [FromServices] IQueryService<ImportFormQuery, ImportForm> service,
         [FromQuery] ImportFormQueryViewModel model)
-        => service
-        .QueryAsync(
-            query: new ImportFormQuery(
-                model.GameProviderCode,
-                model.State,
-                model.PageSize),
-                cancellationToken: HttpContext.RequestAborted);
+    {
+        var forms = await service
+          .QueryAsync(
+              query: new ImportFormQuery(
+                   GameProviderCode: model.GameProviderCode,
+                   State: model.State,
+                  PageSize: model.PageSize),
+              cancellationToken: HttpContext.RequestAborted)
+          .ToArrayAsync(
+            cancellationToken: HttpContext.RequestAborted)
+          .ConfigureAwait(false)
+          ?? Enumerable.Empty<ImportForm>();
+
+        if (!forms.Any())
+        {
+            yield break;
+        }
+
+        foreach (var form in forms)
+        {
+            yield return new ImportFormViewModel(
+                Id: form.Id.ToString(),
+                GameProviderId: form.GameProviderId,
+                GameProviderCode: form.GameProviderCode,
+                State: form.State,
+                Status: form.Status,
+                Players: form.Players,
+                CreatedOn: form.CreatedOn,
+                UpdateOn: form.UpdateOn,
+                StartOn: form.StartOn,
+                EndOn: form.EndOn,
+                ExpireOn: form.ExpireOn);
+        }
+    }
 
     [HttpGet("state")]
     public IAsyncEnumerable<SelectViewModel> StateAsync()

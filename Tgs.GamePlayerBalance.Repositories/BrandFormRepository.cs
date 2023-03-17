@@ -143,7 +143,7 @@ internal class BrandFormRepository : IBrandFormRepository
 
         var sort = Builders<BrandFormModel>
             .Sort
-            .Ascending(x => x.Id);
+            .Descending(x => x.Id);
 
         var options = new FindOptions<BrandFormModel>
         {

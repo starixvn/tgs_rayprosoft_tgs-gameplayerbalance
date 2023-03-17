@@ -25,6 +25,20 @@ public interface IPlayerFormRepository
         IEnumerable<PlayerFormAdd> source,
         CancellationToken cancellationToken = default);
 
+    IAsyncEnumerable<PlayerForm> BrandQueryAsync(
+        long expansionFormId,
+        PlayerFormState? state,
+        string? playerCode,
+        int page = 1,
+        int pageSize = 100,
+        CancellationToken cancellationToken = default);
+
+    ValueTask<long> BrandQueryCountAsync(
+        long expansionFormId,
+        PlayerFormState? state,
+        string? playerCode,
+      CancellationToken cancellationToken = default);
+
     IAsyncEnumerable<long> BrandQueryIdAsync(
         long expansionFormId,
         PlayerFormState state,
@@ -33,7 +47,7 @@ public interface IPlayerFormRepository
         CancellationToken cancellationToken = default);
 
     ValueTask<PlayerForm?> GetAsync(
-            long id,
+        long id,
         CancellationToken cancellationToken = default);
 
     ValueTask<long?> ImportGetFirstIdAsync(
@@ -45,8 +59,22 @@ public interface IPlayerFormRepository
         IEnumerable<PlayerFormAdd> source,
         CancellationToken cancellationToken = default);
 
-    IAsyncEnumerable<long> ImportQueryIdAsync(
+    IAsyncEnumerable<PlayerForm> ImportQueryAsync(
         long expansionFormId,
+        PlayerFormState? state,
+        string? playerCode,
+        int page = 1,
+        int pageSize = 100,
+        CancellationToken cancellationToken = default);
+
+    ValueTask<long> ImportQueryCountAsync(
+        long expansionFormId,
+        PlayerFormState? state,
+        string? playerCode,
+      CancellationToken cancellationToken = default);
+
+    IAsyncEnumerable<long> ImportQueryIdAsync(
+            long expansionFormId,
         PlayerFormState state,
         long id,
         int pageSize = 1000,

@@ -74,7 +74,7 @@
         const App = {
             data() {
                 return {
-                    title: "Brand Form",
+                    title: "Player Form",
                     tableColumn: ["No.", "操作", "訂單號", "平台", "遊戲供應商", "狀態", "創建時間", "處理起始", "處理結束"],
                     tableData: [],
                     playerCode: "",
@@ -146,10 +146,6 @@
                         var button = event.relatedTarget
                         // Extract info from data-bs-* attributes
                         var recipient = button.getAttribute('data-bs-whatever')
-                        // If necessary, you could initiate an AJAX request here
-                        // and then do the updating in a callback.
-                        //
-                        // Update the modal's content.
 
                     })
                 },

@@ -44,7 +44,7 @@
             <tbody>
                 <tr v-for="(data,index) in tableData">
                     <td>{{index+1 }}</td>
-                    <td>{{data.id }}</td>
+                    <td><a :href="'playerformsbybrand?id='+data.id">{{data.id }}</></td>
                     <td>{{data.gameProviderCode }}</td>
                     <td>{{data.state}}</td>
                     <td>{{localtime(data.createdOn)}}</td>

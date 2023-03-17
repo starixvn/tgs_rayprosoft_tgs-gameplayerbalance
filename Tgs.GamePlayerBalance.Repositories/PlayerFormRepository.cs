@@ -1,6 +1,8 @@
 ﻿using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Operations;
 using Tgs.GameFundTransfer.Protos;
 using Tgs.GamePlayerBalance.Core;
 using Tgs.GamePlayerBalance.Core.Models;
@@ -177,6 +179,89 @@ internal class PlayerFormRepository : IPlayerFormRepository
         {
             yield return document.Id;
         }
+    }
+
+    public async IAsyncEnumerable<PlayerForm> BrandQueryAsync(
+        long expansionFormId,
+        PlayerFormState? state,
+        string? playerCode,
+        int page = 1,
+        int pageSize = 100,
+       [EnumeratorCancellation] CancellationToken cancellationToken = default)
+
+    {
+        var collection = GetCollection();
+
+        var builder = Builders<PlayerFormModel>.Filter;
+        var sort = Builders<PlayerFormModel>.Sort.Descending(x => x.Id);
+        var filter = BrandQueryFilter(expansionFormId, state, playerCode);
+
+        var options = new FindOptions<PlayerFormModel>
+        {
+            Skip = (page - 1) * pageSize,
+            Limit = pageSize,
+            Sort = sort
+        };
+
+        var asyncCursor = await collection
+                    .FindAsync(
+                        filter: filter,
+                        options: options,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+        while (await asyncCursor
+                .MoveNextAsync(
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false))
+        {
+            foreach (var current in asyncCursor.Current)
+            {
+                yield return new PlayerForm(
+                    Id: current.Id,
+                    ExpansionFormId: current.ExpansionFormId,
+                    GameProviderId: current.GameProviderId,
+                    GameProviderCode: current.GameProviderCode,
+                    BrandId: current.BrandId,
+                    BrandCode: current.BrandCode,
+                    PlayerCode: current.PlayerCode,
+                    Username: current.Username,
+                    WalletId: current.WalletId,
+                    CurrencyCode: current.CurrencyCode,
+                    State: current.State,
+                    Status: current.Status,
+                    CreatedOn: current.CreatedOn,
+                    UpdateOn: current.UpdateOn,
+                    StartOn: current.StartOn,
+                    EndOn: current.EndOn,
+                    ExpireOn: current.ExpireOn,
+                    Result: current.Result == null
+                    ? null
+                    : new PlayerFormFundResult(
+                        current.Result.State,
+                        current.Result.Message,
+                        current.Result.FundTransactionId,
+                        current.Result.TransactionId,
+                        current.Result.ExternalTransactionId));
+            }
+        }
+    }
+
+    public async ValueTask<long> BrandQueryCountAsync(
+        long expansionFormId,
+        PlayerFormState? state,
+        string? playerCode,
+        CancellationToken cancellationToken = default)
+    {
+        var collection = GetCollection();
+
+        var filter = BrandQueryFilter(expansionFormId, state, playerCode);
+
+        return await collection
+            .CountDocumentsAsync(
+                filter: filter,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
 
     public async IAsyncEnumerable<long> BrandQueryIdAsync(
@@ -386,6 +471,89 @@ internal class PlayerFormRepository : IPlayerFormRepository
         }
     }
 
+    public async IAsyncEnumerable<PlayerForm> ImportQueryAsync(
+        long expansionFormId,
+        PlayerFormState? state,
+        string? playerCode,
+        int page = 1,
+        int pageSize = 100,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+
+    {
+        var collection = GetCollection();
+
+        var builder = Builders<PlayerFormModel>.Filter;
+        var sort = Builders<PlayerFormModel>.Sort.Descending(x => x.Id);
+        var filter = ImportQueryFilter(expansionFormId, state, playerCode);
+
+        var options = new FindOptions<PlayerFormModel>
+        {
+            Skip = (page - 1) * pageSize,
+            Limit = pageSize,
+            Sort = sort
+        };
+
+        var asyncCursor = await collection
+                    .FindAsync(
+                        filter: filter,
+                        options: options,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+        while (await asyncCursor
+                .MoveNextAsync(
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false))
+        {
+            foreach (var current in asyncCursor.Current)
+            {
+                yield return new PlayerForm(
+                    Id: current.Id,
+                    ExpansionFormId: current.ExpansionFormId,
+                    GameProviderId: current.GameProviderId,
+                    GameProviderCode: current.GameProviderCode,
+                    BrandId: current.BrandId,
+                    BrandCode: current.BrandCode,
+                    PlayerCode: current.PlayerCode,
+                    Username: current.Username,
+                    WalletId: current.WalletId,
+                    CurrencyCode: current.CurrencyCode,
+                    State: current.State,
+                    Status: current.Status,
+                    CreatedOn: current.CreatedOn,
+                    UpdateOn: current.UpdateOn,
+                    StartOn: current.StartOn,
+                    EndOn: current.EndOn,
+                    ExpireOn: current.ExpireOn,
+                    Result: current.Result == null
+                    ? null
+                    : new PlayerFormFundResult(
+                        current.Result.State,
+                        current.Result.Message,
+                        current.Result.FundTransactionId,
+                        current.Result.TransactionId,
+                        current.Result.ExternalTransactionId));
+            }
+        }
+    }
+
+    public async ValueTask<long> ImportQueryCountAsync(
+        long expansionFormId,
+        PlayerFormState? state,
+        string? playerCode,
+        CancellationToken cancellationToken = default)
+    {
+        var collection = GetCollection();
+
+        var filter = ImportQueryFilter(expansionFormId, state, playerCode);
+
+        return await collection
+            .CountDocumentsAsync(
+                filter: filter,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     public async IAsyncEnumerable<long> ImportQueryIdAsync(
         long expansionFormId,
         PlayerFormState state,
@@ -484,14 +652,13 @@ internal class PlayerFormRepository : IPlayerFormRepository
     {
         var collection = GetCollection();
 
-
         var builder = Builders<PlayerFormModel>.Filter;
 
         var filter = builder.Eq(x => x.PlayerCode, playerCode);
 
         var sort = Builders<PlayerFormModel>
             .Sort
-            .Ascending(x => x.Id);
+            .Descending(x => x.Id);
 
         var options = new FindOptions<PlayerFormModel>
         {
@@ -543,7 +710,7 @@ internal class PlayerFormRepository : IPlayerFormRepository
     }
 
     public async ValueTask UpdateCompleteAsync(
-                long id,
+        long id,
         StateCode resultStateCode,
         string resultMessage,
         Guid resultFundTransactionId,
@@ -649,6 +816,52 @@ internal class PlayerFormRepository : IPlayerFormRepository
             update: update,
             cancellationToken: cancellationToken)
         .ConfigureAwait(false);
+    }
+
+    private static FilterDefinition<PlayerFormModel> ImportQueryFilter(
+        long expansionFormId,
+        PlayerFormState? state,
+        string? playerCode)
+    {
+        var builder = Builders<PlayerFormModel>.Filter;
+
+        var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
+                    builder.Eq(x => x.Source, PlayerFormSource.Import);
+
+        if (state.HasValue)
+        {
+            filter &= builder.Eq(x => x.State, state.Value);
+        }
+
+        if (!string.IsNullOrEmpty(playerCode))
+        {
+            filter &= builder.Eq(x => x.PlayerCode, playerCode);
+        }
+
+        return filter;
+    }
+
+    private static FilterDefinition<PlayerFormModel> BrandQueryFilter(
+        long expansionFormId,
+        PlayerFormState? state,
+        string? playerCode)
+    {
+        var builder = Builders<PlayerFormModel>.Filter;
+
+        var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
+                    builder.Eq(x => x.Source, PlayerFormSource.Brand);
+
+        if (state.HasValue)
+        {
+            filter &= builder.Eq(x => x.State, state.Value);
+        }
+
+        if (!string.IsNullOrEmpty(playerCode))
+        {
+            filter &= builder.Eq(x => x.PlayerCode, playerCode);
+        }
+
+        return filter;
     }
 
     private static Task BrandCode_IndexAsync(

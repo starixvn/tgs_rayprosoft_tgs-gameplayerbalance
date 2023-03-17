@@ -1,6 +1,4 @@
-﻿using Tgs.GamePlayerBalance.Core;
-
-namespace Tgs.GamePlayerBalance.ViewModels;
+﻿namespace Tgs.GamePlayerBalance.ViewModels;
 
 public record PlayerFormQueryViewModel(
     string PlayerCode,

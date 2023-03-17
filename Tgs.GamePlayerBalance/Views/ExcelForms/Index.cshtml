@@ -44,7 +44,7 @@
             <tbody>
                 <tr v-for="(data,index) in tableData">
                     <td>{{index+1 }}</td>
-                    <td>{{data.id }}</td>
+                    <td><a :href="'playerformsbyexcel?id='+data.id">{{data.id }}</></td>
                     <td>{{data.state}}</td>
                     <td>{{localtime(data.createdOn)}}</td>
                     <td>{{localtime(data.startOn)}}</td>
@@ -63,7 +63,7 @@
         const App = {
             data() {
                 return {
-                    title: "Brand Form",
+                    title: "Excel Form",
                     tableColumn: ["No.", "訂單號", "狀態", "創建時間", "處理起始", "處理結束"],
                     tableData: [],
                     gameProviderCode: "",

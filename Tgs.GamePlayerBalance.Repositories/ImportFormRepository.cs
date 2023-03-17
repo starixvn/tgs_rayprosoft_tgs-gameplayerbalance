@@ -139,7 +139,7 @@ internal class ImportFormRepository : IImportFormRepository
 
         var sort = Builders<ImportFormModel>
             .Sort
-            .Ascending(x => x.Id);
+            .Descending(x => x.Id);
 
         var options = new FindOptions<ImportFormModel>
         {
