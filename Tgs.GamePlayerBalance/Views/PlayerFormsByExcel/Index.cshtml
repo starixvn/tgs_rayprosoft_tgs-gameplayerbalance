@@ -54,7 +54,7 @@
                 <tr v-for="(data,index) in tableData">
                     <td>{{index+1 }}</td>
                     <td>
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" v-on:click="result(data.result)">result</button>
+                        <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#exampleModal" v-on:click="result(data.result)">result</button>
                     </td>
                     <td>{{data.id }}</td>
                     <td>{{data.playerCode }}</td>
@@ -193,16 +193,7 @@
                     this.loadData();
                 },
                 result(value) {
-                    console.log(value);
                     this.jsonstr = value;
-                    var exampleModal = document.getElementById('exampleModal')
-                    exampleModal.addEventListener('show.bs.modal', function (event) {
-                        // Button that triggered the modal
-                        var button = event.relatedTarget
-                        // Extract info from data-bs-* attributes
-                        var recipient = button.getAttribute('data-bs-whatever')
-
-                    })
                 },
                 onPageSizeChange(event) {
                     this.page = 1
