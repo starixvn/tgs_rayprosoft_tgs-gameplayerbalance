@@ -6,8 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Instrumentation.AspNetCore;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Prometheus;
 using Tgs.GamePlayerBalance.MessageHandlers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -110,46 +112,39 @@ builder.Services
     .AddNatsGlobPatternExchange("game.playerbalance.player.form.queued");
 
 builder.Services
-     .AddSingleton<IConfigureOptions<OtlpExporterOptions>>(
-        sp => new ConfigureNamedOptions<OtlpExporterOptions>(
-            Options.DefaultName,
-            exporterOptions =>
-            {
-                var config = sp.GetRequiredService<IConfiguration>();
-                var nodeIp = config.GetValue<string>("NODE_IP");
-
-                if (!string.IsNullOrWhiteSpace(nodeIp))
-                    exporterOptions.Endpoint = new Uri($"http://{nodeIp}:4317");
-
-                config.GetSection("Opentelemetry:Tracing").Bind(exporterOptions);
-            }))
-    .AddOpenTelemetryTracing(traceBuilder => traceBuilder
-        .SetResourceBuilder(ResourceBuilder.CreateDefault().AddEnvironmentVariableDetector())
+    .AddOpenTelemetry()
+    .WithTracing(builder => builder
+        .SetResourceBuilder(ResourceBuilder.CreateDefault()
+            .AddEnvironmentVariableDetector())
         .AddSource("Tgs.*")
         .AddSource("TGS.*")
-        .AddGrpcClientInstrumentation()
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
-        .AddProfileViewExporter()
+        .AddGrpcClientInstrumentation()
+        .AddGrpcCoreInstrumentation()
+        .AddEntityFrameworkCoreInstrumentation(options => options.SetDbStatementForText = true)
         .AddOtlpExporter())
-    .AddProfileViewer()
-    .Configure<AspNetCoreInstrumentationOptions>(options =>
-    {
-        options.Filter = httpContext =>
-        {
-            return !httpContext.Request.Path.HasValue
-                || !httpContext.Request.Path.StartsWithSegments("/swagger")
-                && !httpContext.Request.Path.StartsWithSegments("/healthz")
-                && !httpContext.Request.Path.StartsWithSegments("/profiler/")
-                && !httpContext.Request.Path.StartsWithSegments("/hangfire")
-                && !httpContext.Request.Path.StartsWithSegments("/metrics")
-                   && !new[] { "html", "ico", "png", "jpg" }.Any(
-                       ext => httpContext.Request.Path.Value.EndsWith($".{ext}"));
-        };
-    });
+    .WithMetrics(meterBuiler => meterBuiler
+    .SetResourceBuilder(ResourceBuilder.CreateDefault()
+    .AddEnvironmentVariableDetector())
+    .AddRuntimeInstrumentation()
+    .AddAspNetCoreInstrumentation()
+    .AddOtlpExporter())
+    .Services
+    .Configure<AspNetCoreInstrumentationOptions>(options => options.Filter =
+        httpContext => !httpContext.Request.Path.HasValue
+            || !httpContext.Request.Path.StartsWithSegments("/swagger")
+            && !httpContext.Request.Path.StartsWithSegments("/health")
+            && !httpContext.Request.Path.StartsWithSegments("/profiler/")
+            && !httpContext.Request.Path.StartsWithSegments("/metrics")
+            && !new[] { "html", "ico", "png", "jpg" }.Any(
+                ext => httpContext.Request.Path.Value.EndsWith($".{ext}")))
+    .AddInterceptionService()
+    .AddServiceUtiltiyInterceptors();
 
 builder.Services
-    .AddHealthChecks();
+    .AddHealthChecks()
+    .ForwardToPrometheus();
 
 var app = builder.Build();
 
@@ -165,11 +160,9 @@ _ = app.UseAuthorization();
 
 _ = app.MapControllers();
 
-app.MapProfileViewer();
-
 app.MapHealthChecks("/healthz");
 
-_ = app.UseGameRecordRegister();
+_ = app.UseRegister();
 
 app.MapControllerRoute(
     name: "default",
