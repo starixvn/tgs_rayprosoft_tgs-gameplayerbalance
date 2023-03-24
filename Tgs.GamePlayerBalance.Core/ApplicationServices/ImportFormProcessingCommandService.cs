@@ -1,7 +1,4 @@
-﻿using Google.Protobuf;
-using Microsoft.Extensions.Logging;
-using Tgs.GamePlayerBalance.Common.Protos;
-using Tgs.MessageQueue;
+﻿using Microsoft.Extensions.Logging;
 using Tgs.ServiceUtility;
 
 namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
@@ -10,19 +7,19 @@ internal class ImportFormProcessingCommandService : ICommandService<ImportFormPr
 {
     private readonly IImportFormRepository _importFormRepository;
     private readonly ILogger<ImportFormProcessingCommandService> _logger;
-    private readonly IMessageSender _messageSender;
     private readonly IPlayerFormRepository _playerFormRepository;
+    private readonly ICommandService<ImportFormProcessingPublishCommand> _service;
 
     public ImportFormProcessingCommandService(
         ILogger<ImportFormProcessingCommandService> logger,
         IImportFormRepository importFormRepository,
         IPlayerFormRepository playerFormRepository,
-        IMessageSender messageSender)
+        ICommandService<ImportFormProcessingPublishCommand> service)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _importFormRepository = importFormRepository ?? throw new ArgumentNullException(nameof(importFormRepository));
         _playerFormRepository = playerFormRepository ?? throw new ArgumentNullException(nameof(playerFormRepository));
-        _messageSender = messageSender ?? throw new ArgumentNullException(nameof(messageSender));
+        _service = service ?? throw new ArgumentNullException(nameof(service));
     }
 
     public async ValueTask ExecuteAsync(
@@ -47,7 +44,6 @@ internal class ImportFormProcessingCommandService : ICommandService<ImportFormPr
             throw new Exception($"The brand form status is not processing.({command.Id})");
         }
 
-        var pageSize = 50;
         try
         {
             var filterId = await _playerFormRepository
@@ -58,57 +54,16 @@ internal class ImportFormProcessingCommandService : ICommandService<ImportFormPr
                 .ConfigureAwait(false)
                 ?? 0;
 
-            if (filterId == 0)
+            if (filterId > 0)
             {
-                _logger.LogWarning("There is no queue list under this brand list.({id})", command.Id);
-                return;
-            }
-
-            filterId--;
-
-            while (filterId > 0)
-            {
-                var formIds = await _playerFormRepository
-                .ImportQueryIdAsync(
-                    expansionFormId: form.Id,
-                    state: PlayerFormState.Queued,
-                    id: filterId,
-                    pageSize: pageSize,
-                    cancellationToken: cancellationToken)
-                .ToArrayAsync(
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false)
-                ?? Enumerable.Empty<long>();
-
-                if (!formIds.Any())
-                {
-                    break;
-                }
-
-                foreach (var formId in formIds)
-                {
-                    filterId = formId;
-                    try
-                    {
-                        var request = new PlayerFormModelRequest
-                        {
-                            Id = formId
-                        };
-
-                        await _messageSender
-                            .PublishAsync(
-                                subject: "game.playerbalance.player.form.queued",
-                                data: request.ToByteArray(),
-                                cancellationToken: cancellationToken)
-                            .ConfigureAwait(false);
-
-                        _logger.LogInformation("LogOn:{logOn} Information Request:{receive}", DateTime.Now.ToString("o"), request);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "An exception occurred when sending the player application form.({id})", formId);
-                    }
-                }
+                filterId--;
+                await _service
+                    .ExecuteAsync(
+                        command: new ImportFormProcessingPublishCommand(
+                            ExpansionFormId: form.Id,
+                            FilterId: filterId),
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
             }
 
             await _importFormRepository

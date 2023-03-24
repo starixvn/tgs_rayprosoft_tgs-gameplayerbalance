@@ -101,13 +101,16 @@ internal class BrandFormByAwcAelottoQueuedCommandService : ICommandService<Brand
 
         try
         {
-            _ = await _playerFormRepository
-            .BrandPlayerFormAddAsync(
-                playerFormAdds,
-                cancellationToken)
-            .ToArrayAsync(
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+            if (playerFormAdds.Any())
+            {
+                _ = await _playerFormRepository
+                    .BrandPlayerFormAddAsync(
+                        playerFormAdds,
+                        cancellationToken)
+                    .ToArrayAsync(
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+            }
         }
         catch (Exception ex)
         {
