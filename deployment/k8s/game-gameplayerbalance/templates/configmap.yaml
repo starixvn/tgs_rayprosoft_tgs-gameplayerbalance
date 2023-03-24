@@ -6,11 +6,16 @@ metadata:
 data:
   appsettings.json: |
     {
-        "GamePlayerBalance": {
-             "GameCommandClientBaseUrl": "http://game-gamecommand/",
-             "GameProvidersClientBaseUrl": "http://game-gameproviders/",
-             "GameFundTransferClientBaseUrl": "http://game-gamefundtransfer:9090/"
-        }
+      "Logging": {
+        "LogLevel": {
+            "Default": "Warning"
+         }
+      },
+      "GamePlayerBalance": {
+        "GameCommandClientBaseUrl": "http://game-gamecommand/",
+        "GameProvidersClientBaseUrl": "http://game-gameproviders/",
+        "GameFundTransferClientBaseUrl": "http://game-gamefundtransfer:9090/"
+      }
     }
   otel-collector-config.yaml: |
     receivers:
