@@ -65,38 +65,43 @@ internal class BrandFormByAwcAelottoQueuedCommandService : ICommandService<Brand
                 cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        var balanceResponses = _gameProvidersBalancesClient
+        var balanceResponses = await _gameProvidersBalancesClient
             .AwcAelottoGetBalances(
                 brandCode: form.BrandCode,
                 cancellationToken: cancellationToken)
-            .ToEnumerable()
+            .ToArrayAsync(
+                cancellationToken)
+            .ConfigureAwait(false)
             ?? Enumerable.Empty<BalanceResponse>();
 
         var playerFormAdds = new List<PlayerFormAdd>();
-        foreach (var balanceResponse in balanceResponses)
+        if (balanceResponses.Any())
         {
-            var player = await _gameCommandClient
-                 .PlayerGetAsync(
-                  playerCode: balanceResponse.PlayerCode,
-                  cancellationToken: cancellationToken)
-                 .ConfigureAwait(false);
-
-            if (player is null)
+            foreach (var balanceResponse in balanceResponses)
             {
-                _logger.LogError("This player does not exist.({playerCode})", balanceResponse.PlayerCode);
-                continue;
+                var player = await _gameCommandClient
+                     .PlayerGetAsync(
+                      playerCode: balanceResponse.PlayerCode,
+                      cancellationToken: cancellationToken)
+                     .ConfigureAwait(false);
+
+                if (player is null)
+                {
+                    _logger.LogError("This player does not exist.({playerCode})", balanceResponse.PlayerCode);
+                    continue;
+                }
+                playerFormAdds.Add(new PlayerFormAdd(
+                    FormId: _snowflake.NextId(),
+                    ExpansionFormId: form.Id,
+                    GameProviderId: form.GameProviderId,
+                    GameProviderCode: form.GameProviderCode,
+                    BrandId: form.BrandId,
+                    BrandCode: form.BrandCode,
+                    PlayerCode: player.PlayerCode,
+                    Username: player.Username,
+                    WalletId: player.DefaultWalletId,
+                    CurrencyCode: player.DefaultWalletCurrencyCode));
             }
-            playerFormAdds.Add(new PlayerFormAdd(
-                FormId: _snowflake.NextId(),
-                ExpansionFormId: form.Id,
-                GameProviderId: form.GameProviderId,
-                GameProviderCode: form.GameProviderCode,
-                BrandId: form.BrandId,
-                BrandCode: form.BrandCode,
-                PlayerCode: player.PlayerCode,
-                Username: player.Username,
-                WalletId: player.DefaultWalletId,
-                CurrencyCode: player.DefaultWalletCurrencyCode));
         }
 
         try
