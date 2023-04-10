@@ -74,62 +74,56 @@ internal class BrandFormByAwcFacaiQueuedCommandService : ICommandService<BrandFo
             .ConfigureAwait(false)
             ?? Enumerable.Empty<BalanceResponse>();
 
-        if (balanceResponses.Any())
+
+        var pageSize = 500;
+        var tempbalanceResponses = balanceResponses.Take(pageSize);
+
+        if (tempbalanceResponses.Any())
         {
-            var pageIndex = 1;
-            var pageSize = 50;
-            var tempbalanceResponses = balanceResponses.Skip((pageIndex - 1) * pageSize).Take(pageSize);
-
-            while (tempbalanceResponses.Any())
+            var playerFormAdds = new List<PlayerFormAdd>();
+            foreach (var balanceResponse in tempbalanceResponses)
             {
+                var player = await _gameCommandClient
+                     .PlayerGetAsync(
+                      playerCode: balanceResponse.PlayerCode,
+                      cancellationToken: cancellationToken)
+                     .ConfigureAwait(false);
 
-                var playerFormAdds = new List<PlayerFormAdd>();
-                foreach (var balanceResponse in tempbalanceResponses)
+                if (player is null)
                 {
-                    var player = await _gameCommandClient
-                         .PlayerGetAsync(
-                          playerCode: balanceResponse.PlayerCode,
-                          cancellationToken: cancellationToken)
-                         .ConfigureAwait(false);
-
-                    if (player is null)
-                    {
-                        _logger.LogError("This player does not exist.({playerCode})", balanceResponse.PlayerCode);
-                        continue;
-                    }
-                    playerFormAdds.Add(new PlayerFormAdd(
-                        FormId: _snowflake.NextId(),
-                        ExpansionFormId: form.Id,
-                        GameProviderId: form.GameProviderId,
-                        GameProviderCode: form.GameProviderCode,
-                        BrandId: form.BrandId,
-                        BrandCode: form.BrandCode,
-                        PlayerCode: player.PlayerCode,
-                        Username: player.Username,
-                        WalletId: player.DefaultWalletId,
-                        CurrencyCode: player.DefaultWalletCurrencyCode));
+                    _logger.LogError("This player does not exist.({playerCode})", balanceResponse.PlayerCode);
+                    continue;
                 }
-                if (playerFormAdds.Any())
+                playerFormAdds.Add(new PlayerFormAdd(
+                    FormId: _snowflake.NextId(),
+                    ExpansionFormId: form.Id,
+                    GameProviderId: form.GameProviderId,
+                    GameProviderCode: form.GameProviderCode,
+                    BrandId: form.BrandId,
+                    BrandCode: form.BrandCode,
+                    PlayerCode: player.PlayerCode,
+                    Username: player.Username,
+                    WalletId: player.DefaultWalletId,
+                    CurrencyCode: player.DefaultWalletCurrencyCode));
+            }
+            if (playerFormAdds.Any())
+            {
+                try
                 {
-                    try
-                    {
 
-                        _ = await _playerFormRepository
-                            .BrandPlayerFormAddAsync(
-                                playerFormAdds,
-                                cancellationToken)
-                            .ToArrayAsync(
-                                cancellationToken: cancellationToken)
-                            .ConfigureAwait(false);
-                    }
-
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "An unknown error occurred.({id})", command.Id);
-                    }
+                    _ = await _playerFormRepository
+                        .BrandPlayerFormAddAsync(
+                            playerFormAdds,
+                            cancellationToken)
+                        .ToArrayAsync(
+                            cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
                 }
-                pageIndex++;
-                tempbalanceResponses = balanceResponses.Skip((pageIndex - 1) * pageSize).Take(pageSize);
+
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "An unknown error occurred.({id})", command.Id);
+                }
             }
         }
 
