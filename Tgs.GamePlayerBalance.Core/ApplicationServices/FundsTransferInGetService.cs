@@ -5,19 +5,19 @@ namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
 internal class FundsTransferInGetService : IGetService<FundsTransferInQuery, FundsTransferInResult>
 {
-    private readonly IGameFundTransferClient _client;
+    private readonly IPlayerFundRepository _playerFund;
 
     public FundsTransferInGetService(
-        IGameFundTransferClient client)
+        IPlayerFundRepository playerFund)
     {
-        _client = client ?? throw new ArgumentNullException(nameof(client));
+        _playerFund = playerFund ?? throw new ArgumentNullException(nameof(playerFund));
     }
 
     public async ValueTask<FundsTransferInResult> GetAsync(
         FundsTransferInQuery query,
         CancellationToken cancellationToken = default)
     {
-        var reply = await _client.FundInZeroResultAsync(
+        var reply = await _playerFund.FundInZeroResultAsync(
             gameProviderId: query.GameProviderId,
             gameProviderCode: query.GameProviderCode,
             brandCode: query.BrandCode,
@@ -28,10 +28,10 @@ internal class FundsTransferInGetService : IGetService<FundsTransferInQuery, Fun
             .ConfigureAwait(false);
 
         return new FundsTransferInResult(
-            StateCode: reply.State,
+            StateCode: reply.StateCode,
             Message: reply.Message,
-            FundTransactionId: reply.FundTransactionId.ToGuid(),
-            TransactionId: reply.TransactionId.ToGuid(),
+            FundTransactionId: reply.FundTransactionId,
+            TransactionId: reply.TransactionId,
             ExternalTransactionId: reply.ExternalTransactionId);
     }
 }

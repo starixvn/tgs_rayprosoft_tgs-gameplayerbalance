@@ -1,24 +1,23 @@
 ﻿using Microsoft.Extensions.Logging;
-using Tgs.GameProviders.Client;
 using Tgs.ServiceUtility;
 
 namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
 internal class PlayerFormQueuedCommandService : ICommandService<PlayerFormQueuedCommand>
 {
-    private readonly IGameProvidersClient _client;
     private readonly ILogger<PlayerFormQueuedCommandService> _logger;
+    private readonly IPlayerBalanceRepository _playerBalance;
     private readonly IPlayerFormRepository _repository;
     private readonly IGetService<FundsTransferInQuery, FundsTransferInResult> _service;
 
     public PlayerFormQueuedCommandService(
         ILogger<PlayerFormQueuedCommandService> logger,
-        IGameProvidersClient client,
+        IPlayerBalanceRepository playerBalance,
         IPlayerFormRepository repository,
         IGetService<FundsTransferInQuery, FundsTransferInResult> service)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _client = client ?? throw new ArgumentNullException(nameof(client));
+        _playerBalance = playerBalance ?? throw new ArgumentNullException(nameof(playerBalance));
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
@@ -49,7 +48,7 @@ internal class PlayerFormQueuedCommandService : ICommandService<PlayerFormQueued
 
         try
         {
-            var playerBalance = await _client.PlayerBalanceAsync(
+            var playerBalance = await _playerBalance.GetAsync(
                 gameProviderCode: form.GameProviderCode,
                 playerCode: form.PlayerCode,
                 cancellationToken: cancellationToken)

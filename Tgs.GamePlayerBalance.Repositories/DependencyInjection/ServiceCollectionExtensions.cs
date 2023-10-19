@@ -16,5 +16,7 @@ public static class ServiceCollectionExtensions
         .Decorate<IGameProviderRepository>((innerRepository, sp) => ActivatorUtilities.CreateInstance<GameProviderCacheRepository>(sp, innerRepository))
         .AddTransient<IBrandFormRepository>((sp) => ActivatorUtilities.CreateInstance<BrandFormRepository>(sp, mongoDatabaseResolver(sp)))
         .AddTransient<IImportFormRepository>((sp) => ActivatorUtilities.CreateInstance<ImportFormRepository>(sp, mongoDatabaseResolver(sp)))
-        .AddTransient<IPlayerFormRepository>((sp) => ActivatorUtilities.CreateInstance<PlayerFormRepository>(sp, mongoDatabaseResolver(sp)));
+        .AddTransient<IPlayerFormRepository>((sp) => ActivatorUtilities.CreateInstance<PlayerFormRepository>(sp, mongoDatabaseResolver(sp)))
+        .AddTransient<IPlayerBalanceRepository, PlayerBalanceRepository>()
+        .AddTransient<IPlayerFundRepository, PlayerFundRepository>();
 }
