@@ -25,10 +25,9 @@ internal class PlayerFormQueuedCommandService : ICommandService<PlayerFormQueued
 
     public async ValueTask ExecuteAsync(PlayerFormQueuedCommand command, CancellationToken cancellationToken = default)
     {
-        var form = await _repository
-            .GetAsync(
-                id: command.Id,
-                cancellationToken: cancellationToken)
+        var form = await _repository.GetAsync(
+            id: command.Id,
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         if (form == null)
@@ -43,19 +42,17 @@ internal class PlayerFormQueuedCommandService : ICommandService<PlayerFormQueued
             throw new Exception($"The player form status is not queued.({command.Id})");
         }
 
-        await _repository
-            .UpdateProcessingAsync(
-                id: command.Id,
-                cancellationToken: cancellationToken)
+        await _repository.UpdateProcessingAsync(
+            id: command.Id,
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         try
         {
-            var playerBalance = await _client
-                .PlayerBalanceAsync(
-                    gameProviderCode: form.GameProviderCode,
-                    playerCode: form.PlayerCode,
-                    cancellationToken: cancellationToken)
+            var playerBalance = await _client.PlayerBalanceAsync(
+                gameProviderCode: form.GameProviderCode,
+                playerCode: form.PlayerCode,
+                cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
             if (playerBalance.FreeBalance > 0)
@@ -68,29 +65,26 @@ internal class PlayerFormQueuedCommandService : ICommandService<PlayerFormQueued
                     WalletId: form.WalletId,
                     CurrencyCode: form.CurrencyCode);
 
-                var result = await _service
-                      .GetAsync(
-                          query: query,
-                          cancellationToken: cancellationToken)
-                      .ConfigureAwait(false);
+                var result = await _service.GetAsync(
+                    query: query,
+                    cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
 
-                await _repository
-                    .UpdateCompleteAsync(
-                        id: command.Id,
-                        resultStateCode: result.StateCode,
-                        resultMessage: result.Message,
-                        resultFundTransactionId: result.FundTransactionId,
-                        resultTransactionId: result.TransactionId,
-                        resultExternalTransactionId: result.ExternalTransactionId,
-                        cancellationToken: cancellationToken)
+                await _repository.UpdateCompleteAsync(
+                    id: command.Id,
+                    resultStateCode: result.StateCode,
+                    resultMessage: result.Message,
+                    resultFundTransactionId: result.FundTransactionId,
+                    resultTransactionId: result.TransactionId,
+                    resultExternalTransactionId: result.ExternalTransactionId,
+                    cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
             }
             else
             {
-                await _repository
-                    .UpdateCompleteAsync(
-                        id: command.Id,
-                        cancellationToken: cancellationToken)
+                await _repository.UpdateCompleteAsync(
+                    id: command.Id,
+                    cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
             }
         }
@@ -98,12 +92,11 @@ internal class PlayerFormQueuedCommandService : ICommandService<PlayerFormQueued
         {
             _logger.LogError(ex, "An unknown error occurred.({id})", command.Id);
 
-            await _repository
-                 .UpdateFailedAsync(
-                     id: command.Id,
-                     status: ex.Message,
-                     cancellationToken: cancellationToken)
-                 .ConfigureAwait(false);
+            await _repository.UpdateFailedAsync(
+                id: command.Id,
+                status: ex.Message,
+                cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 }

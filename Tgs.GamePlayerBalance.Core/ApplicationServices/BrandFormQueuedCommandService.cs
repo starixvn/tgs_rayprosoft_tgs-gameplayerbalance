@@ -38,10 +38,9 @@ internal class BrandFormQueuedCommandService : ICommandService<BrandFormQueuedCo
         BrandFormQueuedCommand command,
         CancellationToken cancellationToken = default)
     {
-        var form = await _brandFormRepository
-            .GetAsync(
-                id: command.Id,
-                cancellationToken: cancellationToken)
+        var form = await _brandFormRepository.GetAsync(
+            id: command.Id,
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         if (form == null)
@@ -56,10 +55,9 @@ internal class BrandFormQueuedCommandService : ICommandService<BrandFormQueuedCo
             throw new Exception($"The brand form status is not queued.({command.Id})");
         }
 
-        await _brandFormRepository
-            .UpdateProcessingAsync(
-                id: command.Id,
-                cancellationToken: cancellationToken)
+        await _brandFormRepository.UpdateProcessingAsync(
+            id: command.Id,
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         var pageIndex = 1;
@@ -67,14 +65,13 @@ internal class BrandFormQueuedCommandService : ICommandService<BrandFormQueuedCo
 
         while (true)
         {
-            var players = await _client
-                .PlayerQueryAsync(
-                    brandId: form.BrandId,
-                    pageIndex: pageIndex,
-                    pageSize: pageSize,
-                    cancellationToken: cancellationToken)
+            var players = await _client.PlayerQueryAsync(
+                brandId: form.BrandId,
+                pageIndex: pageIndex,
+                pageSize: pageSize,
+                cancellationToken: cancellationToken)
                 .ToArrayAsync(
-                    cancellationToken: cancellationToken)
+                cancellationToken: cancellationToken)
                 .ConfigureAwait(false)
                 ?? Enumerable.Empty<PlayerInfo>();
 
@@ -104,12 +101,11 @@ internal class BrandFormQueuedCommandService : ICommandService<BrandFormQueuedCo
                         CurrencyCode: player.DefaultWalletCurrencyCode));
                 }
 
-                var formIds = await _playerFormRepository
-                    .BrandPlayerFormAddAsync(
-                        playerFormAdds,
-                        cancellationToken)
+                var formIds = await _playerFormRepository.BrandPlayerFormAddAsync(
+                    source: playerFormAdds,
+                    cancellationToken: cancellationToken)
                     .ToArrayAsync(
-                        cancellationToken: cancellationToken)
+                    cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (Exception ex)

@@ -18,13 +18,12 @@ internal class PlayerFormQueryService : IQueryService<PlayerFormQuery, PlayerFor
         PlayerFormQuery query,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var forms = await _repository
-            .QueryAsync(
-                playerCode: query.PlayerCode,
-                pageSize: query.PageSize,
-                cancellationToken: cancellationToken)
+        var forms = await _repository.QueryAsync(
+            playerCode: query.PlayerCode,
+            pageSize: query.PageSize,
+            cancellationToken: cancellationToken)
             .ToArrayAsync(
-                cancellationToken: cancellationToken)
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         if (!forms.Any())

@@ -37,10 +37,9 @@ internal class ImportFormQueuedCommandService : ICommandService<ImportFormQueued
         ImportFormQueuedCommand command,
         CancellationToken cancellationToken = default)
     {
-        var form = await _importFormRepository
-            .GetAsync(
-                id: command.Id,
-                cancellationToken: cancellationToken)
+        var form = await _importFormRepository.GetAsync(
+            id: command.Id,
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         if (form == null)
@@ -55,20 +54,18 @@ internal class ImportFormQueuedCommandService : ICommandService<ImportFormQueued
             throw new Exception($"The brand form status is not queued.({command.Id})");
         }
 
-        await _importFormRepository
-            .UpdateProcessingAsync(
-                id: command.Id,
-                cancellationToken: cancellationToken)
+        await _importFormRepository.UpdateProcessingAsync(
+            id: command.Id,
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         var playerFormAdds = new List<PlayerFormAdd>();
 
         foreach (var player in form.Players)
         {
-            var playerInfo = await _client
-                .PlayerGetAsync(
-                    playerCode: player.PlayerCode,
-                    cancellationToken: cancellationToken)
+            var playerInfo = await _client.PlayerGetAsync(
+                playerCode: player.PlayerCode,
+                cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
             if (playerInfo == null)
@@ -91,12 +88,11 @@ internal class ImportFormQueuedCommandService : ICommandService<ImportFormQueued
 
         try
         {
-            var formIds = await _playerFormRepository
-                .ImportPlayerFormAddAsync(
-                    playerFormAdds,
-                    cancellationToken)
+            var formIds = await _playerFormRepository.ImportPlayerFormAddAsync(
+                playerFormAdds,
+                cancellationToken)
                 .ToArrayAsync(
-                    cancellationToken: cancellationToken)
+                cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception ex)
@@ -111,11 +107,10 @@ internal class ImportFormQueuedCommandService : ICommandService<ImportFormQueued
 
         var subject = "game.playerbalance.import.form.processing";
 
-        await _messageSender
-            .PublishAsync(
-                subject: subject,
-                data: request.ToByteArray(),
-                cancellationToken: cancellationToken)
+        await _messageSender.PublishAsync(
+            subject: subject,
+            data: request.ToByteArray(),
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         _logger.LogInformation("LogOn:{logOn}  Subject:{subject} Information Request:{receive}",

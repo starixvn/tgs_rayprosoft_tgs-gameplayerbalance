@@ -21,20 +21,18 @@ internal class ImportFormQuerySerivce : IQueryService<ImportFormQuery, ImportFor
         ImportFormQuery query,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var gameProviderId = await _gameProviderRepository
-            .GetIdAsync(
-                code: query.GameProviderCode,
-                cancellationToken: cancellationToken)
+        var gameProviderId = await _gameProviderRepository.GetIdAsync(
+            code: query.GameProviderCode,
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        var forms = await _importFormRepository
-            .QueryAsync(
-                gameProviderId: gameProviderId,
-                state: query.State,
-                pageSize: query.PageSize,
-                cancellationToken: cancellationToken)
+        var forms = await _importFormRepository.QueryAsync(
+            gameProviderId: gameProviderId,
+            state: query.State,
+            pageSize: query.PageSize,
+            cancellationToken: cancellationToken)
             .ToArrayAsync(
-                cancellationToken: cancellationToken)
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         if (!forms.Any())

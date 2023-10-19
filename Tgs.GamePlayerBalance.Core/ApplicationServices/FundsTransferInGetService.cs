@@ -17,16 +17,15 @@ internal class FundsTransferInGetService : IGetService<FundsTransferInQuery, Fun
         FundsTransferInQuery query,
         CancellationToken cancellationToken = default)
     {
-        var reply = await _client
-                    .FundInZeroResultAsync(
-                        gameProviderId: query.GameProviderId,
-                        gameProviderCode: query.GameProviderCode,
-                        brandCode: query.BrandCode,
-                        playerCode: query.PlayerCode,
-                        walletId: query.WalletId,
-                        currencyCode: query.CurrencyCode,
-                        cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
+        var reply = await _client.FundInZeroResultAsync(
+            gameProviderId: query.GameProviderId,
+            gameProviderCode: query.GameProviderCode,
+            brandCode: query.BrandCode,
+            playerCode: query.PlayerCode,
+            walletId: query.WalletId,
+            currencyCode: query.CurrencyCode,
+            cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
 
         return new FundsTransferInResult(
             StateCode: reply.State,

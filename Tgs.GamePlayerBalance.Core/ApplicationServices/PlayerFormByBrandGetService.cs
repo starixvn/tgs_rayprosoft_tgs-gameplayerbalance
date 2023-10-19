@@ -16,23 +16,21 @@ internal class PlayerFormByBrandGetService : IGetService<PlayerFormByBrandQuery,
         PlayerFormByBrandQuery query,
         CancellationToken cancellationToken = default)
     {
-        var items = _repository
-            .BrandQueryAsync(
-                expansionFormId: query.ExpansionFormId,
-                state: query.State,
-                playerCode: query.PlayerCode,
-                page: query.Page,
-                pageSize: query.PageSize,
-                cancellationToken: cancellationToken)
+        var items = _repository.BrandQueryAsync(
+            expansionFormId: query.ExpansionFormId,
+            state: query.State,
+            playerCode: query.PlayerCode,
+            page: query.Page,
+            pageSize: query.PageSize,
+            cancellationToken: cancellationToken)
             .ToEnumerable()
             ?? Enumerable.Empty<PlayerForm>();
 
-        var count = await _repository
-            .BrandQueryCountAsync(
-                expansionFormId: query.ExpansionFormId,
-                state: query.State,
-                playerCode: query.PlayerCode,
-                cancellationToken: cancellationToken)
+        var count = await _repository.BrandQueryCountAsync(
+            expansionFormId: query.ExpansionFormId,
+            state: query.State,
+            playerCode: query.PlayerCode,
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         return new DataPaginationResult<PlayerForm>(

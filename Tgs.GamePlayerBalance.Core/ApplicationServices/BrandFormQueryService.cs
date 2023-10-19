@@ -22,24 +22,23 @@ internal class BrandFormQueryService : IQueryService<BrandFormQuery, BrandForm>
         BrandFormQuery query,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var brandId = await _client
-            .BrandGetBrandIdAsync(
-                brandcode: query.BrandCode,
-                cancellationToken: cancellationToken)
+        var brandId = await _client.BrandGetBrandIdAsync(
+            brandcode: query.BrandCode,
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
+
         if (!brandId.HasValue)
         {
             yield break;
         }
 
-        var brandForms = await _repository
-            .QueryAsync(
-                brandId: brandId.Value,
-                state: query.State,
-                pageSize: query.PageSize,
-                cancellationToken: cancellationToken)
+        var brandForms = await _repository.QueryAsync(
+            brandId: brandId.Value,
+            state: query.State,
+            pageSize: query.PageSize,
+            cancellationToken: cancellationToken)
             .ToArrayAsync(
-                cancellationToken: cancellationToken)
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         if (!brandForms.Any())

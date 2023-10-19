@@ -31,16 +31,14 @@ internal class PlayerFormAddCommandService : ICommandService<PlayerFormAddComman
 
     public async ValueTask ExecuteAsync(PlayerFormAddCommand command, CancellationToken cancellationToken = default)
     {
-        var gameProviderId = await _gameProviderRepository
-           .GetIdAsync(
-               code: command.GameProviderCode,
-               cancellationToken: cancellationToken)
+        var gameProviderId = await _gameProviderRepository.GetIdAsync(
+            code: command.GameProviderCode,
+            cancellationToken: cancellationToken)
            .ConfigureAwait(false);
 
-        var player = await _client
-            .PlayerGetAsync(
-                playerCode: command.PlayerCode,
-                cancellationToken: cancellationToken)
+        var player = await _client.PlayerGetAsync(
+            playerCode: command.PlayerCode,
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         if (player == null)
@@ -49,28 +47,27 @@ internal class PlayerFormAddCommandService : ICommandService<PlayerFormAddComman
             throw new Exception($"This player does not exist.({command.PlayerCode})");
         }
 
-        var id = await _playerFormRepository
-            .AddAsync(
-                gameProviderId,
-                command.GameProviderCode,
-                brandId: player.BrandId,
-                brandCode: player.BrandCode,
-                playerCode: player.PlayerCode,
-                username: player.Username,
-                walletId: player.DefaultWalletId,
-                currencyCode: player.DefaultWalletCurrencyCode,
-                cancellationToken: cancellationToken);
+        var id = await _playerFormRepository.AddAsync(
+            gameProviderId: gameProviderId,
+            gameProviderCode: command.GameProviderCode,
+            brandId: player.BrandId,
+            brandCode: player.BrandCode,
+            playerCode: player.PlayerCode,
+            username: player.Username,
+            walletId: player.DefaultWalletId,
+            currencyCode: player.DefaultWalletCurrencyCode,
+            cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
 
         var request = new PlayerFormModelRequest
         {
             Id = id
         };
 
-        await _messageSender
-            .PublishAsync(
-                subject: "game.playerbalance.player.form.queued",
-                data: request.ToByteArray(),
-                cancellationToken: cancellationToken)
+        await _messageSender.PublishAsync(
+            subject: "game.playerbalance.player.form.queued",
+            data: request.ToByteArray(),
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         _logger.LogInformation("LogOn:{logOn} Information Request:{receive}", DateTime.Now.ToString("o"), request);

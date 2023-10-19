@@ -59,18 +59,16 @@ internal class BrandFormByAwcAwsQueuedCommandService : ICommandService<BrandForm
             throw new Exception($"The brand form status is not queued.({command.Id})");
         }
 
-        await _brandFormRepository
-            .UpdateProcessingAsync(
-                id: command.Id,
-                cancellationToken: cancellationToken)
+        await _brandFormRepository.UpdateProcessingAsync(
+            id: command.Id,
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        var balanceResponses = await _gameProvidersBalancesClient
-            .AwcAwsGetBalances(
-                brandCode: form.BrandCode,
-                cancellationToken: cancellationToken)
+        var balanceResponses = await _gameProvidersBalancesClient.AwcAwsGetBalances(
+            brandCode: form.BrandCode,
+            cancellationToken: cancellationToken)
             .ToArrayAsync(
-                cancellationToken)
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false)
             ?? Enumerable.Empty<BalanceResponse>();
 
@@ -82,11 +80,10 @@ internal class BrandFormByAwcAwsQueuedCommandService : ICommandService<BrandForm
             var playerFormAdds = new List<PlayerFormAdd>();
             foreach (var balanceResponse in tempbalanceResponses)
             {
-                var player = await _gameCommandClient
-                     .PlayerGetAsync(
-                      playerCode: balanceResponse.PlayerCode,
-                      cancellationToken: cancellationToken)
-                     .ConfigureAwait(false);
+                var player = await _gameCommandClient.PlayerGetAsync(
+                    playerCode: balanceResponse.PlayerCode,
+                    cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
 
                 if (player is null)
                 {
@@ -109,12 +106,11 @@ internal class BrandFormByAwcAwsQueuedCommandService : ICommandService<BrandForm
             {
                 try
                 {
-                    _ = await _playerFormRepository
-                        .BrandPlayerFormAddAsync(
-                            playerFormAdds,
-                            cancellationToken)
+                    _ = await _playerFormRepository.BrandPlayerFormAddAsync(
+                        playerFormAdds,
+                        cancellationToken)
                         .ToArrayAsync(
-                            cancellationToken: cancellationToken)
+                        cancellationToken: cancellationToken)
                         .ConfigureAwait(false);
                 }
                 catch (Exception ex)
@@ -131,11 +127,10 @@ internal class BrandFormByAwcAwsQueuedCommandService : ICommandService<BrandForm
 
         var subject = "game.playerbalance.brand.form.processing";
 
-        await _messageSender
-            .PublishAsync(
-                subject: subject,
-                data: request.ToByteArray(),
-                cancellationToken: cancellationToken)
+        await _messageSender.PublishAsync(
+            subject: subject,
+            data: request.ToByteArray(),
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         _logger.LogInformation("LogOn:{logOn}  Subject:{subject} Information Request:{receive}",

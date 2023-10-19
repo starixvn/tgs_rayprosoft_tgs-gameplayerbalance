@@ -31,17 +31,16 @@ internal class ImportFormProcessingPublishCommandService : ICommandService<Impor
 
         while (id > 0)
         {
-            var formIds = await _playerFormRepository
-            .ImportQueryIdAsync(
+            var formIds = await _playerFormRepository.ImportQueryIdAsync(
                 expansionFormId: command.ExpansionFormId,
                 state: PlayerFormState.Queued,
                 id: id,
                 pageSize: pageSize,
                 cancellationToken: cancellationToken)
-            .ToArrayAsync(
+                .ToArrayAsync(
                 cancellationToken: cancellationToken)
-            .ConfigureAwait(false)
-            ?? Enumerable.Empty<long>();
+                .ConfigureAwait(false)
+                ?? Enumerable.Empty<long>();
 
             if (!formIds.Any())
             {
@@ -58,11 +57,10 @@ internal class ImportFormProcessingPublishCommandService : ICommandService<Impor
                         Id = formId
                     };
 
-                    await _messageSender
-                        .PublishAsync(
-                            subject: "game.playerbalance.player.form.queued",
-                            data: request.ToByteArray(),
-                            cancellationToken: cancellationToken)
+                    await _messageSender.PublishAsync(
+                        subject: "game.playerbalance.player.form.queued",
+                        data: request.ToByteArray(),
+                        cancellationToken: cancellationToken)
                         .ConfigureAwait(false);
 
                     _logger.LogInformation("LogOn:{logOn} Information Request:{receive}", DateTime.Now.ToString("o"), request);

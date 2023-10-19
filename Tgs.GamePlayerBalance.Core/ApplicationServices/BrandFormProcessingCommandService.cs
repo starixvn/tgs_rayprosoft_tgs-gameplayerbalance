@@ -26,10 +26,9 @@ internal class BrandFormProcessingCommandService : ICommandService<BrandFormProc
         BrandFormProcessingCommand command,
         CancellationToken cancellationToken = default)
     {
-        var form = await _brandFormRepository
-            .GetAsync(
-                id: command.Id,
-                cancellationToken: cancellationToken)
+        var form = await _brandFormRepository.GetAsync(
+            id: command.Id,
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         if (form == null)
@@ -46,42 +45,38 @@ internal class BrandFormProcessingCommandService : ICommandService<BrandFormProc
 
         try
         {
-            var filterId = await _playerFormRepository
-                .BrandGetFirstIdAsync(
-                    expansionFormId: form.Id,
-                    state: PlayerFormState.Queued,
-                    cancellationToken: cancellationToken)
+            var filterId = await _playerFormRepository.BrandGetFirstIdAsync(
+                expansionFormId: form.Id,
+                state: PlayerFormState.Queued,
+                cancellationToken: cancellationToken)
                 .ConfigureAwait(false)
                 ?? 0;
 
             if (filterId > 0)
             {
                 filterId--;
-                await _service
-                    .ExecuteAsync(
-                        command: new BrandFormProcessingPublishCommand(
-                            ExpansionFormId: form.Id,
-                            FilterId: filterId),
-                        cancellationToken: cancellationToken)
+                await _service.ExecuteAsync(
+                    command: new BrandFormProcessingPublishCommand(
+                        ExpansionFormId: form.Id,
+                        FilterId: filterId),
+                    cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
             }
 
-            await _brandFormRepository
-                 .UpdateCompleteAsync(
-                     id: command.Id,
-                     cancellationToken: cancellationToken)
-                 .ConfigureAwait(false);
+            await _brandFormRepository.UpdateCompleteAsync(
+                id: command.Id,
+                cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An unknown error occurred.({id})", command.Id);
 
-            await _brandFormRepository
-                 .UpdateFailedAsync(
-                     id: command.Id,
-                     status: ex.Message,
-                     cancellationToken: cancellationToken)
-                 .ConfigureAwait(false);
+            await _brandFormRepository.UpdateFailedAsync(
+                id: command.Id,
+                status: ex.Message,
+                cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 }

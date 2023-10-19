@@ -31,25 +31,22 @@ internal class BrandFormAddCommandService : ICommandService<BrandFormAddCommand>
 
     public async ValueTask ExecuteAsync(BrandFormAddCommand command, CancellationToken cancellationToken = default)
     {
-        var gameProviderId = await _gameProviderRepository
-           .GetIdAsync(
-               code: command.GameProviderCode,
-               cancellationToken: cancellationToken)
+        var gameProviderId = await _gameProviderRepository.GetIdAsync(
+            code: command.GameProviderCode,
+            cancellationToken: cancellationToken)
            .ConfigureAwait(false);
 
-        var brandId = await _brandRepository
-            .GetIdAsync(
-                code: command.BrandCode,
-                cancellationToken: cancellationToken)
+        var brandId = await _brandRepository.GetIdAsync(
+            code: command.BrandCode,
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        var id = await _brandFormRepository
-            .AddAsync(
-                gameProviderId: gameProviderId,
-                gameProviderCode: command.GameProviderCode,
-                brandId: brandId,
-                brandCode: command.BrandCode,
-                cancellationToken: cancellationToken)
+        var id = await _brandFormRepository.AddAsync(
+            gameProviderId: gameProviderId,
+            gameProviderCode: command.GameProviderCode,
+            brandId: brandId,
+            brandCode: command.BrandCode,
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         var request = new BrandFormModelRequest
@@ -63,11 +60,10 @@ internal class BrandFormAddCommandService : ICommandService<BrandFormAddCommand>
             subject = $"{subject}.{command.GameProviderCode.Replace("_", ".").ToLower()}";
         }
 
-        await _messageSender
-            .PublishAsync(
-                subject: subject,
-                data: request.ToByteArray(),
-                cancellationToken: cancellationToken)
+        await _messageSender.PublishAsync(
+            subject: subject,
+            data: request.ToByteArray(),
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         _logger.LogInformation("LogOn:{logOn}  Subject:{subject} Information Request:{receive}",

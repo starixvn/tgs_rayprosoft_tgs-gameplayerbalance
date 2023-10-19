@@ -4,15 +4,15 @@ using Tgs.ServiceUtility;
 
 namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
-internal class PlayerBakanceCommandService : ICommandService<PlayerBakanceCommand>
+internal class PlayerBalanceCommandService : ICommandService<PlayerBalanceCommand>
 {
     private readonly IGameCommandClient _client;
     private readonly IGameProviderRepository _gameProviderRepository;
-    private readonly ILogger<PlayerBakanceCommandService> _logger;
+    private readonly ILogger<PlayerBalanceCommandService> _logger;
     private readonly IGetService<FundsTransferInQuery, FundsTransferInResult> _service;
 
-    public PlayerBakanceCommandService(
-        ILogger<PlayerBakanceCommandService> logger,
+    public PlayerBalanceCommandService(
+        ILogger<PlayerBalanceCommandService> logger,
         IGameCommandClient client,
         IGameProviderRepository gameProviderRepository,
         IGetService<FundsTransferInQuery, FundsTransferInResult> service)
@@ -23,18 +23,16 @@ internal class PlayerBakanceCommandService : ICommandService<PlayerBakanceComman
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
 
-    public async ValueTask ExecuteAsync(PlayerBakanceCommand command, CancellationToken cancellationToken = default)
+    public async ValueTask ExecuteAsync(PlayerBalanceCommand command, CancellationToken cancellationToken = default)
     {
-        var gameProviderId = await _gameProviderRepository
-            .GetIdAsync(
-                code: command.GameProviderCode,
-                cancellationToken: cancellationToken)
+        var gameProviderId = await _gameProviderRepository.GetIdAsync(
+            code: command.GameProviderCode,
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        var player = await _client
-            .PlayerGetAsync(
-                playerCode: command.PlayerCode,
-                cancellationToken: cancellationToken)
+        var player = await _client.PlayerGetAsync(
+            playerCode: command.PlayerCode,
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         if (player == null)
@@ -50,10 +48,9 @@ internal class PlayerBakanceCommandService : ICommandService<PlayerBakanceComman
             PlayerCode: player.PlayerCode,
             WalletId: player.DefaultWalletId,
             CurrencyCode: player.DefaultWalletCurrencyCode);
-        _ = await _service
-           .GetAsync(
-               query: query,
-               cancellationToken: cancellationToken)
+        _ = await _service.GetAsync(
+            query: query,
+            cancellationToken: cancellationToken)
            .ConfigureAwait(false);
     }
 }

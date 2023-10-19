@@ -3,11 +3,11 @@ using Tgs.ServiceUtility;
 
 namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
-internal class PlayerFormByImportGService : IGetService<PlayerFormByImportQuery, DataPaginationResult<PlayerForm>>
+internal class PlayerFormByImportGetService : IGetService<PlayerFormByImportQuery, DataPaginationResult<PlayerForm>>
 {
     private readonly IPlayerFormRepository _repository;
 
-    public PlayerFormByImportGService(IPlayerFormRepository repository)
+    public PlayerFormByImportGetService(IPlayerFormRepository repository)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
     }
@@ -16,23 +16,21 @@ internal class PlayerFormByImportGService : IGetService<PlayerFormByImportQuery,
         PlayerFormByImportQuery query,
         CancellationToken cancellationToken = default)
     {
-        var items = _repository
-            .ImportQueryAsync(
-                expansionFormId: query.ExpansionFormId,
-                state: query.State,
-                playerCode: query.PlayerCode,
-                page: query.Page,
-                pageSize: query.PageSize,
-                cancellationToken: cancellationToken)
+        var items = _repository.ImportQueryAsync(
+            expansionFormId: query.ExpansionFormId,
+            state: query.State,
+            playerCode: query.PlayerCode,
+            page: query.Page,
+            pageSize: query.PageSize,
+            cancellationToken: cancellationToken)
             .ToEnumerable()
             ?? Enumerable.Empty<PlayerForm>();
 
-        var count = await _repository
-            .ImportQueryCountAsync(
-                expansionFormId: query.ExpansionFormId,
-                state: query.State,
-                playerCode: query.PlayerCode,
-                cancellationToken: cancellationToken)
+        var count = await _repository.ImportQueryCountAsync(
+            expansionFormId: query.ExpansionFormId,
+            state: query.State,
+            playerCode: query.PlayerCode,
+            cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         return new DataPaginationResult<PlayerForm>(
