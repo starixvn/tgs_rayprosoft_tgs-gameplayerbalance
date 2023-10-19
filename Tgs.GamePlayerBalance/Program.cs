@@ -7,7 +7,6 @@ using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using Prometheus;
 using Tgs.GamePlayerBalance.MessageHandlers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,7 +33,7 @@ builder.Logging
 
 builder.Services
     .AddRouting(options => options.LowercaseUrls = true)
-    .AddControllersWithViews(options =>
+    .AddControllers(options =>
     {
         options.Filters.Add(new ProducesAttribute(MediaTypeNames.Application.Json));
         options.Filters.Add(new ConsumesAttribute(MediaTypeNames.Application.Json));
@@ -43,12 +42,16 @@ builder.Services
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     var xmlFileNames = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.xml");
-    foreach (var xmlFileName in xmlFileNames) c.IncludeXmlComments(xmlFileName);
+    foreach (var xmlFileName in xmlFileNames)
+    {
+        c.IncludeXmlComments(xmlFileName);
+    }
 });
 
 builder.Services.AddGamePlayerBalance(
@@ -98,7 +101,6 @@ builder.Services
         .AddHandler<ImportFormProcessingMessageHandler>("game.playerbalance.import.form.processing", "game.playerbalance.import.form.processing")
         .AddHandler<PlayerFormQueuedMessageHandler>("game.playerbalance.player.form.queued", "game.playerbalance.player.form.queued");
     })
-
     .ClearAllExchanges()
     .AddNatsGlobPatternExchange("*");
 
@@ -109,6 +111,7 @@ builder.Services
             .AddEnvironmentVariableDetector())
         .AddSource("Tgs.*")
         .AddSource("TGS.*")
+        .AddSource("Valhalla.*")
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddGrpcClientInstrumentation()
@@ -141,10 +144,6 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 _ = app.UseSwagger();
 _ = app.UseSwaggerUI();
-
-_ = app.UseHttpsRedirection();
-
-_ = app.UseAuthorization();
 
 _ = app.MapControllers();
 
