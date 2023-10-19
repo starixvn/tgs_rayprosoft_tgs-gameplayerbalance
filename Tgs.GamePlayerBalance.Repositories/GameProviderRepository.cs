@@ -15,7 +15,7 @@ internal class GameProviderRepository : IGameProviderRepository
     public async ValueTask<Guid> GetIdAsync(
         string code,
         CancellationToken cancellationToken = default)
-        => await _client .GameProviderGetGameProviderIdAsync(
+        => await _client.GameProviderGetGameProviderIdAsync(
             gameProviderCode: code,
             cancellationToken: cancellationToken)
         .ConfigureAwait(false)

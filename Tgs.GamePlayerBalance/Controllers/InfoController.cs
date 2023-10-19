@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Tgs.GamePlayerBalance.Controllers;
 
-[Route("api/info")]
+[Route("api/[controller]")]
 [ApiController]
-public class InfoAPIController : ControllerBase
+public class InfoController : ControllerBase
 {
     private readonly IConfiguration _configuration;
 
-    public InfoAPIController(IConfiguration configuration)
+    public InfoController(IConfiguration configuration)
     {
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
     }

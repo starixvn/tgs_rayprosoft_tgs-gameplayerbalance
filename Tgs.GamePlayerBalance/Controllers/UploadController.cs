@@ -7,9 +7,9 @@ using Tgs.ServiceUtility;
 
 namespace Tgs.GamePlayerBalance.Controllers;
 
-[Route("api/upload")]
+[Route("api/[controller]")]
 [ApiController]
-public class UploadAPIController : ControllerBase
+public class UploadController : ControllerBase
 {
     [HttpPost("{gameProviderCode}")]
     public ValueTask UploadAsync(

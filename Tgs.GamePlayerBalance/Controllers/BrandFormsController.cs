@@ -6,9 +6,9 @@ using Tgs.ServiceUtility;
 
 namespace Tgs.GamePlayerBalance.Controllers;
 
-[Route("api/brandforms")]
+[Route("api/[controller]")]
 [ApiController]
-public class BrandFormsAPIController : ControllerBase
+public class BrandFormsController : ControllerBase
 {
     [HttpPost(Name = "BrandFormAdd")]
     public ValueTask BrandFormAddAsync(

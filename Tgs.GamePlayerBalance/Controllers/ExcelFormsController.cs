@@ -6,9 +6,9 @@ using Tgs.ServiceUtility;
 
 namespace Tgs.GamePlayerBalance.Controllers;
 
-[Route("api/excelforms")]
+[Route("api/[controller]")]
 [ApiController]
-public class ExcelFormsAPIController : ControllerBase
+public class ExcelFormsController : ControllerBase
 {
     [HttpGet(Name = "ImportFormQuery")]
     public async IAsyncEnumerable<ImportFormViewModel> BrandFormQueryAsync(

@@ -7,9 +7,9 @@ using Tgs.ServiceUtility;
 
 namespace Tgs.GamePlayerBalance.Controllers;
 
-[Route("api/playerforms")]
+[Route("api/[controller]")]
 [ApiController]
-public class PlayerFormsAPIController : ControllerBase
+public class PlayerFormsController : ControllerBase
 {
     [HttpGet(Name = "PlayerFormQuery")]
     public async IAsyncEnumerable<PlayerFormViewModel> BrandFormQueryAsync(
