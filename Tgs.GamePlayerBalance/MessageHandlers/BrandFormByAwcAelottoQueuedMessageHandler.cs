@@ -1,7 +1,7 @@
 ﻿using Tgs.GamePlayerBalance.Common.Protos;
 using Tgs.GamePlayerBalance.Core.ApplicationServices;
-using Tgs.MessageQueue;
 using Tgs.ServiceUtility;
+using Valhalla.MessageQueue;
 
 namespace Tgs.GamePlayerBalance.MessageHandlers;
 

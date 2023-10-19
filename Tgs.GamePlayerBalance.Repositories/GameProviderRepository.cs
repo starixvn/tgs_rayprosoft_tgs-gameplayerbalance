@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using Tgs.GameCommand.Client;
+﻿using Tgs.GameCommand.Client;
 using Tgs.GamePlayerBalance.Core;
 
 namespace Tgs.GamePlayerBalance.Repositories;
@@ -17,8 +15,7 @@ internal class GameProviderRepository : IGameProviderRepository
     public async ValueTask<Guid> GetIdAsync(
         string code,
         CancellationToken cancellationToken = default)
-        => await _client
-        .GameProviderGetGameProviderIdAsync(
+        => await _client .GameProviderGetGameProviderIdAsync(
             gameProviderCode: code,
             cancellationToken: cancellationToken)
         .ConfigureAwait(false)

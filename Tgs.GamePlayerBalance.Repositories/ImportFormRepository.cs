@@ -321,6 +321,21 @@ internal class ImportFormRepository : IImportFormRepository
             cancellationToken: cancellationToken);
     }
 
+    private static FilterDefinition<ImportFormModel> QueryFilter(
+        Guid gameProviderId,
+        ImportFormState? state)
+    {
+        var builder = Builders<ImportFormModel>.Filter;
+
+        var filter = builder.Eq(x => x.GameProviderId, gameProviderId);
+        if (state.HasValue)
+        {
+            filter &= builder.Eq(x => x.State, state);
+        }
+
+        return filter;
+    }
+
     private static Task State_IndexAsync(
         IMongoCollection<ImportFormModel> collection,
         CancellationToken cancellationToken = default)
@@ -337,21 +352,6 @@ internal class ImportFormRepository : IImportFormRepository
         return collection.Indexes.CreateOneAsync(
             model: createIndexModel,
             cancellationToken: cancellationToken);
-    }
-
-    private static FilterDefinition<ImportFormModel> QueryFilter(
-        Guid gameProviderId,
-        ImportFormState? state)
-    {
-        var builder = Builders<ImportFormModel>.Filter;
-
-        var filter = builder.Eq(x => x.GameProviderId, gameProviderId);
-        if (state.HasValue)
-        {
-            filter &= builder.Eq(x => x.State, state);
-        }
-
-        return filter;
     }
 
     private IMongoCollection<ImportFormModel> GetCollection()

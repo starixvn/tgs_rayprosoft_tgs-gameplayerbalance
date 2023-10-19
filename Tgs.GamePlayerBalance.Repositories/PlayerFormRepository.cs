@@ -1,8 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
-using MongoDB.Driver.Core.Operations;
 using Tgs.GameFundTransfer.Protos;
 using Tgs.GamePlayerBalance.Core;
 using Tgs.GamePlayerBalance.Core.Models;
@@ -818,52 +816,6 @@ internal class PlayerFormRepository : IPlayerFormRepository
         .ConfigureAwait(false);
     }
 
-    private static FilterDefinition<PlayerFormModel> ImportQueryFilter(
-        long expansionFormId,
-        PlayerFormState? state,
-        string? playerCode)
-    {
-        var builder = Builders<PlayerFormModel>.Filter;
-
-        var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
-                    builder.Eq(x => x.Source, PlayerFormSource.Import);
-
-        if (state.HasValue)
-        {
-            filter &= builder.Eq(x => x.State, state.Value);
-        }
-
-        if (!string.IsNullOrEmpty(playerCode))
-        {
-            filter &= builder.Eq(x => x.PlayerCode, playerCode);
-        }
-
-        return filter;
-    }
-
-    private static FilterDefinition<PlayerFormModel> BrandQueryFilter(
-        long expansionFormId,
-        PlayerFormState? state,
-        string? playerCode)
-    {
-        var builder = Builders<PlayerFormModel>.Filter;
-
-        var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
-                    builder.Eq(x => x.Source, PlayerFormSource.Brand);
-
-        if (state.HasValue)
-        {
-            filter &= builder.Eq(x => x.State, state.Value);
-        }
-
-        if (!string.IsNullOrEmpty(playerCode))
-        {
-            filter &= builder.Eq(x => x.PlayerCode, playerCode);
-        }
-
-        return filter;
-    }
-
     private static Task BrandCode_IndexAsync(
         IMongoCollection<PlayerFormModel> collection,
         CancellationToken cancellationToken = default)
@@ -898,6 +850,29 @@ internal class PlayerFormRepository : IPlayerFormRepository
         return collection.Indexes.CreateOneAsync(
             model: createIndexModel,
             cancellationToken: cancellationToken);
+    }
+
+    private static FilterDefinition<PlayerFormModel> BrandQueryFilter(
+        long expansionFormId,
+        PlayerFormState? state,
+        string? playerCode)
+    {
+        var builder = Builders<PlayerFormModel>.Filter;
+
+        var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
+                    builder.Eq(x => x.Source, PlayerFormSource.Brand);
+
+        if (state.HasValue)
+        {
+            filter &= builder.Eq(x => x.State, state.Value);
+        }
+
+        if (!string.IsNullOrEmpty(playerCode))
+        {
+            filter &= builder.Eq(x => x.PlayerCode, playerCode);
+        }
+
+        return filter;
     }
 
     private static Task CreatedOn_IndexAsync(
@@ -971,6 +946,29 @@ internal class PlayerFormRepository : IPlayerFormRepository
         return collection.Indexes.CreateOneAsync(
             model: createIndexModel,
             cancellationToken: cancellationToken);
+    }
+
+    private static FilterDefinition<PlayerFormModel> ImportQueryFilter(
+        long expansionFormId,
+        PlayerFormState? state,
+        string? playerCode)
+    {
+        var builder = Builders<PlayerFormModel>.Filter;
+
+        var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
+                    builder.Eq(x => x.Source, PlayerFormSource.Import);
+
+        if (state.HasValue)
+        {
+            filter &= builder.Eq(x => x.State, state.Value);
+        }
+
+        if (!string.IsNullOrEmpty(playerCode))
+        {
+            filter &= builder.Eq(x => x.PlayerCode, playerCode);
+        }
+
+        return filter;
     }
 
     private static Task Search_ExpansionFormId_IndexAsync(

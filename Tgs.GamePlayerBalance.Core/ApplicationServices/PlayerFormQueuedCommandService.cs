@@ -51,14 +51,14 @@ internal class PlayerFormQueuedCommandService : ICommandService<PlayerFormQueued
 
         try
         {
-            var balance = await _client
+            var playerBalance = await _client
                 .PlayerBalanceAsync(
                     gameProviderCode: form.GameProviderCode,
                     playerCode: form.PlayerCode,
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
-            if (balance > 0)
+            if (playerBalance.FreeBalance > 0)
             {
                 var query = new FundsTransferInQuery(
                     form.GameProviderId,

@@ -70,6 +70,7 @@ public class PlayerFormRepositoryUnitTest
               .InsertOneAsync(Arg.Is(document));
     }
 
+    [Test]
     public async Task Get()
     {
         var fakeLogger = NullLogger<PlayerFormRepository>.Instance;

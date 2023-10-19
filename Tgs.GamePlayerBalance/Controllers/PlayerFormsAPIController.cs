@@ -181,12 +181,4 @@ public class PlayerFormsAPIController : ControllerBase
             TotalPage: result.TotalPage,
             TotalCount: result.TotalCount);
     }
-
-    [HttpGet("state")]
-    public IAsyncEnumerable<SelectViewModel> StateAsync()
-    => Enum
-        .GetValues(typeof(PlayerFormState))
-        .Cast<BrandFormState>()
-        .Select(x => new SelectViewModel(x.ToString(), x.ToString()))
-        .ToAsyncEnumerable();
 }

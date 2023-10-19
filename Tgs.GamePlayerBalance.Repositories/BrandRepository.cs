@@ -16,8 +16,7 @@ internal class BrandRepository : IBrandRepository
     public async ValueTask<Guid> GetIdAsync(
         string code,
         CancellationToken cancellationToken = default)
-        => await _client
-        .BrandGetBrandIdAsync(
+        => await _client.BrandGetBrandIdAsync(
             code,
             cancellationToken)
         .ConfigureAwait(false)

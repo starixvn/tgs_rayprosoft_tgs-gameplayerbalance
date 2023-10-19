@@ -14,28 +14,26 @@ public static class ServiceRegisterExtensions
 
             try
             {
-                var gameProviderIdInfos = await client
-                    .GameProviderGetGameProviderIdsAsync()
+                var gameProviderInfos = await client.GameProviderQueryAsync()
                     .ToArrayAsync()
                     .ConfigureAwait(false)
-                    ?? Enumerable.Empty<GameProviderIdInfo>();
+                    ?? Enumerable.Empty<GameProviderInfo>();
 
-                if (gameProviderIdInfos.Any())
+                if (gameProviderInfos.Any())
                 {
                     var gameProviderRepository = scope.ServiceProvider.GetRequiredService<IGameProviderRepository>();
 
-                    foreach (var gameProviderIdInfo in gameProviderIdInfos)
+                    foreach (var gameProviderInfo in gameProviderInfos)
                     {
                         _ = await gameProviderRepository
                             .GetIdAsync(
-                                gameProviderIdInfo.GameProviderCode)
+                                gameProviderInfo.GameProviderCode)
                             .ConfigureAwait(false);
                     }
                 }
             }
             catch
             {
-
             }
 
             var brandFormRepository = scope.ServiceProvider.GetRequiredService<IBrandFormRepository>();

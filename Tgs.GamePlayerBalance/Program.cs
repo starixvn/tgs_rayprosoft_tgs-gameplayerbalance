@@ -3,8 +3,6 @@ using System.Net.Mime;
 using System.Net.Sockets;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using OpenTelemetry.Exporter;
 using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -25,9 +23,9 @@ builder.Logging
         options.ParseStateValues = true;
         _ = options.AddFluentdForwardExporter(fluentOptions =>
         {
-            var nodeIp = builder.Configuration.GetValue<string>("NODE_IP");
+            var nodeIp = builder.Configuration.GetValue<string>("NODE_IP")!;
             fluentOptions.Host = nodeIp;
-            fluentOptions.Tag = builder.Configuration.GetValue<string>("OTEL_SERVICE_NAME");
+            fluentOptions.Tag = builder.Configuration.GetValue<string>("OTEL_SERVICE_NAME")!;
             fluentOptions.UseMessagePack();
         });
     });
@@ -68,17 +66,17 @@ builder.Services.AddGamePlayerBalance(
     (options, sp) =>
     {
         var configuration = sp.GetRequiredService<IConfiguration>();
-        options.BaseUrl = configuration.GetValue<Uri>("GamePlayerBalance:GameCommandClientBaseUrl");
+        options.BaseUrl = configuration.GetValue<Uri>("GamePlayerBalance:GameCommandClientBaseUrl")!;
     },
     (options, sp) =>
     {
         var configuration = sp.GetRequiredService<IConfiguration>();
-        options.BaseUrl = configuration.GetValue<Uri>("GamePlayerBalance:GameProvidersClientBaseUrl");
+        options.BaseUrl = configuration.GetValue<Uri>("GamePlayerBalance:GameProvidersClientBaseUrl")!;
     },
     (options, sp) =>
     {
         var configuration = sp.GetRequiredService<IConfiguration>();
-        options.BaseUrl = configuration.GetValue<Uri>("GamePlayerBalance:GameFundTransferClientBaseUrl");
+        options.BaseUrl = configuration.GetValue<Uri>("GamePlayerBalance:GameFundTransferClientBaseUrl")!;
     });
 
 builder.Services
@@ -91,25 +89,18 @@ builder.Services
             var configuration = sp.GetRequiredService<IConfiguration>();
             options.Url = configuration.GetConnectionString("Nats")!;
         })
-        .AddHandler<BrandFormByAwcAelottoQueuedMessageHandler>("game.playerbalance.brand.form.queued.awc.aelotto", "tgs.game.playerbalance.brand.form")
-        .AddHandler<BrandFormByAwcAwsQueuedMessageHandler>("game.playerbalance.brand.form.queued.awc.aws", "tgs.game.playerbalance.brand.form")
-        .AddHandler<BrandFormByAwcFacaiQueuedMessageHandler>("game.playerbalance.brand.form.queued.awc.facai", "tgs.game.playerbalance.brand.form")
-        .AddHandler<BrandFormQueuedMessageHandler>("game.playerbalance.brand.form.queued", "tgs.game.playerbalance.brand.form")
-        .AddHandler<BrandFormProcessingMessageHandler>("game.playerbalance.brand.form.processing", "tgs.game.playerbalance.brand.form")
-        .AddHandler<ImportFormQueuedMessageHandler>("game.playerbalance.import.form.queued", "tgs.game.playerbalance.import.form")
-        .AddHandler<ImportFormProcessingMessageHandler>("game.playerbalance.import.form.processing", "tgs.game.playerbalance.import.form")
-        .AddHandler<PlayerFormQueuedMessageHandler>("game.playerbalance.player.form.queued", "tgs.game.playerbalance.player.form");
+        .AddHandler<BrandFormByAwcAelottoQueuedMessageHandler>("game.playerbalance.brand.form.queued.awc.aelotto", "game.playerbalance.brand.form.queued.awc.aelotto")
+        .AddHandler<BrandFormByAwcAwsQueuedMessageHandler>("game.playerbalance.brand.form.queued.awc.aws", "game.playerbalance.brand.form.queued.awc.aws")
+        .AddHandler<BrandFormByAwcFacaiQueuedMessageHandler>("game.playerbalance.brand.form.queued.awc.facai", "game.playerbalance.brand.form.queued.awc.facai")
+        .AddHandler<BrandFormQueuedMessageHandler>("game.playerbalance.brand.form.queued", "game.playerbalance.brand.form.queued")
+        .AddHandler<BrandFormProcessingMessageHandler>("game.playerbalance.brand.form.processing", "game.playerbalance.brand.form.processing")
+        .AddHandler<ImportFormQueuedMessageHandler>("game.playerbalance.import.form.queued", "game.playerbalance.import.form.queued")
+        .AddHandler<ImportFormProcessingMessageHandler>("game.playerbalance.import.form.processing", "game.playerbalance.import.form.processing")
+        .AddHandler<PlayerFormQueuedMessageHandler>("game.playerbalance.player.form.queued", "game.playerbalance.player.form.queued");
     })
 
     .ClearAllExchanges()
-    .AddNatsGlobPatternExchange("game.playerbalance.brand.form.queued.awc.aelotto")
-    .AddNatsGlobPatternExchange("game.playerbalance.brand.form.queued.awc.aws")
-    .AddNatsGlobPatternExchange("game.playerbalance.brand.form.queued.awc.facai")
-    .AddNatsGlobPatternExchange("game.playerbalance.brand.form.queued")
-    .AddNatsGlobPatternExchange("game.playerbalance.brand.form.processing")
-    .AddNatsGlobPatternExchange("game.playerbalance.import.form.queued")
-    .AddNatsGlobPatternExchange("game.playerbalance.import.form.processing")
-    .AddNatsGlobPatternExchange("game.playerbalance.player.form.queued");
+    .AddNatsGlobPatternExchange("*");
 
 builder.Services
     .AddOpenTelemetry()

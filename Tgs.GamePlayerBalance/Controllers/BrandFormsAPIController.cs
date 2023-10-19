@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Tgs.GamePlayerBalance.Core;
 using Tgs.GamePlayerBalance.Core.ApplicationServices;
 using Tgs.GamePlayerBalance.Core.Models;
 using Tgs.GamePlayerBalance.ViewModels;
@@ -64,12 +63,4 @@ public class BrandFormsAPIController : ControllerBase
                 ExpireOn: form.ExpireOn);
         }
     }
-
-    [HttpGet("state")]
-    public IAsyncEnumerable<SelectViewModel> StateAsync()
-    => Enum
-        .GetValues(typeof(BrandFormState))
-        .Cast<BrandFormState>()
-        .Select(x => new SelectViewModel(x.ToString(), x.ToString()))
-        .ToAsyncEnumerable();
 }

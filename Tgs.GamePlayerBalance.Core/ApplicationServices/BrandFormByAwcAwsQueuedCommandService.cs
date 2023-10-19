@@ -4,8 +4,8 @@ using Tgs.GameCommand.Client;
 using Tgs.GamePlayerBalance.Common.Protos;
 using Tgs.GamePlayerBalance.Core.Models;
 using Tgs.GameProviders.Client;
-using Tgs.MessageQueue;
 using Tgs.ServiceUtility;
+using Valhalla.MessageQueue;
 
 namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
@@ -109,7 +109,6 @@ internal class BrandFormByAwcAwsQueuedCommandService : ICommandService<BrandForm
             {
                 try
                 {
-
                     _ = await _playerFormRepository
                         .BrandPlayerFormAddAsync(
                             playerFormAdds,
@@ -118,7 +117,6 @@ internal class BrandFormByAwcAwsQueuedCommandService : ICommandService<BrandForm
                             cancellationToken: cancellationToken)
                         .ConfigureAwait(false);
                 }
-
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "An unknown error occurred.({id})", command.Id);
