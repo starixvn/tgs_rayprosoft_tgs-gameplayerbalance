@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using Tgs.GameFundTransfer.Protos;
 using Tgs.GamePlayerBalance.Core;
+using Tgs.GamePlayerBalance.Core.Extensions;
 using Tgs.GamePlayerBalance.Core.Models;
 using Tgs.GamePlayerBalance.Repositories.Models;
 
@@ -12,12 +13,12 @@ internal class PlayerFormRepository : IPlayerFormRepository
 {
     private readonly IMongoDatabase _database;
     private readonly ILogger<PlayerFormRepository> _logger;
-    private readonly ISnowflake _snowflake;
+    private readonly ISnowflakeWork _snowflake;
 
     public PlayerFormRepository(
         ILogger<PlayerFormRepository> logger,
         IMongoDatabase database,
-        ISnowflake snowflake)
+        ISnowflakeWork snowflake)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _database = database ?? throw new ArgumentNullException(nameof(database));
@@ -36,7 +37,7 @@ internal class PlayerFormRepository : IPlayerFormRepository
         CancellationToken cancellationToken = default)
 
     {
-        var id = _snowflake.NextId();
+        var id = _snowflake.GetId();
 
         var collection = GetCollection();
 
@@ -1032,5 +1033,5 @@ internal class PlayerFormRepository : IPlayerFormRepository
     }
 
     private IMongoCollection<PlayerFormModel> GetCollection()
-        => _database.GetCollection<PlayerFormModel>("player_forms");
+        => _database.GetCollection<PlayerFormModel>(typeof(PlayerFormModel).GetTableName());
 }

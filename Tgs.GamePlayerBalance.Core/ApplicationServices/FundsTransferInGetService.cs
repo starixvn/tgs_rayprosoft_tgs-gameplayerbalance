@@ -1,5 +1,4 @@
-﻿using Tgs.GameFundTransfer.Client;
-using Tgs.ServiceUtility;
+﻿using Tgs.ServiceUtility;
 
 namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 

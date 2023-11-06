@@ -7,6 +7,7 @@ using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Tgs.GamePlayerBalance.Common;
 using Tgs.GamePlayerBalance.MessageHandlers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -92,14 +93,17 @@ builder.Services
             var configuration = sp.GetRequiredService<IConfiguration>();
             options.Url = configuration.GetConnectionString("Nats")!;
         })
-        .AddHandler<BrandFormByAwcAelottoQueuedMessageHandler>("game.playerbalance.brand.form.queued.awc.aelotto", "game.playerbalance.brand.form.queued.awc.aelotto")
-        .AddHandler<BrandFormByAwcAwsQueuedMessageHandler>("game.playerbalance.brand.form.queued.awc.aws", "game.playerbalance.brand.form.queued.awc.aws")
-        .AddHandler<BrandFormByAwcFacaiQueuedMessageHandler>("game.playerbalance.brand.form.queued.awc.facai", "game.playerbalance.brand.form.queued.awc.facai")
-        .AddHandler<BrandFormQueuedMessageHandler>("game.playerbalance.brand.form.queued", "game.playerbalance.brand.form.queued")
-        .AddHandler<BrandFormProcessingMessageHandler>("game.playerbalance.brand.form.processing", "game.playerbalance.brand.form.processing")
-        .AddHandler<ImportFormQueuedMessageHandler>("game.playerbalance.import.form.queued", "game.playerbalance.import.form.queued")
-        .AddHandler<ImportFormProcessingMessageHandler>("game.playerbalance.import.form.processing", "game.playerbalance.import.form.processing")
-        .AddHandler<PlayerFormQueuedMessageHandler>("game.playerbalance.player.form.queued", "game.playerbalance.player.form.queued");
+        .AddHandler<BrandFormByAwcAelottoQueuedMessageHandler>(NatsConst.GamePlayerBalanceBrandFormByAwcAelotto, NatsConst.GamePlayerBalanceBrandFormByAwcAelotto)
+        .AddHandler<BrandFormByAwcAwsQueuedMessageHandler>(NatsConst.GamePlayerBalanceBrandFormByAwcAws, NatsConst.GamePlayerBalanceBrandFormByAwcAws)
+        .AddHandler<BrandFormByAwcFacaiQueuedMessageHandler>(NatsConst.GamePlayerBalanceBrandFormByAwcFacai, NatsConst.GamePlayerBalanceBrandFormByAwcFacai)
+        .AddHandler<BrandFormQueuedMessageHandler>(NatsConst.GamePlayerBalanceBrandFormQueued, NatsConst.GamePlayerBalanceBrandFormQueued)
+        .AddHandler<BrandFormProcessingMessageHandler>(NatsConst.GamePlayerBalanceBrandFormProcessing, NatsConst.GamePlayerBalanceBrandFormProcessing)
+        .AddHandler<ImportFormQueuedMessageHandler>(NatsConst.GamePlayerBalanceImportFormQueued, NatsConst.GamePlayerBalanceImportFormQueued)
+        .AddHandler<ImportFormProcessingMessageHandler>(NatsConst.GamePlayerBalanceImportFormProcessing, NatsConst.GamePlayerBalanceImportFormProcessing)
+        .AddHandler<PlayerFormQueuedMessageHandler>(NatsConst.GamePlayerBalancePlayerFormQueued, NatsConst.GamePlayerBalancePlayerFormQueued)
+        .AddProcessor<PlayerBalanceMessageProcessor>(NatsConst.GamePlayerBalancePlayerBalance, NatsConst.GamePlayerBalancePlayerBalance)
+        .AddHandler<PlayerBalanceAddMessageHandler>(NatsConst.GamePlayerBalancePlayerBalanceAdd, NatsConst.GamePlayerBalancePlayerBalanceAdd)
+        .AddHandler<PlayerBalanceDeleteMessageHandler>(NatsConst.GamePlayerBalancePlayerBalanceDelete, NatsConst.GamePlayerBalancePlayerBalanceDelete);
     })
     .ClearAllExchanges()
     .AddNatsGlobPatternExchange("*");
@@ -148,5 +152,12 @@ _ = app.UseSwaggerUI();
 _ = app.MapControllers();
 
 app.MapHealthChecks("/healthz");
+
+_ = app.UseRegister();
+_ = app.InitialSnowflakeWork();
+_ = app.InitializeBrandFormAsync();
+_ = app.InitializeUseImportFormAsync();
+_ = app.InitializePlayerFormAsync();
+_ = app.InitializePlayerTempBalanceAsync();
 
 app.Run();

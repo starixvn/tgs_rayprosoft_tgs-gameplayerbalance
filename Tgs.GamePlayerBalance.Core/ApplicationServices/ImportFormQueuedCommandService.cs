@@ -15,14 +15,14 @@ internal class ImportFormQueuedCommandService : ICommandService<ImportFormQueued
     private readonly ILogger<ImportFormQueuedCommandService> _logger;
     private readonly IMessageSender _messageSender;
     private readonly IPlayerFormRepository _playerFormRepository;
-    private readonly ISnowflake _snowflake;
+    private readonly ISnowflakeWork _snowflake;
 
     public ImportFormQueuedCommandService(
         ILogger<ImportFormQueuedCommandService> logger,
         IGameCommandClient client,
         IImportFormRepository importFormRepository,
         IPlayerFormRepository playerFormRepository,
-        ISnowflake snowflake,
+        ISnowflakeWork snowflake,
         IMessageSender messageSender)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -74,7 +74,7 @@ internal class ImportFormQueuedCommandService : ICommandService<ImportFormQueued
             }
 
             playerFormAdds.Add(new PlayerFormAdd(
-                FormId: _snowflake.NextId(),
+                FormId: _snowflake.GetId(),
                 ExpansionFormId: form.Id,
                 GameProviderId: form.GameProviderId,
                 GameProviderCode: form.GameProviderCode,
@@ -113,7 +113,7 @@ internal class ImportFormQueuedCommandService : ICommandService<ImportFormQueued
             cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        _logger.LogInformation("LogOn:{logOn}  Subject:{subject} Information Request:{receive}",
+        _logger.LogDebug("LogOn:{logOn}  Subject:{subject} Information Request:{receive}",
             DateTime.Now.ToString("o"),
             subject,
             request);

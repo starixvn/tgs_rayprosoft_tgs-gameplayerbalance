@@ -27,5 +27,5 @@ public static class ServiceCollectionExtensions
                 gameProvidersClientOptions,
                 gameFundTransferClientOptions)
             .AddGamePlayerBalanceRepositories(
-                (sp) => sp.GetRequiredService<MongoDBConnectionManager>().Database);
+                (sp) => sp.GetRequiredService<MongoDBConnectionManager>().MongoDatabase);
 }

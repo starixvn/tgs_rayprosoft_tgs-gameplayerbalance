@@ -12,7 +12,7 @@ public class BrandFormRepositoryUnitTest
     public async Task Add()
     {
         var fakerMongoDatabase = Substitute.For<IMongoDatabase>();
-        var fakerSnowflake = Substitute.For<ISnowflake>();
+        var fakerSnowflake = Substitute.For<ISnowflakeWork>();
 
         var gameProviderId = Guid.NewGuid();
         var gameProviderCode = "KY";
@@ -20,7 +20,7 @@ public class BrandFormRepositoryUnitTest
         var brandCode = "GPI";
 
         var brandFormId = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        _ = fakerSnowflake.NextId().Returns(brandFormId);
+        _ = fakerSnowflake.GetId().Returns(brandFormId);
 
         var repository = new BrandFormRepository(
             fakerMongoDatabase,
@@ -57,7 +57,7 @@ public class BrandFormRepositoryUnitTest
     public async Task UpdateComplete()
     {
         var fakerMongoDatabase = Substitute.For<IMongoDatabase>();
-        var fakerSnowflake = Substitute.For<ISnowflake>();
+        var fakerSnowflake = Substitute.For<ISnowflakeWork>();
 
         var repository = new BrandFormRepository(
             fakerMongoDatabase,
@@ -92,7 +92,7 @@ public class BrandFormRepositoryUnitTest
     public async Task UpdateFailedAsync()
     {
         var fakerMongoDatabase = Substitute.For<IMongoDatabase>();
-        var fakerSnowflake = Substitute.For<ISnowflake>();
+        var fakerSnowflake = Substitute.For<ISnowflakeWork>();
 
         var repository = new BrandFormRepository(
             fakerMongoDatabase,
@@ -127,7 +127,7 @@ public class BrandFormRepositoryUnitTest
     public async Task UpdateProcessing()
     {
         var fakerMongoDatabase = Substitute.For<IMongoDatabase>();
-        var fakerSnowflake = Substitute.For<ISnowflake>();
+        var fakerSnowflake = Substitute.For<ISnowflakeWork>();
 
         var id = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 

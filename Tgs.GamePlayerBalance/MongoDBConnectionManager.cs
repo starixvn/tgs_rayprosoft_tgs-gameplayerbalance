@@ -5,18 +5,16 @@ namespace Tgs.GamePlayerBalance;
 
 internal class MongoDBConnectionManager
 {
-    public IMongoDatabase Database { get; }
+    public IMongoDatabase MongoDatabase { get; }
 
     public MongoDBConnectionManager(
         IOptions<MongoDBOptions> optionsAccessor)
     {
         if (optionsAccessor is null)
             throw new ArgumentNullException(nameof(optionsAccessor));
-
         var options = optionsAccessor.Value;
-
         var mongoUrl = new MongoUrl(options.ConnectionString);
-        var _mongoClient = new MongoClient(mongoUrl);
-        Database = _mongoClient.GetDatabase("game_player_balances");
+        MongoDatabase = new MongoClient(mongoUrl)
+           .GetDatabase("game_player_balances");
     }
 }

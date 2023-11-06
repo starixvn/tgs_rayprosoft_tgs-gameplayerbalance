@@ -23,14 +23,13 @@ public class BrandFormProcessingMessageHandler : IMessageHandler
         var request = BrandFormModelRequest.Parser.ParseFrom(data.Span) ??
             throw new NullReferenceException("The request data resolves to a null value");
 
-        _logger.LogInformation("LogOn:{logOn} Information Request:{receive}", DateTime.Now.ToString("o"), request);
+        _logger.LogDebug("LogOn:{logOn} Information Request:{receive}", DateTime.Now.ToString("o"), request);
 
         var command = new BrandFormProcessingCommand(
             Id: request.Id);
 
-        return _service
-            .ExecuteAsync(
-                command: command,
-                cancellationToken: cancellationToken);
+        return _service.ExecuteAsync(
+            command: command,
+            cancellationToken: cancellationToken);
     }
 }

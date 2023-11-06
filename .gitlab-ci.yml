@@ -47,6 +47,27 @@ unit-test:
     reports:
       junit: ./TestReports/*-TestReport.xml
 
+push-nuget:
+  stage: publish
+  needs:
+    - build-code
+    - unit-test
+  cache:
+    key: $BuildCacheKey
+    untracked: true   
+    policy: pull
+  only:
+    - main
+  script:
+    - dotnet pack -c $BuildConfiguration "Tgs.GamePlayerBalance.Client/Tgs.GamePlayerBalance.Client.csproj" --no-restore
+    - dotnet nuget push "Tgs.GamePlayerBalance.Client/bin/$BuildConfiguration/*.nupkg" -s "raypro-baget" -k $NugetApiKey --skip-duplicate
+  artifacts:
+    name: Nuget
+    untracked: false
+    expire_in: "30 days"
+    paths:
+      - Tgs.GamePlayerBalance.Client/bin/$BuildConfiguration/*.nupkg
+
 push-docker-image:
   stage: publish
   needs:

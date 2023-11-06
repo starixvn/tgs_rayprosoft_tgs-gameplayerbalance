@@ -15,7 +15,7 @@ public class PlayerFormRepositoryUnitTest
     {
         var fakeLogger = NullLogger<PlayerFormRepository>.Instance;
         var fakeMongoDatabase = Substitute.For<IMongoDatabase>();
-        var fakerSnowflake = Substitute.For<ISnowflake>();
+        var fakerSnowflake = Substitute.For<ISnowflakeWork>();
 
         var gameProviderId = Guid.NewGuid();
         var gameProviderCode = "KY";
@@ -27,7 +27,7 @@ public class PlayerFormRepositoryUnitTest
         var currencyCode = "CNY";
 
         var playerFormId = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        _ = fakerSnowflake.NextId().Returns(playerFormId);
+        _ = fakerSnowflake.GetId().Returns(playerFormId);
 
         var repository = new PlayerFormRepository(
             fakeLogger,
@@ -75,7 +75,7 @@ public class PlayerFormRepositoryUnitTest
     {
         var fakeLogger = NullLogger<PlayerFormRepository>.Instance;
         var fakeMongoDatabase = Substitute.For<IMongoDatabase>();
-        var fakeSnowflake = Substitute.For<ISnowflake>();
+        var fakeSnowflake = Substitute.For<ISnowflakeWork>();
 
         var repository = new PlayerFormRepository(
             fakeLogger,
@@ -110,7 +110,7 @@ public class PlayerFormRepositoryUnitTest
     {
         var fakeLogger = NullLogger<PlayerFormRepository>.Instance;
         var fakeMongoDatabase = Substitute.For<IMongoDatabase>();
-        var fakeSnowflake = Substitute.For<ISnowflake>();
+        var fakeSnowflake = Substitute.For<ISnowflakeWork>();
 
         var repository = new PlayerFormRepository(
             fakeLogger,
@@ -167,7 +167,7 @@ public class PlayerFormRepositoryUnitTest
     {
         var fakeLogger = NullLogger<PlayerFormRepository>.Instance;
         var fakeMongoDatabase = Substitute.For<IMongoDatabase>();
-        var fakeSnowflake = Substitute.For<ISnowflake>();
+        var fakeSnowflake = Substitute.For<ISnowflakeWork>();
 
         var repository = new PlayerFormRepository(
             fakeLogger,
@@ -204,7 +204,7 @@ public class PlayerFormRepositoryUnitTest
     {
         var fakeLogger = NullLogger<PlayerFormRepository>.Instance;
         var fakeMongoDatabase = Substitute.For<IMongoDatabase>();
-        var fakeSnowflake = Substitute.For<ISnowflake>();
+        var fakeSnowflake = Substitute.For<ISnowflakeWork>();
 
         var repository = new PlayerFormRepository(
             fakeLogger,

@@ -24,5 +24,5 @@ public static class ServiceCollectionExtensions
             .AddGameCommandClient(gameCommandClientOptions)
             .AddGameProvidersClient(gameProvidersClientOptions)
             .AddGameFundTransferClient(gameFundTransferClientOptions)
-            .AddSingleton<ISnowflake, SnowflakeUtensil>();
+            .AddSingleton<ISnowflakeWork, SnowflakeWork>();
 }

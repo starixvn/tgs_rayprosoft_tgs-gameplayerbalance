@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using MongoDB.Driver;
 using Tgs.GamePlayerBalance.Core;
+using Tgs.GamePlayerBalance.Core.Extensions;
 using Tgs.GamePlayerBalance.Core.Models;
 using Tgs.GamePlayerBalance.Repositories.Models;
 
@@ -9,11 +10,11 @@ namespace Tgs.GamePlayerBalance.Repositories;
 internal class ImportFormRepository : IImportFormRepository
 {
     private readonly IMongoDatabase _database;
-    private readonly ISnowflake _snowflake;
+    private readonly ISnowflakeWork _snowflake;
 
     public ImportFormRepository(
         IMongoDatabase database,
-        ISnowflake snowflake)
+        ISnowflakeWork snowflake)
     {
         _database = database ?? throw new ArgumentNullException(nameof(database));
         _snowflake = snowflake ?? throw new ArgumentNullException(nameof(snowflake));
@@ -26,7 +27,7 @@ internal class ImportFormRepository : IImportFormRepository
         CancellationToken cancellationToken = default)
 
     {
-        var id = _snowflake.NextId();
+        var id = _snowflake.GetId();
 
         var collection = GetCollection();
 
@@ -355,5 +356,5 @@ internal class ImportFormRepository : IImportFormRepository
     }
 
     private IMongoCollection<ImportFormModel> GetCollection()
-        => _database.GetCollection<ImportFormModel>("import_forms");
+        => _database.GetCollection<ImportFormModel>(typeof(ImportFormModel).GetTableName());
 }

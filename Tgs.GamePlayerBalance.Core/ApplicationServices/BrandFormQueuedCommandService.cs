@@ -16,14 +16,14 @@ internal class BrandFormQueuedCommandService : ICommandService<BrandFormQueuedCo
     private readonly ILogger<BrandFormQueuedCommandService> _logger;
     private readonly IMessageSender _messageSender;
     private readonly IPlayerFormRepository _playerFormRepository;
-    private readonly ISnowflake _snowflake;
+    private readonly ISnowflakeWork _snowflake;
 
     public BrandFormQueuedCommandService(
         ILogger<BrandFormQueuedCommandService> logger,
         IGameCommandClient client,
         IBrandFormRepository brandFormRepository,
         IPlayerFormRepository playerFormRepository,
-        ISnowflake snowflake,
+        ISnowflakeWork snowflake,
         IMessageSender messageSender)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -89,7 +89,7 @@ internal class BrandFormQueuedCommandService : ICommandService<BrandFormQueuedCo
                 foreach (var player in players)
                 {
                     playerFormAdds.Add(new PlayerFormAdd(
-                        FormId: _snowflake.NextId(),
+                        FormId: _snowflake.GetId(),
                         ExpansionFormId: form.Id,
                         GameProviderId: form.GameProviderId,
                         GameProviderCode: form.GameProviderCode,
@@ -128,7 +128,7 @@ internal class BrandFormQueuedCommandService : ICommandService<BrandFormQueuedCo
                 cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        _logger.LogInformation("LogOn:{logOn}  Subject:{subject} Information Request:{receive}",
+        _logger.LogDebug("LogOn:{logOn}  Subject:{subject} Information Request:{receive}",
             DateTime.Now.ToString("o"),
             subject,
             request);

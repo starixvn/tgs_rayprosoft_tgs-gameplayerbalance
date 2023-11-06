@@ -6,6 +6,54 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceRegisterExtensions
 {
+    public static async Task<WebApplication> InitializeBrandFormAsync(this WebApplication app)
+    {
+        using (var scope = app.Services.CreateScope())
+        {
+            var brandFormRepository = scope.ServiceProvider.GetRequiredService<IBrandFormRepository>();
+            await brandFormRepository
+                 .InitializeAsync()
+                 .ConfigureAwait(false);
+        }
+        return app;
+    }
+
+    public static async Task<WebApplication> InitializeUseImportFormAsync(this WebApplication app)
+    {
+        using (var scope = app.Services.CreateScope())
+        {
+            var importFormRepository = scope.ServiceProvider.GetRequiredService<IImportFormRepository>();
+            await importFormRepository
+                 .InitializeAsync()
+                 .ConfigureAwait(false);
+        }
+        return app;
+    }
+
+    public static async Task<WebApplication> InitializePlayerFormAsync(this WebApplication app)
+    {
+        using (var scope = app.Services.CreateScope())
+        {
+            var playerFormRepository = scope.ServiceProvider.GetRequiredService<IPlayerFormRepository>();
+            await playerFormRepository
+                 .InitializeAsync()
+                 .ConfigureAwait(false);
+        }
+        return app;
+    }
+
+    public static async Task<WebApplication> InitializePlayerTempBalanceAsync(this WebApplication app)
+    {
+        using (var scope = app.Services.CreateScope())
+        {
+            var playerTempBalanceRepository = scope.ServiceProvider.GetRequiredService<IPlayerTempBalanceRepository>();
+            await playerTempBalanceRepository
+                 .InitializeAsync()
+                 .ConfigureAwait(false);
+        }
+        return app;
+    }
+
     public static async Task<WebApplication> UseRegister(this WebApplication app)
     {
         using (var scope = app.Services.CreateScope())
@@ -25,9 +73,12 @@ public static class ServiceRegisterExtensions
 
                     foreach (var gameProviderInfo in gameProviderInfos)
                     {
-                        _ = await gameProviderRepository
-                            .GetIdAsync(
-                                gameProviderInfo.GameProviderCode)
+                        var gameProviderId = await gameProviderRepository.GetIdAsync(
+                            gameProviderInfo.GameProviderCode)
+                            .ConfigureAwait(false);
+
+                        _ = await gameProviderRepository.GetAsync(
+                            id: gameProviderId)
                             .ConfigureAwait(false);
                     }
                 }
@@ -35,21 +86,17 @@ public static class ServiceRegisterExtensions
             catch
             {
             }
+        }
+        return app;
+    }
 
-            var brandFormRepository = scope.ServiceProvider.GetRequiredService<IBrandFormRepository>();
-            await brandFormRepository
-                 .InitializeAsync()
-                 .ConfigureAwait(false);
+    public static WebApplication InitialSnowflakeWork(this WebApplication app)
+    {
+        using (var scope = app.Services.CreateScope())
+        {
+            var snowflakeWork = scope.ServiceProvider.GetRequiredService<ISnowflakeWork>();
 
-            var importFormRepository = scope.ServiceProvider.GetRequiredService<IImportFormRepository>();
-            await importFormRepository
-                 .InitializeAsync()
-                 .ConfigureAwait(false);
-
-            var playerFormRepository = scope.ServiceProvider.GetRequiredService<IPlayerFormRepository>();
-            await playerFormRepository
-                 .InitializeAsync()
-                 .ConfigureAwait(false);
+            _ = snowflakeWork.GetId();
         }
         return app;
     }

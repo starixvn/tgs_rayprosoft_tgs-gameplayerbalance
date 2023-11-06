@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using MongoDB.Driver;
 using Tgs.GamePlayerBalance.Core;
+using Tgs.GamePlayerBalance.Core.Extensions;
 using Tgs.GamePlayerBalance.Core.Models;
 using Tgs.GamePlayerBalance.Repositories.Models;
 
@@ -9,11 +10,11 @@ namespace Tgs.GamePlayerBalance.Repositories;
 internal class BrandFormRepository : IBrandFormRepository
 {
     private readonly IMongoDatabase _database;
-    private readonly ISnowflake _snowflake;
+    private readonly ISnowflakeWork _snowflake;
 
     public BrandFormRepository(
         IMongoDatabase database,
-        ISnowflake snowflake)
+        ISnowflakeWork snowflake)
     {
         _database = database ?? throw new ArgumentNullException(nameof(database));
         _snowflake = snowflake ?? throw new ArgumentNullException(nameof(snowflake));
@@ -26,7 +27,7 @@ internal class BrandFormRepository : IBrandFormRepository
         string brandCode,
         CancellationToken cancellationToken = default)
     {
-        var id = _snowflake.NextId();
+        var id = _snowflake.GetId();
 
         var collection = GetCollection();
 
@@ -394,5 +395,5 @@ internal class BrandFormRepository : IBrandFormRepository
     }
 
     private IMongoCollection<BrandFormModel> GetCollection()
-        => _database.GetCollection<BrandFormModel>("brand_forms");
+        => _database.GetCollection<BrandFormModel>(typeof(BrandFormModel).GetTableName());
 }

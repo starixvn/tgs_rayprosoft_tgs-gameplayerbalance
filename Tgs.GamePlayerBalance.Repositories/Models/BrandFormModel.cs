@@ -1,9 +1,11 @@
-﻿using MongoDB.Bson;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Tgs.GamePlayerBalance.Core;
 
 namespace Tgs.GamePlayerBalance.Repositories.Models;
 
+[Table("brand_forms")]
 public record BrandFormModel
 {
     /// <summary>

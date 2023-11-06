@@ -1,8 +1,10 @@
-﻿namespace Tgs.GamePlayerBalance.Core;
+﻿using Tgs.GameCommand.Common;
+
+namespace Tgs.GamePlayerBalance.Core;
 
 public interface IGameProviderRepository
 {
-    ValueTask<Guid> GetIdAsync(
-        string code,
-        CancellationToken cancellationToken = default);
+    ValueTask<GameProviderInfo> GetAsync(Guid id, CancellationToken cancellationToken = default);
+
+    ValueTask<Guid> GetIdAsync(string code, CancellationToken cancellationToken = default);
 }

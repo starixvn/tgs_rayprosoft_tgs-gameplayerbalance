@@ -3,7 +3,7 @@
 
 //import "google/protobuf/timestamp.proto";
 //import "phoenix/protobuf/guid.proto";
-//import "phoenix/protobuf/decimal.proto";
+import "phoenix/protobuf/decimal.proto";
 
 option csharp_namespace = "Tgs.GamePlayerBalance.Common.Protos";
 
@@ -37,5 +37,23 @@ message ImportFormModelRequest {
     int64 id = 1;
 }
 
+message PlayerBalanceRequest {
+     string game_provider_code = 1;
+     string player_code = 2;
+}
+
+message PlayerBalanceAddRequest {
+     string game_provider_code = 1;
+     string player_code = 2;
+	phoenix.protobuf.DecimalValue balance = 3;
+	phoenix.protobuf.DecimalValue free_balance = 4;
+	phoenix.protobuf.DecimalValue outstanding_balance = 5;
+}
+
 
 // The response message containing the greetings.
+message PlayerBalanceReply {
+	phoenix.protobuf.DecimalValue balance = 1;
+	phoenix.protobuf.DecimalValue free_balance = 2;
+	phoenix.protobuf.DecimalValue outstanding_balance = 3;
+}

@@ -66,7 +66,7 @@ internal class BrandFormAddCommandService : ICommandService<BrandFormAddCommand>
             cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        _logger.LogInformation("LogOn:{logOn}  Subject:{subject} Information Request:{receive}",
+        _logger.LogDebug("LogOn:{logOn}  Subject:{subject} Information Request:{receive}",
             DateTime.Now.ToString("o"),
             subject,
             request);

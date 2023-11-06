@@ -7,17 +7,20 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <None Remove="Protos\gameplayerbalance.proto" />
+		<None Remove="Protos\gameplayerbalance.proto" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Grpc.AspNetCore" Version="2.58.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+		<PackageReference Include="PhoenixToolkits.MessageQueue" Version="1.0.3" />
+		<PackageReference Include="PhoenixToolkits.MessageQueue.Direct" Version="1.0.3" />
+		<PackageReference Include="PhoenixToolkits.MessageQueue.Nats" Version="1.0.6" />
 		<PackageReference Include="PhoenixToolkits.Protobuf.ExtendTypes" Version="0.0.6" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Protobuf Include="Protos\gameplayerbalance.proto" />
+		<Protobuf Include="Protos\gameplayerbalance.proto" />
 	</ItemGroup>
 
 </Project>

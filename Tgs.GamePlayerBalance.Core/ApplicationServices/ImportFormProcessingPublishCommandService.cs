@@ -63,7 +63,7 @@ internal class ImportFormProcessingPublishCommandService : ICommandService<Impor
                         cancellationToken: cancellationToken)
                         .ConfigureAwait(false);
 
-                    _logger.LogInformation("LogOn:{logOn} Information Request:{receive}", DateTime.Now.ToString("o"), request);
+                    _logger.LogDebug("LogOn:{logOn} Information Request:{receive}", DateTime.Now.ToString("o"), request);
                 }
                 catch (Exception ex)
                 {

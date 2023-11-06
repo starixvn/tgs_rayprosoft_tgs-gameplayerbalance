@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Amazon.Runtime.Internal.Util;
-using Microsoft.Extensions.Logging;
-using Tgs.GamePlayerBalance.Core;
+﻿using Tgs.GamePlayerBalance.Core;
 using Tgs.GamePlayerBalance.Core.Models;
 using Tgs.GameProviders.Client;
 

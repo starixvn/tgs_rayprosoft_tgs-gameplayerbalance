@@ -4,15 +4,15 @@ using Tgs.ServiceUtility;
 
 namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
-internal class PlayerBalanceCommandService : ICommandService<PlayerBalanceCommand>
+internal class PlayerFundsTransferInCommandService : ICommandService<PlayerFundsTransferInCommand>
 {
     private readonly IGameCommandClient _client;
     private readonly IGameProviderRepository _gameProviderRepository;
-    private readonly ILogger<PlayerBalanceCommandService> _logger;
+    private readonly ILogger<PlayerFundsTransferInCommandService> _logger;
     private readonly IGetService<FundsTransferInQuery, FundsTransferInResult> _service;
 
-    public PlayerBalanceCommandService(
-        ILogger<PlayerBalanceCommandService> logger,
+    public PlayerFundsTransferInCommandService(
+        ILogger<PlayerFundsTransferInCommandService> logger,
         IGameCommandClient client,
         IGameProviderRepository gameProviderRepository,
         IGetService<FundsTransferInQuery, FundsTransferInResult> service)
@@ -23,7 +23,7 @@ internal class PlayerBalanceCommandService : ICommandService<PlayerBalanceComman
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
 
-    public async ValueTask ExecuteAsync(PlayerBalanceCommand command, CancellationToken cancellationToken = default)
+    public async ValueTask ExecuteAsync(PlayerFundsTransferInCommand command, CancellationToken cancellationToken = default)
     {
         var gameProviderId = await _gameProviderRepository.GetIdAsync(
             code: command.GameProviderCode,
