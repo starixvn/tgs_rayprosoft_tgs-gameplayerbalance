@@ -6,42 +6,26 @@ using Valhalla.MessageQueue;
 
 namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
-internal class BrandFormAddCommandService : ICommandService<BrandFormAddCommand>
+internal class BrandFormAddCommandService(
+    ILogger<BrandFormAddCommandService> logger,
+    IBrandRepository brandRepository,
+    IGameProviderRepository gameProviderRepository,
+    IBrandFormRepository brandFormRepository,
+    IMessageSender messageSender) : ICommandService<BrandFormAddCommand>
 {
-    private readonly IBrandFormRepository _brandFormRepository;
-    private readonly IBrandRepository _brandRepository;
-    private readonly IGameProviderRepository _gameProviderRepository;
-    private readonly ILogger<BrandFormAddCommandService> _logger;
-    private readonly IMessageSender _messageSender;
-
-    public BrandFormAddCommandService(
-        ILogger<BrandFormAddCommandService> logger,
-        IBrandRepository brandRepository,
-        IGameProviderRepository gameProviderRepository,
-        IBrandFormRepository brandFormRepository,
-        IMessageSender messageSender
-        )
-    {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _brandRepository = brandRepository ?? throw new ArgumentNullException(nameof(brandRepository));
-        _gameProviderRepository = gameProviderRepository ?? throw new ArgumentNullException(nameof(gameProviderRepository));
-        _brandFormRepository = brandFormRepository ?? throw new ArgumentNullException(nameof(brandFormRepository));
-        _messageSender = messageSender ?? throw new ArgumentNullException(nameof(messageSender));
-    }
-
     public async ValueTask ExecuteAsync(BrandFormAddCommand command, CancellationToken cancellationToken = default)
     {
-        var gameProviderId = await _gameProviderRepository.GetIdAsync(
+        var gameProviderId = await gameProviderRepository.GetIdAsync(
             code: command.GameProviderCode,
             cancellationToken: cancellationToken)
            .ConfigureAwait(false);
 
-        var brandId = await _brandRepository.GetIdAsync(
+        var brandId = await brandRepository.GetIdAsync(
             code: command.BrandCode,
             cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        var id = await _brandFormRepository.AddAsync(
+        var id = await brandFormRepository.AddAsync(
             gameProviderId: gameProviderId,
             gameProviderCode: command.GameProviderCode,
             brandId: brandId,
@@ -60,13 +44,13 @@ internal class BrandFormAddCommandService : ICommandService<BrandFormAddCommand>
             subject = $"{subject}.{command.GameProviderCode.Replace("_", ".").ToLower()}";
         }
 
-        await _messageSender.PublishAsync(
+        await messageSender.PublishAsync(
             subject: subject,
             data: request.ToByteArray(),
             cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        _logger.LogDebug("LogOn:{logOn}  Subject:{subject} Information Request:{receive}",
+        logger.LogDebug("LogOn:{logOn}  Subject:{subject} Information Request:{receive}",
             DateTime.Now.ToString("o"),
             subject,
             request);

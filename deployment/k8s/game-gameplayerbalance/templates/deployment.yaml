@@ -18,7 +18,10 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "game-gameplayerbalance.selectorLabels" . | nindent 8 }}
+        {{- include "game-gameplayerbalance.labels" . | nindent 8 }}
+	{{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -40,6 +43,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.hostIP
+            - name: RELEASE_NAMESPACE
+              value: {{ .Release.Namespace }}
             - name: POD_IP
               valueFrom:
                fieldRef:
@@ -55,7 +60,7 @@ spec:
                   name: tgs-connections
                   key: mongo-gp-player-balances
           volumeMounts:
-            - mountPath: /config/appsettings.json
+            - mountPath: /app/appsettings.Production.json
               name: appsettings
               readOnly: true
               subPath: appsettings.json
@@ -65,16 +70,20 @@ spec:
               subPath: rds-combined-ca-bundle.pem
           ports:
             - name: http
-              containerPort: 80
+              containerPort: {{ .Values.service.targetPort }}
               protocol: TCP
           livenessProbe:
             httpGet:
               path: /healthz
               port: http
-          readinessProbe:
+            failureThreshold: 5
+            periodSeconds: 60
+          startupProbe:
             httpGet:
               path: /healthz
               port: http
+            failureThreshold: 30
+            periodSeconds: 2
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
         - name: monitor

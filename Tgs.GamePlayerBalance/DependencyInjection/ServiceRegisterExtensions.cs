@@ -18,18 +18,6 @@ public static class ServiceRegisterExtensions
         return app;
     }
 
-    public static async Task<WebApplication> InitializeUseImportFormAsync(this WebApplication app)
-    {
-        using (var scope = app.Services.CreateScope())
-        {
-            var importFormRepository = scope.ServiceProvider.GetRequiredService<IImportFormRepository>();
-            await importFormRepository
-                 .InitializeAsync()
-                 .ConfigureAwait(false);
-        }
-        return app;
-    }
-
     public static async Task<WebApplication> InitializePlayerFormAsync(this WebApplication app)
     {
         using (var scope = app.Services.CreateScope())
@@ -50,6 +38,29 @@ public static class ServiceRegisterExtensions
             await playerTempBalanceRepository
                  .InitializeAsync()
                  .ConfigureAwait(false);
+        }
+        return app;
+    }
+
+    public static async Task<WebApplication> InitializeUseImportFormAsync(this WebApplication app)
+    {
+        using (var scope = app.Services.CreateScope())
+        {
+            var importFormRepository = scope.ServiceProvider.GetRequiredService<IImportFormRepository>();
+            await importFormRepository
+                 .InitializeAsync()
+                 .ConfigureAwait(false);
+        }
+        return app;
+    }
+
+    public static WebApplication InitialSnowflakeWork(this WebApplication app)
+    {
+        using (var scope = app.Services.CreateScope())
+        {
+            var snowflakeWork = scope.ServiceProvider.GetRequiredService<ISnowflakeWork>();
+
+            _ = snowflakeWork.GetId();
         }
         return app;
     }
@@ -86,17 +97,6 @@ public static class ServiceRegisterExtensions
             catch
             {
             }
-        }
-        return app;
-    }
-
-    public static WebApplication InitialSnowflakeWork(this WebApplication app)
-    {
-        using (var scope = app.Services.CreateScope())
-        {
-            var snowflakeWork = scope.ServiceProvider.GetRequiredService<ISnowflakeWork>();
-
-            _ = snowflakeWork.GetId();
         }
         return app;
     }

@@ -10,8 +10,7 @@ internal class MongoDBConnectionManager
     public MongoDBConnectionManager(
         IOptions<MongoDBOptions> optionsAccessor)
     {
-        if (optionsAccessor is null)
-            throw new ArgumentNullException(nameof(optionsAccessor));
+        ArgumentNullException.ThrowIfNull(optionsAccessor);
         var options = optionsAccessor.Value;
         var mongoUrl = new MongoUrl(options.ConnectionString);
         MongoDatabase = new MongoClient(mongoUrl)
