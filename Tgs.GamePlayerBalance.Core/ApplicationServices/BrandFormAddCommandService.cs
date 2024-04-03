@@ -44,7 +44,7 @@ internal class BrandFormAddCommandService(
             subject = $"{subject}.{command.GameProviderCode.Replace("_", ".").ToLower()}";
         }
 
-        await messageSender.PublishAsync(
+        await messageSender.PublishAsync<ReadOnlyMemory<byte>>(
             subject: subject,
             data: request.ToByteArray(),
             cancellationToken: cancellationToken)

@@ -126,7 +126,7 @@ internal class BrandFormByAwcFacaiQueuedCommandService : ICommandService<BrandFo
 
         var subject = "game.playerbalance.brand.form.processing";
 
-        await _messageSender.PublishAsync(
+        await _messageSender.PublishAsync<ReadOnlyMemory<byte>>(
             subject: subject,
             data: request.ToByteArray(),
             cancellationToken: cancellationToken)

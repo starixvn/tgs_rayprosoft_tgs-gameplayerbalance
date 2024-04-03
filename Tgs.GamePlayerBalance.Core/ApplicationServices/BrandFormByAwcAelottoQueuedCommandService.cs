@@ -108,7 +108,7 @@ internal class BrandFormByAwcAelottoQueuedCommandService(
 
         var subject = "game.playerbalance.brand.form.processing";
 
-        await messageSender.PublishAsync(
+        await messageSender.PublishAsync<ReadOnlyMemory<byte>>(
             subject: subject,
             data: request.ToByteArray(),
             cancellationToken: cancellationToken)

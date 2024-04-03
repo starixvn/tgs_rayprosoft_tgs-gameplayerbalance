@@ -107,7 +107,7 @@ internal class ImportFormQueuedCommandService : ICommandService<ImportFormQueued
 
         var subject = "game.playerbalance.import.form.processing";
 
-        await _messageSender.PublishAsync(
+        await _messageSender.PublishAsync<ReadOnlyMemory<byte>>(
             subject: subject,
             data: request.ToByteArray(),
             cancellationToken: cancellationToken)

@@ -56,7 +56,7 @@ internal class PlayerBalanceGetService : IGetService<PlayerBalanceQuery, PlayerB
             OutstandingBalance = response.OutstandingBalance,
         };
 
-        await _messageSender.PublishAsync(
+        await _messageSender.PublishAsync<ReadOnlyMemory<byte>>(
             NatsConst.GamePlayerBalancePlayerBalanceAdd,
             request.ToByteArray(),
             cancellationToken)
