@@ -5,7 +5,7 @@ using Valhalla.MessageQueue;
 
 namespace Tgs.GamePlayerBalance.MessageHandlers;
 
-public class PlayerBalanceAddMessageHandler : IMessageHandler
+public class PlayerBalanceAddMessageHandler : IMessageHandler<ReadOnlyMemory<byte>>
 {
     private readonly ILogger<PlayerBalanceAddMessageHandler> _logger;
     private readonly ICommandService<PlayerBalanceAddCommand> _service;
@@ -18,7 +18,7 @@ public class PlayerBalanceAddMessageHandler : IMessageHandler
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
 
-    public ValueTask HandleAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+    public ValueTask HandleAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue>? headerValues, CancellationToken cancellationToken = default)
     {
         var request = PlayerBalanceAddRequest.Parser.ParseFrom(data.Span) ??
             throw new NullReferenceException("The request data resolves to a null value");
@@ -36,4 +36,5 @@ public class PlayerBalanceAddMessageHandler : IMessageHandler
             command: command,
             cancellationToken: cancellationToken);
     }
+
 }

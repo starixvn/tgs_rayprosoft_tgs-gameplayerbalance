@@ -35,7 +35,7 @@ public class PlayerController : ControllerBase
             PlayerCode = playerCode,
             GameProviderCode = gameProviderCode,
         };
-        var data = await messageSender.RequestAsync(
+        var data = await messageSender.RequestAsync<ReadOnlyMemory<byte>, ReadOnlyMemory<byte>>(
             subject: NatsConst.GamePlayerBalancePlayerBalance,
             data: request.ToByteArray(),
             cancellationToken: HttpContext.RequestAborted)

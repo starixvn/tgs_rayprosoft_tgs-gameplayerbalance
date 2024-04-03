@@ -58,7 +58,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: tgs-connections
-                  key: mongo-gp-player-balances
+                  key: mongo-gp
           volumeMounts:
             - mountPath: /app/appsettings.Production.json
               name: appsettings

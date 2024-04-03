@@ -5,7 +5,7 @@ using Valhalla.MessageQueue;
 
 namespace Tgs.GamePlayerBalance.MessageHandlers;
 
-public class ImportFormQueuedMessageHandler : IMessageHandler
+public class ImportFormQueuedMessageHandler : IMessageHandler<ReadOnlyMemory<byte>>
 {
     private readonly ILogger<ImportFormQueuedMessageHandler> _logger;
     private readonly ICommandService<ImportFormQueuedCommand> _service;
@@ -18,7 +18,7 @@ public class ImportFormQueuedMessageHandler : IMessageHandler
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
 
-    public ValueTask HandleAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
+    public ValueTask HandleAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue>? headerValues, CancellationToken cancellationToken = default)
     {
         var request = ImportFormModelRequest.Parser.ParseFrom(data.Span) ??
             throw new NullReferenceException("The request data resolves to a null value");

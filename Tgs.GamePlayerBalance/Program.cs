@@ -3,6 +3,7 @@ using System.Net.Mime;
 using System.Net.Sockets;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
+using NATS.Client.Core;
 using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -82,15 +83,13 @@ builder.Services.AddGamePlayerBalance(
     });
 
 builder.Services
-    .AddMessageQueue()
-    .AddNatsMessageQueue(natsConfig =>
+    .AddKeyedSingleton("Nats", (sp, _) => new NatsConnection(NatsOpts.Default with
     {
-        _ = natsConfig
-        .ConfigQueueOptions((options, sp) =>
-        {
-            var configuration = sp.GetRequiredService<IConfiguration>();
-            options.Url = configuration.GetConnectionString("Nats")!;
-        })
+        Url = builder.Configuration.GetConnectionString("Nats")!
+    }))
+    .AddMessageQueue()
+    .AddNatsMessageQueue(config => config
+    .ConfigureResolveConnection(sp => sp.GetRequiredKeyedService<NatsConnection>("Nats"))
         .AddHandler<BrandFormByAwcAelottoQueuedMessageHandler>(NatsConst.GamePlayerBalanceBrandFormByAwcAelotto, NatsConst.GamePlayerBalanceBrandFormByAwcAelotto)
         .AddHandler<BrandFormByAwcAwsQueuedMessageHandler>(NatsConst.GamePlayerBalanceBrandFormByAwcAws, NatsConst.GamePlayerBalanceBrandFormByAwcAws)
         .AddHandler<BrandFormByAwcFacaiQueuedMessageHandler>(NatsConst.GamePlayerBalanceBrandFormByAwcFacai, NatsConst.GamePlayerBalanceBrandFormByAwcFacai)
@@ -101,8 +100,7 @@ builder.Services
         .AddHandler<PlayerFormQueuedMessageHandler>(NatsConst.GamePlayerBalancePlayerFormQueued, NatsConst.GamePlayerBalancePlayerFormQueued)
         .AddProcessor<PlayerBalanceMessageProcessor>(NatsConst.GamePlayerBalancePlayerBalance, NatsConst.GamePlayerBalancePlayerBalance)
         .AddHandler<PlayerBalanceAddMessageHandler>(NatsConst.GamePlayerBalancePlayerBalanceAdd, NatsConst.GamePlayerBalancePlayerBalanceAdd)
-        .AddHandler<PlayerBalanceDeleteMessageHandler>(NatsConst.GamePlayerBalancePlayerBalanceDelete, NatsConst.GamePlayerBalancePlayerBalanceDelete);
-    })
+        .AddHandler<PlayerBalanceDeleteMessageHandler>(NatsConst.GamePlayerBalancePlayerBalanceDelete, NatsConst.GamePlayerBalancePlayerBalanceDelete))
     .ClearAllExchanges()
     .AddNatsGlobPatternExchange("*");
 
