@@ -15,14 +15,15 @@ public static class ServiceCollectionExtensions
 		Action<GameProvidersClientOptions, IServiceProvider> gameProvidersClientOptions,
 		Action<GameFundTransferClientOptions, IServiceProvider> gameFundTransferClientOptions)
 		=> services
-			.AddOptions<IPAddressOptions>()
-			.Configure(ipAddressOptions)
-			.Services
-			.RegisterAllServiceUtilityTypes(
-				Assembly.GetExecutingAssembly(),
-				ServiceLifetime.Transient)
-			.AddGameCommandClient(gameCommandClientOptions)
-			.AddGameProvidersClient(gameProvidersClientOptions)
-			.AddGameFundTransferClient(gameFundTransferClientOptions)
-			.AddSingleton<ISnowflakeWork, SnowflakeWork>();
+		.AddOptions<IPAddressOptions>()
+		.Configure(ipAddressOptions)
+		.Services
+		.RegisterAllServiceUtilityTypes(
+			Assembly.GetExecutingAssembly(),
+			ServiceLifetime.Transient)
+		.AddGameCommandClient(gameCommandClientOptions)
+		.AddGameProvidersClient(gameProvidersClientOptions)
+		.AddGameFundTransferClient(gameFundTransferClientOptions)
+		.AddSingleton<IPlayerFormQueuedDispatcher, PlayerFormQueuedDispatcher>()
+		.AddSingleton<ISnowflakeWork, SnowflakeWork>();
 }

@@ -50,7 +50,7 @@ internal class BrandFormAddCommandService(
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 
-		logger.LogInformation("LogOn:{logOn}  Subject:{subject} Information Request:{data}",
+		logger.LogInformation("LogOn:{logOn} Subject:{subject} Information Request:{data}",
 			DateTime.Now.ToString("o"),
 			subject,
 			data);

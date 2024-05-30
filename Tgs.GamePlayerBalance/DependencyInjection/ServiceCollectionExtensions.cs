@@ -16,16 +16,16 @@ public static class ServiceCollectionExtensions
 		Action<GameProvidersClientOptions, IServiceProvider> gameProvidersClientOptions,
 		Action<GameFundTransferClientOptions, IServiceProvider> gameFundTransferClientOptions)
 		=> services
-			.AddOptions<MongoDBOptions>()
-			.Configure(mongoDBconfigure)
-			.Services
-			.AddSingleton<MongoDBConnectionManager>()
-			.AddMemoryCache()
-			.AddGamePlayerBalanceCore(
-				ipAddressOptions,
-				gameCommandClientOptions,
-				gameProvidersClientOptions,
-				gameFundTransferClientOptions)
-			.AddGamePlayerBalanceRepositories(
-				(sp) => sp.GetRequiredService<MongoDBConnectionManager>().MongoDatabase);
+		.AddOptions<MongoDBOptions>()
+		.Configure(mongoDBconfigure)
+		.Services
+		.AddSingleton<MongoDBConnectionManager>()
+		.AddMemoryCache()
+		.AddGamePlayerBalanceCore(
+			ipAddressOptions,
+			gameCommandClientOptions,
+			gameProvidersClientOptions,
+			gameFundTransferClientOptions)
+		.AddGamePlayerBalanceRepositories(
+			(sp) => sp.GetRequiredService<MongoDBConnectionManager>().MongoDatabase);
 }

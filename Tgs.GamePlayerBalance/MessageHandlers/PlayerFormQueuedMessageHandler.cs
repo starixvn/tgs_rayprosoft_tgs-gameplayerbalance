@@ -1,13 +1,13 @@
 ﻿using Tgs.GamePlayerBalance.Common.Protos;
+using Tgs.GamePlayerBalance.Core;
 using Tgs.GamePlayerBalance.Core.ApplicationServices;
-using Tgs.ServiceUtility;
 using Valhalla.MessageQueue;
 
 namespace Tgs.GamePlayerBalance.MessageHandlers;
 
 public class PlayerFormQueuedMessageHandler(
 	ILogger<PlayerFormQueuedMessageHandler> logger,
-	ICommandService<PlayerFormQueuedCommand> service) : IMessageHandler<PlayerFormModelRequest>
+	IPlayerFormQueuedDispatcher dispatcher) : IMessageHandler<PlayerFormModelRequest>
 {
 	public ValueTask HandleAsync(string subject, PlayerFormModelRequest data, IEnumerable<MessageHeaderValue>? headerValues, CancellationToken cancellationToken = default)
 	{
@@ -16,7 +16,7 @@ public class PlayerFormQueuedMessageHandler(
 			subject,
 			data);
 
-		return service.ExecuteAsync(
+		return dispatcher.PushCommandAsync(
 			command: new PlayerFormQueuedCommand(
 				Id: data.Id),
 			cancellationToken: cancellationToken);

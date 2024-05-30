@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Tgs.GameCommand.Client;
 using Tgs.GameCommand.Common;
+using Tgs.GamePlayerBalance.Common;
 using Tgs.GamePlayerBalance.Common.Protos;
 using Tgs.GamePlayerBalance.Core.Models;
 using Tgs.ServiceUtility;
@@ -97,23 +98,19 @@ internal class BrandFormQueuedCommandService(
 			}
 		}
 
-		var request = new BrandFormModelRequest
+		var data = new BrandFormModelRequest
 		{
 			Id = form.Id
 		};
-
-		var subject = "game.playerbalance.brand.form.processing";
-
-		await messageSender
-			.PublishAsync(
-				subject: subject,
-				data: request.ToByteArray(),
-				cancellationToken: cancellationToken)
+		await messageSender.PublishAsync(
+			subject: GamePlayerBalanceNatsConst.BrandFormProcessing,
+			data: data,
+			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 
-		logger.LogDebug("LogOn:{logOn}  Subject:{subject} Information Request:{receive}",
+		logger.LogInformation("LogOn:{logOn} Subject:{subject} Information Request:{data}",
 			DateTime.Now.ToString("o"),
-			subject,
-			request);
+			GamePlayerBalanceNatsConst.BrandFormProcessing,
+			data);
 	}
 }
