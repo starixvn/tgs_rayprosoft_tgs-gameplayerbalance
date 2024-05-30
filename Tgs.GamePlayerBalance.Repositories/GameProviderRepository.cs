@@ -4,28 +4,22 @@ using Tgs.GamePlayerBalance.Core;
 
 namespace Tgs.GamePlayerBalance.Repositories;
 
-internal class GameProviderRepository : IGameProviderRepository
+internal class GameProviderRepository(
+	IGameCommandClient client) : IGameProviderRepository
 {
-    private readonly IGameCommandClient _client;
+	public async ValueTask<GameProviderInfo> GetAsync(Guid id, CancellationToken cancellationToken = default)
+		=> await client.GameProviderGetAsync(
+			gameProviderId: id,
+			cancellationToken: cancellationToken)
+		.ConfigureAwait(false)
+		?? throw new NullReferenceException($"Game Provider does not exist.({id})");
 
-    public GameProviderRepository(IGameCommandClient client)
-    {
-        _client = client ?? throw new ArgumentNullException(nameof(client));
-    }
-
-    public async ValueTask<GameProviderInfo> GetAsync(Guid id, CancellationToken cancellationToken = default)
-        => await _client.GameProviderGetAsync(
-            gameProviderId: id,
-            cancellationToken: cancellationToken)
-        .ConfigureAwait(false)
-        ?? throw new NullReferenceException($"Game Provider does not exist.({id})");
-
-    public async ValueTask<Guid> GetIdAsync(
-        string code,
-        CancellationToken cancellationToken = default)
-        => await _client.GameProviderGetGameProviderIdAsync(
-            gameProviderCode: code,
-            cancellationToken: cancellationToken)
-        .ConfigureAwait(false)
-        ?? throw new NullReferenceException($"Game Provider does not exist.({code})");
+	public async ValueTask<Guid> GetIdAsync(
+		string code,
+		CancellationToken cancellationToken = default)
+		=> await client.GameProviderGetGameProviderIdAsync(
+			gameProviderCode: code,
+			cancellationToken: cancellationToken)
+		.ConfigureAwait(false)
+		?? throw new NullReferenceException($"Game Provider does not exist.({code})");
 }

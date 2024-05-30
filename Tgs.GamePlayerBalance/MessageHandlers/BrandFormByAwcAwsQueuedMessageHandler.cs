@@ -2,35 +2,23 @@
 using Tgs.GamePlayerBalance.Core.ApplicationServices;
 using Tgs.ServiceUtility;
 using Valhalla.MessageQueue;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Tgs.GamePlayerBalance.MessageHandlers;
 
-public class BrandFormByAwcAwsQueuedMessageHandler : IMessageHandler<ReadOnlyMemory<byte>>
+public class BrandFormByAwcAwsQueuedMessageHandler(
+	ILogger<BrandFormByAwcAwsQueuedMessageHandler> logger,
+	ICommandService<BrandFormByAwcAwsQueuedCommand> service) : IMessageHandler<BrandFormModelRequest>
 {
-    private readonly ILogger<BrandFormByAwcAwsQueuedMessageHandler> _logger;
-    private readonly ICommandService<BrandFormByAwcAwsQueuedCommand> _service;
+	public ValueTask HandleAsync(string subject, BrandFormModelRequest data, IEnumerable<MessageHeaderValue>? headerValues, CancellationToken cancellationToken = default)
+	{
+		logger.LogInformation("LogOn:{logOn} Subject:{subject} Mesaage:This message has been received.({data})",
+			DateTime.Now.ToString("o"),
+			subject,
+			data);
 
-    public BrandFormByAwcAwsQueuedMessageHandler(
-        ILogger<BrandFormByAwcAwsQueuedMessageHandler> logger,
-        ICommandService<BrandFormByAwcAwsQueuedCommand> service)
-    {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _service = service ?? throw new ArgumentNullException(nameof(service));
-    }
-
-    public ValueTask HandleAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue>? headerValues, CancellationToken cancellationToken = default)
-    {
-        var request = BrandFormModelRequest.Parser.ParseFrom(data.Span) ??
-            throw new NullReferenceException("The request data resolves to a null value");
-
-        _logger.LogDebug("LogOn:{logOn} Information Request:{receive}", DateTime.Now.ToString("o"), request);
-
-        var command = new BrandFormByAwcAwsQueuedCommand(
-            Id: request.Id);
-
-        return _service.ExecuteAsync(
-            command: command,
-            cancellationToken: cancellationToken);
-    }
+		return service.ExecuteAsync(
+			command: new BrandFormByAwcAwsQueuedCommand(
+				Id: data.Id),
+			cancellationToken: cancellationToken);
+	}
 }

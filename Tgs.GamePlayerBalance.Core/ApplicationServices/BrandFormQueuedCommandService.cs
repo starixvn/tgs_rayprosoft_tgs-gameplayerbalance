@@ -9,128 +9,111 @@ using Valhalla.MessageQueue;
 
 namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
-internal class BrandFormQueuedCommandService : ICommandService<BrandFormQueuedCommand>
+internal class BrandFormQueuedCommandService(
+	ILogger<BrandFormQueuedCommandService> logger,
+	IGameCommandClient client,
+	IBrandFormRepository brandFormRepository,
+	IPlayerFormRepository playerFormRepository,
+	ISnowflakeWork snowflake,
+	IMessageSender messageSender) : ICommandService<BrandFormQueuedCommand>
 {
-    private readonly IBrandFormRepository _brandFormRepository;
-    private readonly IGameCommandClient _client;
-    private readonly ILogger<BrandFormQueuedCommandService> _logger;
-    private readonly IMessageSender _messageSender;
-    private readonly IPlayerFormRepository _playerFormRepository;
-    private readonly ISnowflakeWork _snowflake;
+	public async ValueTask ExecuteAsync(
+		BrandFormQueuedCommand command,
+		CancellationToken cancellationToken = default)
+	{
+		var form = await brandFormRepository.GetAsync(
+			id: command.Id,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 
-    public BrandFormQueuedCommandService(
-        ILogger<BrandFormQueuedCommandService> logger,
-        IGameCommandClient client,
-        IBrandFormRepository brandFormRepository,
-        IPlayerFormRepository playerFormRepository,
-        ISnowflakeWork snowflake,
-        IMessageSender messageSender)
-    {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _client = client ?? throw new ArgumentNullException(nameof(client));
-        _brandFormRepository = brandFormRepository ?? throw new ArgumentNullException(nameof(brandFormRepository));
-        _playerFormRepository = playerFormRepository ?? throw new ArgumentNullException(nameof(playerFormRepository));
-        _snowflake = snowflake ?? throw new ArgumentNullException(nameof(snowflake));
-        _messageSender = messageSender ?? throw new ArgumentNullException(nameof(messageSender));
-    }
+		if (form == null)
+		{
+			logger.LogError("This brand form does not exist.({id})", command.Id);
+			throw new Exception($"This brand form does not exist.({command.Id})");
+		}
 
-    public async ValueTask ExecuteAsync(
-        BrandFormQueuedCommand command,
-        CancellationToken cancellationToken = default)
-    {
-        var form = await _brandFormRepository.GetAsync(
-            id: command.Id,
-            cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+		if (form.State != BrandFormState.Queued)
+		{
+			logger.LogError("The brand form status is not queued.({id})", command.Id);
+			throw new Exception($"The brand form status is not queued.({command.Id})");
+		}
 
-        if (form == null)
-        {
-            _logger.LogError("This brand form does not exist.({id})", command.Id);
-            throw new Exception($"This brand form does not exist.({command.Id})");
-        }
+		await brandFormRepository.UpdateProcessingAsync(
+			id: command.Id,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 
-        if (form.State != BrandFormState.Queued)
-        {
-            _logger.LogError("The brand form status is not queued.({id})", command.Id);
-            throw new Exception($"The brand form status is not queued.({command.Id})");
-        }
+		var pageIndex = 1;
+		var pageSize = 1000;
 
-        await _brandFormRepository.UpdateProcessingAsync(
-            id: command.Id,
-            cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+		while (true)
+		{
+			var players = await client.PlayerQueryAsync(
+				brandId: form.BrandId,
+				pageIndex: pageIndex,
+				pageSize: pageSize,
+				cancellationToken: cancellationToken)
+				.ToArrayAsync(
+				cancellationToken: cancellationToken)
+				.ConfigureAwait(false)
+				?? Enumerable.Empty<PlayerInfo>();
 
-        var pageIndex = 1;
-        var pageSize = 1000;
+			if (!players.Any())
+			{
+				break;
+			}
 
-        while (true)
-        {
-            var players = await _client.PlayerQueryAsync(
-                brandId: form.BrandId,
-                pageIndex: pageIndex,
-                pageSize: pageSize,
-                cancellationToken: cancellationToken)
-                .ToArrayAsync(
-                cancellationToken: cancellationToken)
-                .ConfigureAwait(false)
-                ?? Enumerable.Empty<PlayerInfo>();
+			pageIndex++;
 
-            if (!players.Any())
-            {
-                break;
-            }
+			try
+			{
+				var playerFormAdds = new List<PlayerFormAdd>();
 
-            pageIndex++;
+				foreach (var player in players)
+				{
+					playerFormAdds.Add(new PlayerFormAdd(
+						FormId: snowflake.GetId(),
+						ExpansionFormId: form.Id,
+						GameProviderId: form.GameProviderId,
+						GameProviderCode: form.GameProviderCode,
+						BrandId: form.BrandId,
+						BrandCode: form.BrandCode,
+						PlayerCode: player.PlayerCode,
+						Username: player.Username,
+						WalletId: player.DefaultWalletId,
+						CurrencyCode: player.DefaultWalletCurrencyCode));
+				}
 
-            try
-            {
-                var playerFormAdds = new List<PlayerFormAdd>();
+				var formIds = await playerFormRepository.BrandPlayerFormAddAsync(
+					source: playerFormAdds,
+					cancellationToken: cancellationToken)
+					.ToArrayAsync(
+					cancellationToken: cancellationToken)
+					.ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				logger.LogError(ex, "An unknown error occurred.({id})", command.Id);
+			}
+		}
 
-                foreach (var player in players)
-                {
-                    playerFormAdds.Add(new PlayerFormAdd(
-                        FormId: _snowflake.GetId(),
-                        ExpansionFormId: form.Id,
-                        GameProviderId: form.GameProviderId,
-                        GameProviderCode: form.GameProviderCode,
-                        BrandId: form.BrandId,
-                        BrandCode: form.BrandCode,
-                        PlayerCode: player.PlayerCode,
-                        Username: player.Username,
-                        WalletId: player.DefaultWalletId,
-                        CurrencyCode: player.DefaultWalletCurrencyCode));
-                }
+		var request = new BrandFormModelRequest
+		{
+			Id = form.Id
+		};
 
-                var formIds = await _playerFormRepository.BrandPlayerFormAddAsync(
-                    source: playerFormAdds,
-                    cancellationToken: cancellationToken)
-                    .ToArrayAsync(
-                    cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An unknown error occurred.({id})", command.Id);
-            }
-        }
+		var subject = "game.playerbalance.brand.form.processing";
 
-        var request = new BrandFormModelRequest
-        {
-            Id = form.Id
-        };
+		await messageSender
+			.PublishAsync(
+				subject: subject,
+				data: request.ToByteArray(),
+				cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 
-        var subject = "game.playerbalance.brand.form.processing";
-
-        await _messageSender
-            .PublishAsync(
-                subject: subject,
-                data: request.ToByteArray(),
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
-
-        _logger.LogDebug("LogOn:{logOn}  Subject:{subject} Information Request:{receive}",
-            DateTime.Now.ToString("o"),
-            subject,
-            request);
-    }
+		logger.LogDebug("LogOn:{logOn}  Subject:{subject} Information Request:{receive}",
+			DateTime.Now.ToString("o"),
+			subject,
+			request);
+	}
 }

@@ -1,75 +1,68 @@
 ﻿using Google.Protobuf;
 using Microsoft.Extensions.Logging;
+using Tgs.GamePlayerBalance.Common;
 using Tgs.GamePlayerBalance.Common.Protos;
 using Tgs.ServiceUtility;
 using Valhalla.MessageQueue;
 
 namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
-internal class BrandFormProcessingPublishCommandService : ICommandService<BrandFormProcessingPublishCommand>
+internal class BrandFormProcessingPublishCommandService(
+	ILogger<BrandFormProcessingPublishCommandService> logger,
+	IPlayerFormRepository playerFormRepository,
+	IMessageSender messageSender) : ICommandService<BrandFormProcessingPublishCommand>
 {
-    private readonly ILogger<BrandFormProcessingPublishCommandService> _logger;
-    private readonly IMessageSender _messageSender;
-    private readonly IPlayerFormRepository _playerFormRepository;
+	public async ValueTask ExecuteAsync(
+		BrandFormProcessingPublishCommand command,
+		CancellationToken cancellationToken = default)
+	{
+		var pageSize = 50;
+		var id = command.FilterId;
 
-    public BrandFormProcessingPublishCommandService(
-        ILogger<BrandFormProcessingPublishCommandService> logger,
-        IPlayerFormRepository playerFormRepository,
-        IMessageSender messageSender)
-    {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _playerFormRepository = playerFormRepository ?? throw new ArgumentNullException(nameof(playerFormRepository));
-        _messageSender = messageSender ?? throw new ArgumentNullException(nameof(messageSender));
-    }
+		while (id > 0)
+		{
+			var formIds = await playerFormRepository.BrandQueryIdAsync(
+				expansionFormId: command.ExpansionFormId,
+				state: PlayerFormState.Queued,
+				id: id,
+				pageSize: pageSize,
+				cancellationToken: cancellationToken)
+				.ToArrayAsync(
+				cancellationToken: cancellationToken)
+				.ConfigureAwait(false)
+				?? Enumerable.Empty<long>();
 
-    public async ValueTask ExecuteAsync(
-        BrandFormProcessingPublishCommand command,
-        CancellationToken cancellationToken = default)
-    {
-        var pageSize = 50;
-        var id = command.FilterId;
+			if (!formIds.Any())
+			{
+				break;
+			}
 
-        while (id > 0)
-        {
-            var formIds = await _playerFormRepository.BrandQueryIdAsync(
-                expansionFormId: command.ExpansionFormId,
-                state: PlayerFormState.Queued,
-                id: id,
-                pageSize: pageSize,
-                cancellationToken: cancellationToken)
-                .ToArrayAsync(
-                cancellationToken: cancellationToken)
-                .ConfigureAwait(false)
-                ?? Enumerable.Empty<long>();
+			foreach (var formId in formIds)
+			{
+				id = formId;
+				try
+				{
+					var data = new PlayerFormModelRequest
+					{
+						Id = formId
+					};
 
-            if (!formIds.Any())
-            {
-                break;
-            }
+					await messageSender.PublishAsync(
+						subject: GamePlayerBalanceNatsConst.PlayerFormQueued,
+						data: data,
+						cancellationToken: cancellationToken)
+						.ConfigureAwait(false);
 
-            foreach (var formId in formIds)
-            {
-                id = formId;
-                try
-                {
-                    var request = new PlayerFormModelRequest
-                    {
-                        Id = formId
-                    };
-
-                    await _messageSender.PublishAsync<ReadOnlyMemory<byte>>(
-                        subject: "game.playerbalance.player.form.queued",
-                        data: request.ToByteArray(),
-                        cancellationToken: cancellationToken)
-                        .ConfigureAwait(false);
-
-                    _logger.LogDebug("LogOn:{logOn} Information Request:{receive}", DateTime.Now.ToString("o"), request);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "An exception occurred when sending the player application form.({id})", formId);
-                }
-            }
-        }
-    }
+					logger.LogInformation("LogOn:{logOn}  Subject:{subject} Information Request:{data}",
+						DateTime.Now.ToString("o"),
+						GamePlayerBalanceNatsConst.PlayerFormQueued,
+						data);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "An exception occurred when sending the player application form.({id})", formId);
+				}
+			}
+		}
+	}
 }

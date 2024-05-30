@@ -5,6 +5,6 @@ namespace Tgs.GamePlayerBalance.Repositories.Models;
 
 public record ImportFormPlayerModel
 {
-    [BsonElement("player_code")]
-    public string PlayerCode { get; set; } = default!;
+	[BsonElement("player_code")]
+	public string PlayerCode { get; set; } = default!;
 }

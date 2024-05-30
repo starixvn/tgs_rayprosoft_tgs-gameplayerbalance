@@ -2,7 +2,7 @@
 
 public enum PlayerFormSource
 {
-    Player = 1,
-    Brand = 2,
-    Import = 3
+	Player = 1,
+	Brand = 2,
+	Import = 3
 }

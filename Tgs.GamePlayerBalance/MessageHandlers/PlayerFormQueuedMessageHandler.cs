@@ -5,31 +5,20 @@ using Valhalla.MessageQueue;
 
 namespace Tgs.GamePlayerBalance.MessageHandlers;
 
-public class PlayerFormQueuedMessageHandler : IMessageHandler<ReadOnlyMemory<byte>>
+public class PlayerFormQueuedMessageHandler(
+	ILogger<PlayerFormQueuedMessageHandler> logger,
+	ICommandService<PlayerFormQueuedCommand> service) : IMessageHandler<PlayerFormModelRequest>
 {
-    private readonly ILogger<PlayerFormQueuedMessageHandler> _logger;
-    private readonly ICommandService<PlayerFormQueuedCommand> _service;
+	public ValueTask HandleAsync(string subject, PlayerFormModelRequest data, IEnumerable<MessageHeaderValue>? headerValues, CancellationToken cancellationToken = default)
+	{
+		logger.LogInformation("LogOn:{logOn} Subject:{subject} Mesaage:This message has been received.({data})",
+			DateTime.Now.ToString("o"),
+			subject,
+			data);
 
-    public PlayerFormQueuedMessageHandler(
-        ILogger<PlayerFormQueuedMessageHandler> logger,
-        ICommandService<PlayerFormQueuedCommand> service)
-    {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _service = service ?? throw new ArgumentNullException(nameof(service));
-    }
-
-    public ValueTask HandleAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue>? headerValues, CancellationToken cancellationToken = default)
-    {
-        var request = PlayerFormModelRequest.Parser.ParseFrom(data.Span) ??
-            throw new NullReferenceException("The request data resolves to a null value");
-
-        _logger.LogDebug("LogOn:{logOn} Information Request:{receive}", DateTime.Now.ToString("o"), request);
-
-        var command = new PlayerFormQueuedCommand(
-            Id: request.Id);
-
-        return _service.ExecuteAsync(
-            command: command,
-            cancellationToken: cancellationToken);
-    }
+		return service.ExecuteAsync(
+			command: new PlayerFormQueuedCommand(
+				Id: data.Id),
+			cancellationToken: cancellationToken);
+	}
 }

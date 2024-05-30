@@ -4,11 +4,11 @@ namespace Tgs.GamePlayerBalance.Core;
 
 public interface ISnowflakeWork
 {
-    long GetDatacenterId();
+	long GetDatacenterId();
 
-    long GetId();
+	long GetId();
 
-    IPAddress GetIPAddress();
+	IPAddress GetIPAddress();
 
-    long GetWorkerId();
+	long GetWorkerId();
 }
