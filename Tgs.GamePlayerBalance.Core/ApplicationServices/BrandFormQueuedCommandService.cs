@@ -1,7 +1,4 @@
-﻿using Google.Protobuf;
-using Microsoft.Extensions.Logging;
-using Tgs.GameCommand.Client;
-using Tgs.GameCommand.Common;
+﻿using Microsoft.Extensions.Logging;
 using Tgs.GamePlayerBalance.Common;
 using Tgs.GamePlayerBalance.Common.Protos;
 using Tgs.GamePlayerBalance.Core.Models;
@@ -12,7 +9,8 @@ namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
 internal class BrandFormQueuedCommandService(
 	ILogger<BrandFormQueuedCommandService> logger,
-	IGameCommandClient client,
+	IBrandRepository brandRepository,
+	IPlayerRepository playerRepository,
 	IBrandFormRepository brandFormRepository,
 	IPlayerFormRepository playerFormRepository,
 	ISnowflakeWork snowflake,
@@ -39,8 +37,10 @@ internal class BrandFormQueuedCommandService(
 			throw new Exception($"The brand form status is not queued.({command.Id})");
 		}
 
+		var brandInfo = await brandRepository.GetAsync(form.BrandCode, cancellationToken).ConfigureAwait(false);
+
 		await brandFormRepository.UpdateProcessingAsync(
-			id: command.Id,
+			id: form.Id,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 
@@ -49,8 +49,8 @@ internal class BrandFormQueuedCommandService(
 
 		while (true)
 		{
-			var players = await client.PlayerQueryAsync(
-				brandId: form.BrandId,
+			var playerInfos = await playerRepository.QueryAsync(
+				brandId: brandInfo.BrandId,
 				pageIndex: pageIndex,
 				pageSize: pageSize,
 				cancellationToken: cancellationToken)
@@ -59,7 +59,7 @@ internal class BrandFormQueuedCommandService(
 				.ConfigureAwait(false)
 				?? Enumerable.Empty<PlayerInfo>();
 
-			if (!players.Any())
+			if (!playerInfos.Any())
 			{
 				break;
 			}
@@ -70,19 +70,17 @@ internal class BrandFormQueuedCommandService(
 			{
 				var playerFormAdds = new List<PlayerFormAdd>();
 
-				foreach (var player in players)
+				foreach (var playerInfo in playerInfos)
 				{
 					playerFormAdds.Add(new PlayerFormAdd(
 						FormId: snowflake.GetId(),
 						ExpansionFormId: form.Id,
-						GameProviderId: form.GameProviderId,
 						GameProviderCode: form.GameProviderCode,
-						BrandId: form.BrandId,
 						BrandCode: form.BrandCode,
-						PlayerCode: player.PlayerCode,
-						Username: player.Username,
-						WalletId: player.DefaultWalletId,
-						CurrencyCode: player.DefaultWalletCurrencyCode));
+						PlayerCode: playerInfo.PlayerCode,
+						Username: playerInfo.Username,
+						WalletId: playerInfo.WalletId,
+						CurrencyCode: playerInfo.CurrencyCode));
 				}
 
 				var formIds = await playerFormRepository.BrandPlayerFormAddAsync(
@@ -94,13 +92,15 @@ internal class BrandFormQueuedCommandService(
 			}
 			catch (Exception ex)
 			{
-				logger.LogError(ex, "An unknown error occurred.({id})", command.Id);
+				logger.LogError(ex, "An unknown error occurred.({id})", form.Id);
 			}
 		}
 
 		var data = new BrandFormModelRequest
 		{
-			Id = form.Id
+			GameProviderCode = form.GameProviderCode,
+			BrandCode = form.BrandCode,
+			FormId = form.Id
 		};
 		await messageSender.PublishAsync(
 			subject: GamePlayerBalanceNatsConst.BrandFormProcessing,

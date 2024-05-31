@@ -1,8 +1,9 @@
 ﻿using System.Diagnostics;
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
-using Tgs.ServiceUtility;
 using Tgs.GamePlayerBalance.Core.ApplicationServices;
+
+using Tgs.ServiceUtility;
 
 namespace Tgs.GamePlayerBalance.Core;
 

@@ -3,9 +3,7 @@
 public record PlayerForm(
 	long Id,
 	long ExpansionFormId,
-	Guid GameProviderId,
 	string GameProviderCode,
-	Guid BrandId,
 	string BrandCode,
 	string PlayerCode,
 	string Username,

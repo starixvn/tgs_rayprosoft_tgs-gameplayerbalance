@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using Tgs.GamePlayerBalance.Core;
 using Tgs.GamePlayerBalance.Core.Extensions;
@@ -8,14 +9,11 @@ using Tgs.GamePlayerBalance.Repositories.Models;
 namespace Tgs.GamePlayerBalance.Repositories;
 
 internal class ImportFormRepository(
+	ILogger<ImportFormRepository> logger,
 	IMongoDatabase database,
 	ISnowflakeWork snowflake) : IImportFormRepository
 {
-	public async ValueTask<long> AddAsync(
-		Guid gameProviderId,
-		string gameProviderCode,
-		IEnumerable<string> players,
-		CancellationToken cancellationToken = default)
+	public async ValueTask<long> AddAsync(string gameProviderCode, IEnumerable<string> players, CancellationToken cancellationToken = default)
 
 	{
 		var id = snowflake.GetId();
@@ -30,7 +28,6 @@ internal class ImportFormRepository(
 		var document = new ImportFormModel
 		{
 			Id = id,
-			GameProviderId = gameProviderId,
 			GameProviderCode = gameProviderCode,
 			State = ImportFormState.Queued,
 			Status = $"{ImportFormState.Queued}...",
@@ -49,9 +46,7 @@ internal class ImportFormRepository(
 		return id;
 	}
 
-	public async ValueTask<ImportForm?> GetAsync(
-		long id,
-		CancellationToken cancellationToken = default)
+	public async ValueTask<ImportForm?> GetAsync(long id, CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
@@ -78,7 +73,6 @@ internal class ImportFormRepository(
 			? null
 			: new ImportForm(
 				Id: data.Id,
-				GameProviderId: data.GameProviderId,
 				GameProviderCode: data.GameProviderCode,
 				State: data.State,
 				Status: data.Status,
@@ -90,88 +84,61 @@ internal class ImportFormRepository(
 				ExpireOn: data.ExpireOn);
 	}
 
-	public async ValueTask InitializeAsync(
-		CancellationToken cancellationToken = default)
+	public async ValueTask InitializeAsync(CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
-		await GameProviderId_IndexAsync(
-			   collection: collection,
-			   cancellationToken: cancellationToken).ConfigureAwait(false);
-
-		await GameProviderCode_IndexAsync(
-			collection: collection,
-			cancellationToken: cancellationToken).ConfigureAwait(false);
-
-		await State_IndexAsync(
-			collection: collection,
-			cancellationToken: cancellationToken).ConfigureAwait(false);
-
-		await CreatedOn_IndexAsync(
-			collection: collection,
-			cancellationToken: cancellationToken).ConfigureAwait(false);
-
-		await ExpireOn_IndexAsync(
-			collection: collection,
-			cancellationToken: cancellationToken).ConfigureAwait(false);
-	}
-
-	public async IAsyncEnumerable<ImportForm> QueryAsync(
-		Guid gameProviderId,
-		ImportFormState? state,
-		int pageSize = 100,
-		[EnumeratorCancellation] CancellationToken cancellationToken = default)
-
-	{
-		var collection = GetCollection();
-
-		var filter = QueryFilter(
-			gameProviderId,
-			state);
-
-		var sort = Builders<ImportFormModel>
-			.Sort
-			.Descending(x => x.Id);
-
-		var options = new FindOptions<ImportFormModel>
-		{
-			Sort = sort,
-			Limit = pageSize,
-		};
-		var asyncCursor = await collection
-					.FindAsync(
-						filter: filter,
-						options: options,
-						cancellationToken: cancellationToken)
-					.ConfigureAwait(false);
-
-		while (await asyncCursor
-				.MoveNextAsync(
-					cancellationToken: cancellationToken)
-				.ConfigureAwait(false))
-		{
-			foreach (var current in asyncCursor.Current)
+		var tasks = new Task[]{
+			Task.Run(async () =>
 			{
-				yield return new ImportForm(
-					Id: current.Id,
-					GameProviderId: current.GameProviderId,
-					GameProviderCode: current.GameProviderCode,
-					State: current.State,
-					Status: current.Status,
-					Players: current.Players.Select(x => new ImportFormPlayer(x.PlayerCode)),
-					CreatedOn: current.CreatedOn,
-					UpdateOn: current.UpdateOn,
-					StartOn: current.StartOn,
-					EndOn: current.EndOn,
-					ExpireOn: current.ExpireOn);
-			}
-		}
+				try
+				{
+					await GameProviderCode_IndexAsync( collection: collection,   cancellationToken: cancellationToken).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_Unique");
+				}
+			}, cancellationToken: cancellationToken),
+			Task.Run(async () =>
+			{
+				try
+				{
+					await State_IndexAsync( collection: collection,   cancellationToken: cancellationToken).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_ExpireOn");
+				}
+			}, cancellationToken: cancellationToken),
+			Task.Run(async () =>
+			{
+				try
+				{
+					 await CreatedOn_IndexAsync( collection: collection,   cancellationToken: cancellationToken).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_ExpireOn");
+				}
+			}, cancellationToken: cancellationToken),
+			Task.Run(async () =>
+			{
+				try
+				{
+					  await ExpireOn_IndexAsync( collection: collection,   cancellationToken: cancellationToken).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_ExpireOn");
+				}
+			}, cancellationToken: cancellationToken)
+		};
+
+		await Task.WhenAll(tasks).ConfigureAwait(false);
 	}
 
-	public async ValueTask UpdateCompleteAsync(
-		long id,
-		string status = "success",
-		CancellationToken cancellationToken = default)
+	public async ValueTask UpdateCompleteAsync(long id, string status = "success", CancellationToken cancellationToken = default)
 
 	{
 		var collection = GetCollection();
@@ -185,18 +152,14 @@ internal class ImportFormRepository(
 			.Set(s => s.UpdateOn, DateTime.UtcNow)
 			.Set(s => s.ExpireOn, DateTime.UtcNow.AddDays(7));
 
-		_ = await collection
-			 .UpdateOneAsync(
-				filter: filter,
-				update: update,
-				cancellationToken: cancellationToken)
-			 .ConfigureAwait(false);
+		_ = await collection.UpdateOneAsync(
+			filter: filter,
+			update: update,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 	}
 
-	public async ValueTask UpdateFailedAsync(
-		long id,
-		string status = "fail",
-		CancellationToken cancellationToken = default)
+	public async ValueTask UpdateFailedAsync(long id, string status = "fail", CancellationToken cancellationToken = default)
 
 	{
 		var collection = GetCollection();
@@ -210,17 +173,14 @@ internal class ImportFormRepository(
 			.Set(s => s.UpdateOn, DateTime.UtcNow)
 			.Set(s => s.ExpireOn, DateTime.UtcNow.AddDays(7));
 
-		_ = await collection
-			 .UpdateOneAsync(
-				filter: filter,
-				update: update,
-				cancellationToken: cancellationToken)
+		_ = await collection.UpdateOneAsync(
+			filter: filter,
+			update: update,
+			cancellationToken: cancellationToken)
 			 .ConfigureAwait(false);
 	}
 
-	public async ValueTask UpdateProcessingAsync(
-		long id,
-		CancellationToken cancellationToken = default)
+	public async ValueTask UpdateProcessingAsync(long id, CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
@@ -232,17 +192,14 @@ internal class ImportFormRepository(
 			.Set(s => s.StartOn, DateTime.UtcNow)
 			.Set(s => s.UpdateOn, DateTime.UtcNow);
 
-		_ = await collection
-		.UpdateOneAsync(
+		_ = await collection.UpdateOneAsync(
 			filter: filter,
 			update: update,
 			cancellationToken: cancellationToken)
-		.ConfigureAwait(false);
+			.ConfigureAwait(false);
 	}
 
-	private static async Task CreatedOn_IndexAsync(
-		IMongoCollection<ImportFormModel> collection,
-		CancellationToken cancellationToken = default)
+	private static async Task CreatedOn_IndexAsync(IMongoCollection<ImportFormModel> collection, CancellationToken cancellationToken = default)
 	{
 		var index = Builders<ImportFormModel>.IndexKeys
 			.Ascending(m => m.CreatedOn);
@@ -259,9 +216,7 @@ internal class ImportFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task ExpireOn_IndexAsync(
-		IMongoCollection<ImportFormModel> collection,
-		CancellationToken cancellationToken = default)
+	private static async Task ExpireOn_IndexAsync(IMongoCollection<ImportFormModel> collection, CancellationToken cancellationToken = default)
 	{
 		var index = Builders<ImportFormModel>.IndexKeys
 			.Ascending(m => m.ExpireOn);
@@ -279,9 +234,7 @@ internal class ImportFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task GameProviderCode_IndexAsync(
-		IMongoCollection<ImportFormModel> collection,
-		CancellationToken cancellationToken = default)
+	private static async Task GameProviderCode_IndexAsync(IMongoCollection<ImportFormModel> collection, CancellationToken cancellationToken = default)
 	{
 		var index = Builders<ImportFormModel>.IndexKeys
 			.Ascending(m => m.GameProviderCode);
@@ -298,43 +251,7 @@ internal class ImportFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task GameProviderId_IndexAsync(
-		IMongoCollection<ImportFormModel> collection,
-		CancellationToken cancellationToken = default)
-	{
-		var index = Builders<ImportFormModel>.IndexKeys
-			.Ascending(m => m.GameProviderId);
-
-		var createIndexOptions = new CreateIndexOptions
-		{
-			Name = $"ix_game_provider_id"
-		};
-		var createIndexModel = new CreateIndexModel<ImportFormModel>(index, createIndexOptions);
-
-		_ = await collection.Indexes.CreateOneAsync(
-			model: createIndexModel,
-			cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
-	}
-
-	private static FilterDefinition<ImportFormModel> QueryFilter(
-		Guid gameProviderId,
-		ImportFormState? state)
-	{
-		var builder = Builders<ImportFormModel>.Filter;
-
-		var filter = builder.Eq(x => x.GameProviderId, gameProviderId);
-		if (state.HasValue)
-		{
-			filter &= builder.Eq(x => x.State, state);
-		}
-
-		return filter;
-	}
-
-	private static async Task State_IndexAsync(
-		IMongoCollection<ImportFormModel> collection,
-		CancellationToken cancellationToken = default)
+	private static async Task State_IndexAsync(IMongoCollection<ImportFormModel> collection, CancellationToken cancellationToken = default)
 	{
 		var index = Builders<ImportFormModel>.IndexKeys
 			.Ascending(m => m.State);

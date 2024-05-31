@@ -1,5 +1,4 @@
-﻿using Google.Protobuf;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Tgs.GamePlayerBalance.Common;
 using Tgs.GamePlayerBalance.Common.Protos;
 using Tgs.ServiceUtility;
@@ -15,20 +14,20 @@ internal class ImportFormAddCommandService(
 {
 	public async ValueTask ExecuteAsync(ImportFormAddCommand command, CancellationToken cancellationToken = default)
 	{
-		var gameProviderId = await gameProviderRepository.GetIdAsync(
+		var gameProviderInfo = await gameProviderRepository.GetAsync(
 			code: command.GameProviderCode,
 			cancellationToken: cancellationToken)
 		   .ConfigureAwait(false);
 
 		var id = await importFormRepository.AddAsync(
-			gameProviderId: gameProviderId,
-			gameProviderCode: command.GameProviderCode,
+			gameProviderCode: gameProviderInfo.GameProviderCode,
 			players: command.Players,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 		var data = new ImportFormModelRequest
 		{
-			Id = id
+			GameProviderCode = gameProviderInfo.GameProviderCode,
+			FormId = id
 		};
 
 		await messageSender.PublishAsync(
@@ -37,7 +36,7 @@ internal class ImportFormAddCommandService(
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 
-		logger.LogDebug("LogOn:{logOn}  Subject:{subject} Information Request:{receive}",
+		logger.LogInformation("LogOn:{logOn} Subject:{subject} Information Request:{data}",
 			DateTime.Now.ToString("o"),
 			GamePlayerBalanceNatsConst.ImportFormQueued,
 			data);

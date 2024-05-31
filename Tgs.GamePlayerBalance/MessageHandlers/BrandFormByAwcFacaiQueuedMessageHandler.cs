@@ -18,7 +18,7 @@ public class BrandFormByAwcFacaiQueuedMessageHandler(
 
 		return service.ExecuteAsync(
 			command: new BrandFormByAwcFacaiQueuedCommand(
-				Id: data.Id),
+				Id: data.FormId),
 			cancellationToken: cancellationToken);
 	}
 }

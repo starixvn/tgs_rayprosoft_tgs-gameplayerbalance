@@ -6,6 +6,7 @@ using Tgs.GamePlayerBalance.Core;
 using Tgs.GamePlayerBalance.Core.Extensions;
 using Tgs.GamePlayerBalance.Core.Models;
 using Tgs.GamePlayerBalance.Repositories.Models;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Tgs.GamePlayerBalance.Repositories;
 
@@ -14,16 +15,7 @@ internal class PlayerFormRepository(
 	IMongoDatabase database,
 	ISnowflakeWork snowflake) : IPlayerFormRepository
 {
-	public async ValueTask<long> AddAsync(
-		Guid gameProviderId,
-		string gameProviderCode,
-		Guid brandId,
-		string brandCode,
-		string playerCode,
-		string username,
-		Guid walletId,
-		string currencyCode,
-		CancellationToken cancellationToken = default)
+	public async ValueTask<long> AddAsync(string gameProviderCode, string brandCode, string playerCode, string username, Guid walletId, string currencyCode, CancellationToken cancellationToken = default)
 
 	{
 		var id = snowflake.GetId();
@@ -35,9 +27,7 @@ internal class PlayerFormRepository(
 			Id = id,
 			ExpansionFormId = id,
 			Source = PlayerFormSource.Player,
-			GameProviderId = gameProviderId,
 			GameProviderCode = gameProviderCode,
-			BrandId = brandId,
 			BrandCode = brandCode,
 			PlayerCode = playerCode,
 			Username = username,
@@ -50,19 +40,15 @@ internal class PlayerFormRepository(
 			ExpireOn = null
 		};
 
-		await collection
-			 .InsertOneAsync(
-		document: document,
-				 cancellationToken: cancellationToken)
-				 .ConfigureAwait(false);
+		await collection.InsertOneAsync(
+			document: document,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 
 		return id;
 	}
 
-	public async ValueTask<long?> BrandGetFirstIdAsync(
-		long expansionFormId,
-		PlayerFormState state,
-		CancellationToken cancellationToken = default)
+	public async ValueTask<long?> BrandGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
@@ -77,26 +63,22 @@ internal class PlayerFormRepository(
 			Limit = 1,
 			Sort = sort
 		};
-		var asyncCursor = await collection
-					.FindAsync(
-						filter: filter,
-						options: options,
-						cancellationToken: cancellationToken)
-					.ConfigureAwait(false);
+		var asyncCursor = await collection.FindAsync(
+			filter: filter,
+			options: options,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 
-		return (await collection
-			.FindAsync(
-				filter: filter,
-				options: options,
-				cancellationToken: cancellationToken)
+		return (await collection.FindAsync(
+			filter: filter,
+			options: options,
+			cancellationToken: cancellationToken)
 			.ConfigureAwait(false))
 			.FirstOrDefault(
 			cancellationToken: cancellationToken)?.Id;
 	}
 
-	public async IAsyncEnumerable<long> BrandPlayerFormAddAsync(
-		IEnumerable<PlayerFormAdd> source,
-		[EnumeratorCancellation] CancellationToken cancellationToken = default)
+	public async IAsyncEnumerable<long> BrandPlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, [EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
@@ -105,9 +87,7 @@ internal class PlayerFormRepository(
 			Id = x.FormId,
 			ExpansionFormId = x.ExpansionFormId,
 			Source = PlayerFormSource.Brand,
-			GameProviderId = x.GameProviderId,
 			GameProviderCode = x.GameProviderCode,
-			BrandId = x.BrandId,
 			BrandCode = x.BrandCode,
 			PlayerCode = x.PlayerCode,
 			Username = x.Username,
@@ -136,12 +116,11 @@ internal class PlayerFormRepository(
 
 		try
 		{
-			await collection
-				 .InsertManyAsync(
-					 documents: documents,
-					 options: options,
-					 cancellationToken: cancellationToken)
-				 .ConfigureAwait(false);
+			await collection.InsertManyAsync(
+				documents: documents,
+				options: options,
+				cancellationToken: cancellationToken)
+				.ConfigureAwait(false);
 		}
 		catch (MongoBulkWriteException mongoBulkWrite)
 		{
@@ -169,94 +148,7 @@ internal class PlayerFormRepository(
 		}
 	}
 
-	public async IAsyncEnumerable<PlayerForm> BrandQueryAsync(
-		long expansionFormId,
-		PlayerFormState? state,
-		string? playerCode,
-		int page = 1,
-		int pageSize = 100,
-	   [EnumeratorCancellation] CancellationToken cancellationToken = default)
-
-	{
-		var collection = GetCollection();
-
-		var builder = Builders<PlayerFormModel>.Filter;
-		var sort = Builders<PlayerFormModel>.Sort.Descending(x => x.Id);
-		var filter = BrandQueryFilter(expansionFormId, state, playerCode);
-
-		var options = new FindOptions<PlayerFormModel>
-		{
-			Skip = (page - 1) * pageSize,
-			Limit = pageSize,
-			Sort = sort
-		};
-
-		var asyncCursor = await collection
-					.FindAsync(
-						filter: filter,
-						options: options,
-						cancellationToken: cancellationToken)
-					.ConfigureAwait(false);
-
-		while (await asyncCursor
-				.MoveNextAsync(
-					cancellationToken: cancellationToken)
-				.ConfigureAwait(false))
-		{
-			foreach (var current in asyncCursor.Current)
-			{
-				yield return new PlayerForm(
-					Id: current.Id,
-					ExpansionFormId: current.ExpansionFormId,
-					GameProviderId: current.GameProviderId,
-					GameProviderCode: current.GameProviderCode,
-					BrandId: current.BrandId,
-					BrandCode: current.BrandCode,
-					PlayerCode: current.PlayerCode,
-					Username: current.Username,
-					WalletId: current.WalletId,
-					CurrencyCode: current.CurrencyCode,
-					State: current.State,
-					Status: current.Status,
-					CreatedOn: current.CreatedOn,
-					UpdateOn: current.UpdateOn,
-					StartOn: current.StartOn,
-					EndOn: current.EndOn,
-					ExpireOn: current.ExpireOn,
-					Result: current.Result == null
-					? null
-					: new PlayerFormFundResult(
-						current.Result.State,
-						current.Result.Message,
-						current.Result.FundTransactionId,
-						current.Result.TransactionId,
-						current.Result.ExternalTransactionId));
-			}
-		}
-	}
-
-	public async ValueTask<long> BrandQueryCountAsync(
-		long expansionFormId,
-		PlayerFormState? state,
-		string? playerCode,
-		CancellationToken cancellationToken = default)
-	{
-		var collection = GetCollection();
-
-		var filter = BrandQueryFilter(expansionFormId, state, playerCode);
-
-		return await collection
-			.CountDocumentsAsync(
-				filter: filter,
-				cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
-	}
-
-	public async IAsyncEnumerable<long> BrandQueryIdAsync(
-		long expansionFormId,
-		PlayerFormState state,
-		long id, int pageSize = 1000,
-		[EnumeratorCancellation] CancellationToken cancellationToken = default)
+	public async IAsyncEnumerable<PlayerForm> BrandQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, [EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
@@ -272,28 +164,47 @@ internal class PlayerFormRepository(
 			Limit = pageSize,
 			Sort = sort
 		};
-		var asyncCursor = await collection
-					.FindAsync(
-						filter: filter,
-						options: options,
-						cancellationToken: cancellationToken)
-					.ConfigureAwait(false);
+		var asyncCursor = await collection.FindAsync(
+			filter: filter,
+			options: options,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 
-		while (await asyncCursor
-				.MoveNextAsync(
-					cancellationToken: cancellationToken)
-				.ConfigureAwait(false))
+		while (await asyncCursor.MoveNextAsync(
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false))
 		{
 			foreach (var current in asyncCursor.Current)
 			{
-				yield return current.Id;
+				yield return new PlayerForm(
+				Id: current.Id,
+				ExpansionFormId: current.ExpansionFormId,
+				GameProviderCode: current.GameProviderCode,
+				BrandCode: current.BrandCode,
+				PlayerCode: current.PlayerCode,
+				Username: current.Username,
+				WalletId: current.WalletId,
+				CurrencyCode: current.CurrencyCode,
+				State: current.State,
+				Status: current.Status,
+				CreatedOn: current.CreatedOn,
+				UpdateOn: current.UpdateOn,
+				StartOn: current.StartOn,
+				EndOn: current.EndOn,
+				ExpireOn: current.ExpireOn,
+				Result: current.Result == null
+				? null
+				: new PlayerFormFundResult(
+				current.Result.State,
+				current.Result.Message,
+					current.Result.FundTransactionId,
+					current.Result.TransactionId,
+					current.Result.ExternalTransactionId));
 			}
 		}
 	}
 
-	public async ValueTask<PlayerForm?> GetAsync(
-		long id,
-		CancellationToken cancellationToken = default)
+	public async ValueTask<PlayerForm?> GetAsync(long id, CancellationToken cancellationToken = default)
 
 	{
 		var collection = GetCollection();
@@ -305,26 +216,22 @@ internal class PlayerFormRepository(
 			Skip = 0,
 			Limit = 1
 		};
-		var datas = await collection
-					.FindAsync(
-						filter: filter,
-						options: options,
-						cancellationToken: cancellationToken)
-					.ConfigureAwait(false);
+		var datas = await collection.FindAsync(
+			filter: filter,
+			options: options,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 
-		var data = await datas
-						.FirstOrDefaultAsync(
-							cancellationToken: cancellationToken)
-						.ConfigureAwait(false);
+		var data = await datas.FirstOrDefaultAsync(
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 
 		return data == null
 			? null
 			: new PlayerForm(
 				Id: data.Id,
 				ExpansionFormId: data.ExpansionFormId,
-				GameProviderId: data.GameProviderId,
 				GameProviderCode: data.GameProviderCode,
-				BrandId: data.BrandId,
 				BrandCode: data.BrandCode,
 				PlayerCode: data.PlayerCode,
 				Username: data.Username,
@@ -347,10 +254,7 @@ internal class PlayerFormRepository(
 					data.Result.ExternalTransactionId));
 	}
 
-	public async ValueTask<long?> ImportGetFirstIdAsync(
-		long expansionFormId,
-		PlayerFormState state,
-		CancellationToken cancellationToken = default)
+	public async ValueTask<long?> ImportGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default)
 
 	{
 		var collection = GetCollection();
@@ -366,26 +270,22 @@ internal class PlayerFormRepository(
 			Limit = 1,
 			Sort = sort
 		};
-		var asyncCursor = await collection
-					.FindAsync(
-						filter: filter,
-						options: options,
-						cancellationToken: cancellationToken)
-					.ConfigureAwait(false);
+		var asyncCursor = await collection.FindAsync(
+			filter: filter,
+			options: options,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 
-		return (await collection
-			.FindAsync(
-				filter: filter,
-				options: options,
-				cancellationToken: cancellationToken)
+		return (await collection.FindAsync(
+			filter: filter,
+			options: options,
+			cancellationToken: cancellationToken)
 			.ConfigureAwait(false))
 			.FirstOrDefault(
 			cancellationToken: cancellationToken)?.Id;
 	}
 
-	public async IAsyncEnumerable<long> ImportPlayerFormAddAsync(
-		IEnumerable<PlayerFormAdd> source,
-		[EnumeratorCancellation] CancellationToken cancellationToken = default)
+	public async IAsyncEnumerable<long> ImportPlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, [EnumeratorCancellation] CancellationToken cancellationToken = default)
 
 	{
 		var collection = GetCollection();
@@ -395,9 +295,7 @@ internal class PlayerFormRepository(
 			Id = x.FormId,
 			ExpansionFormId = x.ExpansionFormId,
 			Source = PlayerFormSource.Import,
-			GameProviderId = x.GameProviderId,
 			GameProviderCode = x.GameProviderCode,
-			BrandId = x.BrandId,
 			BrandCode = x.BrandCode,
 			PlayerCode = x.PlayerCode,
 			Username = x.Username,
@@ -426,12 +324,11 @@ internal class PlayerFormRepository(
 
 		try
 		{
-			await collection
-				 .InsertManyAsync(
-					 documents: documents,
-					 options: options,
-					 cancellationToken: cancellationToken)
-				 .ConfigureAwait(false);
+			await collection.InsertManyAsync(
+				documents: documents,
+				options: options,
+				cancellationToken: cancellationToken)
+				.ConfigureAwait(false);
 		}
 		catch (MongoBulkWriteException mongoBulkWrite)
 		{
@@ -459,95 +356,7 @@ internal class PlayerFormRepository(
 		}
 	}
 
-	public async IAsyncEnumerable<PlayerForm> ImportQueryAsync(
-		long expansionFormId,
-		PlayerFormState? state,
-		string? playerCode,
-		int page = 1,
-		int pageSize = 100,
-		[EnumeratorCancellation] CancellationToken cancellationToken = default)
-
-	{
-		var collection = GetCollection();
-
-		var builder = Builders<PlayerFormModel>.Filter;
-		var sort = Builders<PlayerFormModel>.Sort.Descending(x => x.Id);
-		var filter = ImportQueryFilter(expansionFormId, state, playerCode);
-
-		var options = new FindOptions<PlayerFormModel>
-		{
-			Skip = (page - 1) * pageSize,
-			Limit = pageSize,
-			Sort = sort
-		};
-
-		var asyncCursor = await collection
-					.FindAsync(
-						filter: filter,
-						options: options,
-						cancellationToken: cancellationToken)
-					.ConfigureAwait(false);
-
-		while (await asyncCursor
-				.MoveNextAsync(
-					cancellationToken: cancellationToken)
-				.ConfigureAwait(false))
-		{
-			foreach (var current in asyncCursor.Current)
-			{
-				yield return new PlayerForm(
-					Id: current.Id,
-					ExpansionFormId: current.ExpansionFormId,
-					GameProviderId: current.GameProviderId,
-					GameProviderCode: current.GameProviderCode,
-					BrandId: current.BrandId,
-					BrandCode: current.BrandCode,
-					PlayerCode: current.PlayerCode,
-					Username: current.Username,
-					WalletId: current.WalletId,
-					CurrencyCode: current.CurrencyCode,
-					State: current.State,
-					Status: current.Status,
-					CreatedOn: current.CreatedOn,
-					UpdateOn: current.UpdateOn,
-					StartOn: current.StartOn,
-					EndOn: current.EndOn,
-					ExpireOn: current.ExpireOn,
-					Result: current.Result == null
-					? null
-					: new PlayerFormFundResult(
-						current.Result.State,
-						current.Result.Message,
-						current.Result.FundTransactionId,
-						current.Result.TransactionId,
-						current.Result.ExternalTransactionId));
-			}
-		}
-	}
-
-	public async ValueTask<long> ImportQueryCountAsync(
-		long expansionFormId,
-		PlayerFormState? state,
-		string? playerCode,
-		CancellationToken cancellationToken = default)
-	{
-		var collection = GetCollection();
-
-		var filter = ImportQueryFilter(expansionFormId, state, playerCode);
-
-		return await collection
-			.CountDocumentsAsync(
-				filter: filter,
-				cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
-	}
-
-	public async IAsyncEnumerable<long> ImportQueryIdAsync(
-		long expansionFormId,
-		PlayerFormState state,
-		long id,
-		int pageSize = 1000,
-		[EnumeratorCancellation] CancellationToken cancellationToken = default)
+	public async IAsyncEnumerable<PlayerForm> ImportQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, [EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
@@ -570,142 +379,128 @@ internal class PlayerFormRepository(
 						cancellationToken: cancellationToken)
 					.ConfigureAwait(false);
 
-		while (await asyncCursor
-				.MoveNextAsync(
-					cancellationToken: cancellationToken)
-				.ConfigureAwait(false))
-		{
-			foreach (var current in asyncCursor.Current)
-			{
-				yield return current.Id;
-			}
-		}
-	}
-
-	public async ValueTask InitializeAsync(
-		CancellationToken cancellationToken = default)
-	{
-		var collection = GetCollection();
-
-		await GameProviderId_IndexAsync(
-				collection: collection,
-				cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
-
-		await GameProviderCode_IndexAsync(
-				collection: collection,
-				cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
-
-		await Search_IndexAsync(
-				collection: collection,
-				cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
-
-		await Search_ExpansionFormId_IndexAsync(
-				collection: collection,
-				cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
-
-		await BrandId_IndexAsync(
-				collection: collection,
-				cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
-
-		await BrandCode_IndexAsync(
-				collection: collection,
-				cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
-
-		await State_IndexAsync(
-				collection: collection,
-				cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
-
-		await CreatedOn_IndexAsync(
-				collection: collection,
-				cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
-
-		await ExpireOn_IndexAsync(
-				collection: collection,
-				cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
-	}
-
-	public async IAsyncEnumerable<PlayerForm> QueryAsync(
-		string playerCode,
-		int pageSize = 100,
-		[EnumeratorCancellation] CancellationToken cancellationToken = default)
-	{
-		var collection = GetCollection();
-
-		var builder = Builders<PlayerFormModel>.Filter;
-
-		var filter = builder.Eq(x => x.PlayerCode, playerCode);
-
-		var sort = Builders<PlayerFormModel>
-			.Sort
-			.Descending(x => x.Id);
-
-		var options = new FindOptions<PlayerFormModel>
-		{
-			Sort = sort,
-			Limit = pageSize,
-		};
-		var asyncCursor = await collection
-					.FindAsync(
-						filter: filter,
-						options: options,
-						cancellationToken: cancellationToken)
-					.ConfigureAwait(false);
-
-		while (await asyncCursor
-				.MoveNextAsync(
-					cancellationToken: cancellationToken)
-				.ConfigureAwait(false))
+		while (await asyncCursor.MoveNextAsync(
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false))
 		{
 			foreach (var current in asyncCursor.Current)
 			{
 				yield return new PlayerForm(
-					Id: current.Id,
-					ExpansionFormId: current.ExpansionFormId,
-					GameProviderId: current.GameProviderId,
-					GameProviderCode: current.GameProviderCode,
-					BrandId: current.BrandId,
-					BrandCode: current.BrandCode,
-					PlayerCode: current.PlayerCode,
-					Username: current.Username,
-					WalletId: current.WalletId,
-					CurrencyCode: current.CurrencyCode,
-					State: current.State,
-					Status: current.Status,
-					CreatedOn: current.CreatedOn,
-					UpdateOn: current.UpdateOn,
-					StartOn: current.StartOn,
-					EndOn: current.EndOn,
-					ExpireOn: current.ExpireOn,
-					Result: current.Result == null
-					? null
-					: new PlayerFormFundResult(
-						current.Result.State,
-						current.Result.Message,
-						current.Result.FundTransactionId,
-						current.Result.TransactionId,
-						current.Result.ExternalTransactionId));
+				Id: current.Id,
+				ExpansionFormId: current.ExpansionFormId,
+				GameProviderCode: current.GameProviderCode,
+				BrandCode: current.BrandCode,
+				PlayerCode: current.PlayerCode,
+				Username: current.Username,
+				WalletId: current.WalletId,
+				CurrencyCode: current.CurrencyCode,
+				State: current.State,
+				Status: current.Status,
+				CreatedOn: current.CreatedOn,
+				UpdateOn: current.UpdateOn,
+				StartOn: current.StartOn,
+				EndOn: current.EndOn,
+				ExpireOn: current.ExpireOn,
+				Result: current.Result == null
+				? null
+				: new PlayerFormFundResult(
+				current.Result.State,
+				current.Result.Message,
+					current.Result.FundTransactionId,
+					current.Result.TransactionId,
+					current.Result.ExternalTransactionId));
 			}
 		}
 	}
 
-	public async ValueTask UpdateCompleteAsync(
-		long id,
-		StateCode resultStateCode,
-		string resultMessage,
-		Guid resultFundTransactionId,
-		Guid resultTransactionId,
-		string resultExternalTransactionId,
-		string status = "success",
-		CancellationToken cancellationToken = default)
+	public async ValueTask InitializeAsync(CancellationToken cancellationToken = default)
+	{
+		var collection = GetCollection();
+
+		var tasks = new Task[]{
+			Task.Run(async () =>
+			{
+				try
+				{
+					await GameProviderCode_IndexAsync( collection: collection,   cancellationToken: cancellationToken).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_Unique");
+				}
+			}, cancellationToken: cancellationToken),
+			Task.Run(async () =>
+			{
+				try
+				{
+					await BrandCode_IndexAsync( collection: collection,   cancellationToken: cancellationToken).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_ExpireOn");
+				}
+			}, cancellationToken: cancellationToken),
+			Task.Run(async () =>
+			{
+				try
+				{
+					 await State_IndexAsync( collection: collection,   cancellationToken: cancellationToken).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_ExpireOn");
+				}
+			}, cancellationToken: cancellationToken),
+			Task.Run(async () =>
+			{
+				try
+				{
+					  await CreatedOn_IndexAsync( collection: collection,   cancellationToken: cancellationToken).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_ExpireOn");
+				}
+			}, cancellationToken: cancellationToken),
+			Task.Run(async () =>
+			{
+				try
+				{
+					 await ExpireOn_IndexAsync( collection: collection,   cancellationToken: cancellationToken).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_ExpireOn");
+				}
+			}, cancellationToken: cancellationToken),
+			Task.Run(async () =>
+			{
+				try
+				{
+					 await Search_IndexAsync( collection: collection,   cancellationToken: cancellationToken).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_ExpireOn");
+				}
+			}, cancellationToken: cancellationToken),
+			Task.Run(async () =>
+			{
+				try
+				{
+					 await Search_ExpansionFormId_IndexAsync( collection: collection,   cancellationToken: cancellationToken).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_ExpireOn");
+				}
+			}, cancellationToken: cancellationToken),
+		};
+
+		await Task.WhenAll(tasks).ConfigureAwait(false);
+	}
+
+	public async ValueTask UpdateCompleteAsync(long id, StateCode resultStateCode, string resultMessage, Guid resultFundTransactionId, Guid resultTransactionId, string resultExternalTransactionId, string status = "success", CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
@@ -736,10 +531,7 @@ internal class PlayerFormRepository(
 			 .ConfigureAwait(false);
 	}
 
-	public async ValueTask UpdateCompleteAsync(
-		long id,
-		string status = "success",
-		CancellationToken cancellationToken = default)
+	public async ValueTask UpdateCompleteAsync(long id, string status = "success", CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
@@ -760,10 +552,7 @@ internal class PlayerFormRepository(
 			 .ConfigureAwait(false);
 	}
 
-	public async ValueTask UpdateFailedAsync(
-		long id,
-		string status = "fail",
-		CancellationToken cancellationToken = default)
+	public async ValueTask UpdateFailedAsync(long id, string status = "fail", CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
@@ -784,9 +573,7 @@ internal class PlayerFormRepository(
 			 .ConfigureAwait(false);
 	}
 
-	public async ValueTask UpdateProcessingAsync(
-		long id,
-		CancellationToken cancellationToken = default)
+	public async ValueTask UpdateProcessingAsync(long id, CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
@@ -806,9 +593,7 @@ internal class PlayerFormRepository(
 		.ConfigureAwait(false);
 	}
 
-	private static async Task BrandCode_IndexAsync(
-		IMongoCollection<PlayerFormModel> collection,
-		CancellationToken cancellationToken = default)
+	private static async Task BrandCode_IndexAsync(IMongoCollection<PlayerFormModel> collection, CancellationToken cancellationToken = default)
 	{
 		var index = Builders<PlayerFormModel>.IndexKeys
 			.Ascending(m => m.BrandCode);
@@ -825,51 +610,7 @@ internal class PlayerFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task BrandId_IndexAsync(
-		IMongoCollection<PlayerFormModel> collection,
-		CancellationToken cancellationToken = default)
-	{
-		var index = Builders<PlayerFormModel>.IndexKeys
-			.Ascending(m => m.BrandId);
-
-		var createIndexOptions = new CreateIndexOptions
-		{
-			Name = $"ix_brand_id"
-		};
-		var createIndexModel = new CreateIndexModel<PlayerFormModel>(index, createIndexOptions);
-
-		_ = await collection.Indexes.CreateOneAsync(
-			model: createIndexModel,
-			cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
-	}
-
-	private static FilterDefinition<PlayerFormModel> BrandQueryFilter(
-		long expansionFormId,
-		PlayerFormState? state,
-		string? playerCode)
-	{
-		var builder = Builders<PlayerFormModel>.Filter;
-
-		var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
-					builder.Eq(x => x.Source, PlayerFormSource.Brand);
-
-		if (state.HasValue)
-		{
-			filter &= builder.Eq(x => x.State, state.Value);
-		}
-
-		if (!string.IsNullOrEmpty(playerCode))
-		{
-			filter &= builder.Eq(x => x.PlayerCode, playerCode);
-		}
-
-		return filter;
-	}
-
-	private static async Task CreatedOn_IndexAsync(
-		IMongoCollection<PlayerFormModel> collection,
-		CancellationToken cancellationToken = default)
+	private static async Task CreatedOn_IndexAsync(IMongoCollection<PlayerFormModel> collection, CancellationToken cancellationToken = default)
 	{
 		var index = Builders<PlayerFormModel>.IndexKeys
 			.Ascending(m => m.CreatedOn);
@@ -886,9 +627,7 @@ internal class PlayerFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task ExpireOn_IndexAsync(
-		IMongoCollection<PlayerFormModel> collection,
-		CancellationToken cancellationToken = default)
+	private static async Task ExpireOn_IndexAsync(IMongoCollection<PlayerFormModel> collection, CancellationToken cancellationToken = default)
 	{
 		var index = Builders<PlayerFormModel>.IndexKeys
 			.Ascending(m => m.ExpireOn);
@@ -906,9 +645,7 @@ internal class PlayerFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task GameProviderCode_IndexAsync(
-		IMongoCollection<PlayerFormModel> collection,
-		CancellationToken cancellationToken = default)
+	private static async Task GameProviderCode_IndexAsync(IMongoCollection<PlayerFormModel> collection, CancellationToken cancellationToken = default)
 	{
 		var index = Builders<PlayerFormModel>.IndexKeys
 			.Ascending(m => m.GameProviderCode);
@@ -925,51 +662,7 @@ internal class PlayerFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task GameProviderId_IndexAsync(
-		IMongoCollection<PlayerFormModel> collection,
-		CancellationToken cancellationToken = default)
-	{
-		var index = Builders<PlayerFormModel>.IndexKeys
-			.Ascending(m => m.GameProviderId);
-
-		var createIndexOptions = new CreateIndexOptions
-		{
-			Name = $"ix_game_provider_id"
-		};
-		var createIndexModel = new CreateIndexModel<PlayerFormModel>(index, createIndexOptions);
-
-		_ = await collection.Indexes.CreateOneAsync(
-			model: createIndexModel,
-			cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
-	}
-
-	private static FilterDefinition<PlayerFormModel> ImportQueryFilter(
-		long expansionFormId,
-		PlayerFormState? state,
-		string? playerCode)
-	{
-		var builder = Builders<PlayerFormModel>.Filter;
-
-		var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
-					builder.Eq(x => x.Source, PlayerFormSource.Import);
-
-		if (state.HasValue)
-		{
-			filter &= builder.Eq(x => x.State, state.Value);
-		}
-
-		if (!string.IsNullOrEmpty(playerCode))
-		{
-			filter &= builder.Eq(x => x.PlayerCode, playerCode);
-		}
-
-		return filter;
-	}
-
-	private static async Task Search_ExpansionFormId_IndexAsync(
-		IMongoCollection<PlayerFormModel> collection,
-		CancellationToken cancellationToken = default)
+	private static async Task Search_ExpansionFormId_IndexAsync(IMongoCollection<PlayerFormModel> collection, CancellationToken cancellationToken = default)
 	{
 		var index = Builders<PlayerFormModel>.IndexKeys
 			.Ascending(m => m.ExpansionFormId)
@@ -988,9 +681,7 @@ internal class PlayerFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task Search_IndexAsync(
-		IMongoCollection<PlayerFormModel> collection,
-		CancellationToken cancellationToken = default)
+	private static async Task Search_IndexAsync(IMongoCollection<PlayerFormModel> collection, CancellationToken cancellationToken = default)
 	{
 		var index = Builders<PlayerFormModel>.IndexKeys
 			.Ascending(m => m.ExpansionFormId)
@@ -1011,9 +702,7 @@ internal class PlayerFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task State_IndexAsync(
-		IMongoCollection<PlayerFormModel> collection,
-		CancellationToken cancellationToken = default)
+	private static async Task State_IndexAsync(IMongoCollection<PlayerFormModel> collection, CancellationToken cancellationToken = default)
 	{
 		var index = Builders<PlayerFormModel>.IndexKeys
 			.Ascending(m => m.State);

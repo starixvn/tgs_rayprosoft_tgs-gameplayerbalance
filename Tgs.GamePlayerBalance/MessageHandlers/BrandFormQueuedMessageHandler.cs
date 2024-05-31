@@ -18,7 +18,7 @@ public class BrandFormQueuedMessageHandler(
 
 		return service.ExecuteAsync(
 			command: new BrandFormQueuedCommand(
-				Id: data.Id),
+				Id: data.FormId),
 			cancellationToken: cancellationToken);
 	}
 }

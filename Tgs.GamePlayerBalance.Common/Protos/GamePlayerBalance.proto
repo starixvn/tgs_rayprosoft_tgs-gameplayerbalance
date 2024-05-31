@@ -25,15 +25,21 @@ message BrandMessageRequest {
 }
 
 message PlayerFormModelRequest {
-    int64 id = 1;
+    string game_provider_code = 1;
+    string brand_code = 2;
+    string player_Code = 3;
+    int64 form_id = 4;
 }
 
 message BrandFormModelRequest {
-    int64 id = 1;
+    string game_provider_code = 1;
+    string brand_code = 2;
+    int64 form_id = 3;
 }
 
 message ImportFormModelRequest {
-    int64 id = 1;
+    string game_provider_code = 1;
+    int64 form_id = 2;
 }
 
 // The response message containing the greetings.

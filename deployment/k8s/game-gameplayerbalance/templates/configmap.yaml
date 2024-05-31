@@ -8,11 +8,12 @@ data:
     {
       "Logging": {
         "LogLevel": {
-            "Default": "Information"
+            "Default": "Warning",
+            "Tgs.GamePlayerBalance.MessageHandlers": "Information",
+            "Tgs.GamePlayerBalance.Core.ApplicationServices": "Information"
          }
       },
-      "GamePlayerBalance": {
-        "GameCommandClientBaseUrl": "http://game-gamecommand/",
+      "GamePlayerBalanceConnectionStrings": {
         "GameProvidersClientBaseUrl": "http://game-gameproviders/",
         "GameFundTransferClientBaseUrl": "http://game-gamefundtransfer:9090/"
       }

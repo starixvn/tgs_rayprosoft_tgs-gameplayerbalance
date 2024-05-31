@@ -1,6 +1,5 @@
 ﻿using Google.Protobuf;
 using Microsoft.Extensions.Logging;
-using Tgs.GameCommand.Client;
 using Tgs.GamePlayerBalance.Common;
 using Tgs.GamePlayerBalance.Common.Protos;
 using Tgs.GamePlayerBalance.Core.Models;
@@ -13,8 +12,8 @@ namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 internal class BrandFormByAwcAwsQueuedCommandService(
 	ILogger<BrandFormByAwcAwsQueuedCommandService> logger,
 	IGameProvidersBalancesClient gameProvidersBalancesClient,
-	IGameCommandClient gameCommandClient,
 	IBrandFormRepository brandFormRepository,
+	IPlayerRepository playerRepository,
 	IPlayerFormRepository playerFormRepository,
 	ISnowflakeWork snowflake,
 	IMessageSender messageSender) : ICommandService<BrandFormByAwcAwsQueuedCommand>
@@ -41,7 +40,7 @@ internal class BrandFormByAwcAwsQueuedCommandService(
 		}
 
 		await brandFormRepository.UpdateProcessingAsync(
-			id: command.Id,
+			id: form.Id,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 
@@ -61,7 +60,7 @@ internal class BrandFormByAwcAwsQueuedCommandService(
 			var playerFormAdds = new List<PlayerFormAdd>();
 			foreach (var balanceResponse in tempbalanceResponses)
 			{
-				var player = await gameCommandClient.PlayerGetAsync(
+				var player = await playerRepository.GetAsync(
 					playerCode: balanceResponse.PlayerCode,
 					cancellationToken: cancellationToken)
 					.ConfigureAwait(false);
@@ -75,14 +74,12 @@ internal class BrandFormByAwcAwsQueuedCommandService(
 				playerFormAdds.Add(new PlayerFormAdd(
 					FormId: snowflake.GetId(),
 					ExpansionFormId: form.Id,
-					GameProviderId: form.GameProviderId,
 					GameProviderCode: form.GameProviderCode,
-					BrandId: form.BrandId,
 					BrandCode: form.BrandCode,
 					PlayerCode: player.PlayerCode,
 					Username: player.Username,
-					WalletId: player.DefaultWalletId,
-					CurrencyCode: player.DefaultWalletCurrencyCode));
+					WalletId: player.WalletId,
+					CurrencyCode: player.CurrencyCode));
 			}
 
 			if (playerFormAdds.Count != 0)
@@ -105,7 +102,9 @@ internal class BrandFormByAwcAwsQueuedCommandService(
 
 		var data = new BrandFormModelRequest
 		{
-			Id = form.Id
+			GameProviderCode = form.GameProviderCode,
+			BrandCode = form.BrandCode,
+			FormId = form.Id
 		};
 
 		await messageSender.PublishAsync(

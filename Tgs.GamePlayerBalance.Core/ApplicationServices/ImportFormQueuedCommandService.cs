@@ -1,6 +1,4 @@
-﻿using Google.Protobuf;
-using Microsoft.Extensions.Logging;
-using Tgs.GameCommand.Client;
+﻿using Microsoft.Extensions.Logging;
 using Tgs.GamePlayerBalance.Common;
 using Tgs.GamePlayerBalance.Common.Protos;
 using Tgs.GamePlayerBalance.Core.Models;
@@ -11,8 +9,8 @@ namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
 internal class ImportFormQueuedCommandService(
 	ILogger<ImportFormQueuedCommandService> logger,
-	IGameCommandClient client,
 	IImportFormRepository importFormRepository,
+	IPlayerRepository playerRepository,
 	IPlayerFormRepository playerFormRepository,
 	ISnowflakeWork snowflake,
 	IMessageSender messageSender) : ICommandService<ImportFormQueuedCommand>
@@ -28,18 +26,18 @@ internal class ImportFormQueuedCommandService(
 
 		if (form == null)
 		{
-			logger.LogError("This brand form does not exist.({id})", command.Id);
-			throw new Exception($"This brand form does not exist.({command.Id})");
+			logger.LogError("This import form does not exist.({id})", command.Id);
+			throw new Exception($"This import form does not exist.({command.Id})");
 		}
 
 		if (form.State != ImportFormState.Queued)
 		{
-			logger.LogError("The brand form status is not queued.({id})", command.Id);
-			throw new Exception($"The brand form status is not queued.({command.Id})");
+			logger.LogError("The import form status is not queued.({id})", command.Id);
+			throw new Exception($"The import form status is not queued.({command.Id})");
 		}
 
 		await importFormRepository.UpdateProcessingAsync(
-			id: command.Id,
+			id: form.Id,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 
@@ -47,46 +45,48 @@ internal class ImportFormQueuedCommandService(
 
 		foreach (var player in form.Players)
 		{
-			var playerInfo = await client.PlayerGetAsync(
+			var playerInfo = await playerRepository.GetAsync(
 				playerCode: player.PlayerCode,
 				cancellationToken: cancellationToken)
 				.ConfigureAwait(false);
 
 			if (playerInfo == null)
 			{
+				logger.LogError("This player does not exist.({playerCode})", player.PlayerCode);
 				continue;
 			}
 
 			playerFormAdds.Add(new PlayerFormAdd(
 				FormId: snowflake.GetId(),
 				ExpansionFormId: form.Id,
-				GameProviderId: form.GameProviderId,
 				GameProviderCode: form.GameProviderCode,
-				BrandId: playerInfo.BrandId,
 				BrandCode: playerInfo.BrandCode,
 				PlayerCode: playerInfo.PlayerCode,
 				Username: playerInfo.Username,
-				WalletId: playerInfo.DefaultWalletId,
-				CurrencyCode: playerInfo.DefaultWalletCurrencyCode));
+				WalletId: playerInfo.WalletId,
+				CurrencyCode: playerInfo.CurrencyCode));
 		}
 
 		try
 		{
-			var formIds = await playerFormRepository.ImportPlayerFormAddAsync(
-				playerFormAdds,
-				cancellationToken)
-				.ToArrayAsync(
-				cancellationToken: cancellationToken)
-				.ConfigureAwait(false);
+			if (playerFormAdds.Count != 0)
+			{
+				var formIds = await playerFormRepository.ImportPlayerFormAddAsync(
+					playerFormAdds,
+					cancellationToken)
+					.ToArrayAsync(
+					cancellationToken: cancellationToken)
+					.ConfigureAwait(false);
+			}
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, "An unknown error occurred.({id})", command.Id);
+			logger.LogError(ex, "An unknown error occurred.({id})", form.Id);
 		}
 
 		var data = new ImportFormModelRequest
 		{
-			Id = form.Id
+			FormId = form.Id
 		};
 
 		await messageSender.PublishAsync(

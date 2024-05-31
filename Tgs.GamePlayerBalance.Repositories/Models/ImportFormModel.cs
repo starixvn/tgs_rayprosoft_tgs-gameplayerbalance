@@ -15,12 +15,6 @@ public record ImportFormModel
 	[BsonRepresentation(BsonType.Int64)]
 	public long Id { get; set; } = default!;
 	/// <summary>
-	/// The game provider identifier
-	/// </summary>
-	[BsonElement("game_provider_id")]
-	[BsonRepresentation(BsonType.String)]
-	public Guid GameProviderId { get; set; } = default!;
-	/// <summary>
 	/// The game provider code
 	/// </summary>
 	[BsonElement("game_provider_code")]

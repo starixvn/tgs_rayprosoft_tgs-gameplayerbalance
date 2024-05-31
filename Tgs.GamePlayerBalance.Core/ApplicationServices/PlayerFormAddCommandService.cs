@@ -1,6 +1,4 @@
-﻿using Google.Protobuf;
-using Microsoft.Extensions.Logging;
-using Tgs.GameCommand.Client;
+﻿using Microsoft.Extensions.Logging;
 using Tgs.GamePlayerBalance.Common;
 using Tgs.GamePlayerBalance.Common.Protos;
 using Tgs.ServiceUtility;
@@ -10,44 +8,34 @@ namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
 internal class PlayerFormAddCommandService(
 	ILogger<PlayerFormAddCommandService> logger,
-	IGameCommandClient client,
-	IGameProviderRepository gameProviderRepository,
+	IPlayerRepository playerRepository,
 	IPlayerFormRepository playerFormRepository,
 	IMessageSender messageSender) : ICommandService<PlayerFormAddCommand>
 {
 	public async ValueTask ExecuteAsync(PlayerFormAddCommand command, CancellationToken cancellationToken = default)
 	{
-		var gameProviderId = await gameProviderRepository.GetIdAsync(
-			code: command.GameProviderCode,
-			cancellationToken: cancellationToken)
-		   .ConfigureAwait(false);
-
-		var player = await client.PlayerGetAsync(
+		var player = await playerRepository.GetAsync(
 			playerCode: command.PlayerCode,
 			cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
-
-		if (player == null)
-		{
-			logger.LogError("This player does not exist.({playerCode})", command.PlayerCode);
-			throw new Exception($"This player does not exist.({command.PlayerCode})");
-		}
+			.ConfigureAwait(false)
+			?? throw new ArgumentNullException(command.PlayerCode, "This player does not exist.");
 
 		var id = await playerFormRepository.AddAsync(
-			gameProviderId: gameProviderId,
 			gameProviderCode: command.GameProviderCode,
-			brandId: player.BrandId,
 			brandCode: player.BrandCode,
 			playerCode: player.PlayerCode,
 			username: player.Username,
-			walletId: player.DefaultWalletId,
-			currencyCode: player.DefaultWalletCurrencyCode,
+			walletId: player.WalletId,
+			currencyCode: player.CurrencyCode,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 
-		var data = new BrandFormModelRequest
+		var data = new PlayerFormModelRequest
 		{
-			Id = id
+			GameProviderCode = command.GameProviderCode,
+			BrandCode = player.BrandCode,
+			PlayerCode = player.PlayerCode,
+			FormId = id
 		};
 
 		await messageSender.PublishAsync(

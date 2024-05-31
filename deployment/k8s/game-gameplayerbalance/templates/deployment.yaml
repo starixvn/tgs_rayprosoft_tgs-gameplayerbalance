@@ -49,16 +49,21 @@ spec:
               valueFrom:
                fieldRef:
                 fieldPath: status.podIP
-            - name: ConnectionStrings__Nats
+            - name: ConnectionStrings__Tgs
               valueFrom:
                 secretKeyRef:
                   name: tgs-connections
-                  key: nats
+                  key: tgs
             - name: ConnectionStrings__Mongo
               valueFrom:
                 secretKeyRef:
                   name: tgs-connections
                   key: mongo-gp
+            - name: ConnectionStrings__Nats
+              valueFrom:
+                secretKeyRef:
+                  name: tgs-connections
+                  key: nats
           volumeMounts:
             - mountPath: /app/appsettings.Production.json
               name: appsettings

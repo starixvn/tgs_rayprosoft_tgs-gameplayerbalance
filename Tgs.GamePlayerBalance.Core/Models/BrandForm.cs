@@ -2,9 +2,7 @@
 
 public record BrandForm(
 	long Id,
-	Guid GameProviderId,
 	string GameProviderCode,
-	Guid BrandId,
 	string BrandCode,
 	BrandFormState State,
 	string Status,

@@ -15,33 +15,31 @@ internal class BrandFormAddCommandService(
 {
 	public async ValueTask ExecuteAsync(BrandFormAddCommand command, CancellationToken cancellationToken = default)
 	{
-		var gameProviderId = await gameProviderRepository.GetIdAsync(
-			code: command.GameProviderCode,
-			cancellationToken: cancellationToken)
-		   .ConfigureAwait(false);
-
-		var brandId = await brandRepository.GetIdAsync(
+		var brandInfo = await brandRepository.GetAsync(
 			code: command.BrandCode,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
-
+		var gameProviderInfo = await gameProviderRepository.GetAsync(
+			code: command.GameProviderCode,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 		var id = await brandFormRepository.AddAsync(
-			gameProviderId: gameProviderId,
-			gameProviderCode: command.GameProviderCode,
-			brandId: brandId,
-			brandCode: command.BrandCode,
+			gameProviderCode: gameProviderInfo.GameProviderCode,
+			brandCode: brandInfo.BrandCode,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 
 		var subject = GamePlayerBalanceNatsConst.BrandFormQueued;
-		if (command.GameProviderCode.StartsWith("AWC_", StringComparison.OrdinalIgnoreCase))
+		if (gameProviderInfo.GameProviderCode.StartsWith("AWC_", StringComparison.OrdinalIgnoreCase))
 		{
-			subject = $"{subject}.{command.GameProviderCode.Replace("_", ".").ToLower()}";
+			subject = $"{subject}.{gameProviderInfo.GameProviderCode.Replace("_", ".").ToLower()}";
 		}
 
 		var data = new BrandFormModelRequest
 		{
-			Id = id
+			GameProviderCode = gameProviderInfo.GameProviderCode,
+			BrandCode = brandInfo.BrandCode,
+			FormId = id
 		};
 
 		await messageSender.PublishAsync(

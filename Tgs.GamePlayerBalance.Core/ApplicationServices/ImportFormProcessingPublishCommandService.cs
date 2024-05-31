@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Tgs.GamePlayerBalance.Common;
 using Tgs.GamePlayerBalance.Common.Protos;
+using Tgs.GamePlayerBalance.Core.Models;
 using Tgs.ServiceUtility;
 using Valhalla.MessageQueue;
 
@@ -19,7 +20,7 @@ internal class ImportFormProcessingPublishCommandService(
 
 		while (id > 0)
 		{
-			var formIds = await playerFormRepository.ImportQueryIdAsync(
+			var playerForms = await playerFormRepository.ImportQueryAsync(
 				expansionFormId: command.ExpansionFormId,
 				state: PlayerFormState.Queued,
 				id: id,
@@ -28,21 +29,24 @@ internal class ImportFormProcessingPublishCommandService(
 				.ToArrayAsync(
 				cancellationToken: cancellationToken)
 				.ConfigureAwait(false)
-				?? Enumerable.Empty<long>();
+				?? Enumerable.Empty<PlayerForm>();
 
-			if (!formIds.Any())
+			if (!playerForms.Any())
 			{
 				break;
 			}
 
-			foreach (var formId in formIds)
+			foreach (var playerForm in playerForms)
 			{
-				id = formId;
+				id = playerForm.Id;
 				try
 				{
 					var data = new PlayerFormModelRequest
 					{
-						Id = formId
+						GameProviderCode = playerForm.GameProviderCode,
+						BrandCode = playerForm.BrandCode,
+						PlayerCode = playerForm.PlayerCode,
+						FormId = playerForm.Id
 					};
 
 					await messageSender.PublishAsync(
@@ -58,7 +62,7 @@ internal class ImportFormProcessingPublishCommandService(
 				}
 				catch (Exception ex)
 				{
-					logger.LogError(ex, "An exception occurred when sending the player application form.({id})", formId);
+					logger.LogError(ex, "An exception occurred when sending the player application form.({id})", id);
 				}
 			}
 		}

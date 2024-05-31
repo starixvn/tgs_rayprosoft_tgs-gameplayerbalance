@@ -30,7 +30,7 @@ internal class PlayerFormQueuedCommandService(
 		}
 
 		await repository.UpdateProcessingAsync(
-			id: command.Id,
+			id: form.Id,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 
@@ -45,7 +45,6 @@ internal class PlayerFormQueuedCommandService(
 			if (playerBalance.FreeBalance > 0)
 			{
 				var query = new FundsTransferInQuery(
-					form.GameProviderId,
 					form.GameProviderCode,
 					BrandCode: form.BrandCode,
 					PlayerCode: form.PlayerCode,
@@ -70,14 +69,14 @@ internal class PlayerFormQueuedCommandService(
 			else
 			{
 				await repository.UpdateCompleteAsync(
-					id: command.Id,
+					id: form.Id,
 					cancellationToken: cancellationToken)
 					.ConfigureAwait(false);
 			}
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, "An unknown error occurred.({id})", command.Id);
+			logger.LogError(ex, "An unknown error occurred.({id})", form.Id);
 
 			await repository.UpdateFailedAsync(
 				id: command.Id,

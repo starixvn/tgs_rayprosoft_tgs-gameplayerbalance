@@ -3,10 +3,12 @@ using System.Net.Mime;
 using System.Net.Sockets;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using NATS.Client.Core;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Tgs.GamePlayerBalance;
 using Tgs.GamePlayerBalance.Common;
 using Tgs.GamePlayerBalance.MessageHandlers;
 using Tgs.MessageQueue.Nats.Serializers;
@@ -52,6 +54,11 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 builder.Services.AddGamePlayerBalance(
+	(sp, dbBuilder) =>
+	{
+		var config = sp.GetRequiredService<IConfiguration>();
+		_ = dbBuilder.UseNpgsql(config.GetConnectionString("Tgs"));
+	},
 	(options, sp) =>
 	{
 		var configuration = sp.GetRequiredService<IConfiguration>();
@@ -66,18 +73,16 @@ builder.Services.AddGamePlayerBalance(
 	(options, sp) =>
 	{
 		var configuration = sp.GetRequiredService<IConfiguration>();
-		options.BaseUrl = configuration.GetValue<Uri>("GamePlayerBalance:GameCommandClientBaseUrl")!;
+		options.BaseUrl = configuration.GetValue<Uri>("GamePlayerBalanceConnectionStrings:GameProvidersClientBaseUrl")!;
 	},
 	(options, sp) =>
 	{
 		var configuration = sp.GetRequiredService<IConfiguration>();
-		options.BaseUrl = configuration.GetValue<Uri>("GamePlayerBalance:GameProvidersClientBaseUrl")!;
-	},
-	(options, sp) =>
-	{
-		var configuration = sp.GetRequiredService<IConfiguration>();
-		options.BaseUrl = configuration.GetValue<Uri>("GamePlayerBalance:GameFundTransferClientBaseUrl")!;
+		options.BaseUrl = configuration.GetValue<Uri>("GamePlayerBalanceConnectionStrings:GameFundTransferClientBaseUrl")!;
 	});
+
+// HostedService
+builder.Services.AddHostedService<InitializeHostedService>();
 
 builder.Services
 	.AddKeyedSingleton("Nats", (sp, _) => new NatsConnection(NatsOpts.Default with
@@ -97,7 +102,14 @@ builder.Services
 		.AddHandler<ImportFormProcessingMessageHandler>(GamePlayerBalanceNatsConst.ImportFormProcessing, GamePlayerBalanceNatsConst.ImportFormProcessing)
 		.AddHandler<PlayerFormQueuedMessageHandler>(GamePlayerBalanceNatsConst.PlayerFormQueued, GamePlayerBalanceNatsConst.PlayerFormQueued))
 	.ClearAllExchanges()
-	.AddNatsGlobPatternExchange("*");
+	.AddNatsGlobPatternExchange(GamePlayerBalanceNatsConst.BrandFormByAwcAelotto)
+	.AddNatsGlobPatternExchange(GamePlayerBalanceNatsConst.BrandFormByAwcAws)
+	.AddNatsGlobPatternExchange(GamePlayerBalanceNatsConst.BrandFormByAwcFacai)
+	.AddNatsGlobPatternExchange(GamePlayerBalanceNatsConst.BrandFormQueued)
+	.AddNatsGlobPatternExchange(GamePlayerBalanceNatsConst.BrandFormProcessing)
+	.AddNatsGlobPatternExchange(GamePlayerBalanceNatsConst.ImportFormQueued)
+	.AddNatsGlobPatternExchange(GamePlayerBalanceNatsConst.ImportFormProcessing)
+	.AddNatsGlobPatternExchange(GamePlayerBalanceNatsConst.PlayerFormQueued);
 
 builder.Services
 	.AddOpenTelemetry()
@@ -141,12 +153,5 @@ _ = app.UseSwaggerUI();
 _ = app.MapControllers();
 
 app.MapHealthChecks("/healthz");
-
-_ = app.UseRegister();
-_ = app.InitialSnowflakeWork();
-_ = app.InitializeBrandFormAsync();
-_ = app.InitializeUseImportFormAsync();
-_ = app.InitializePlayerFormAsync();
-_ = app.InitializePlayerTempBalanceAsync();
 
 app.Run();

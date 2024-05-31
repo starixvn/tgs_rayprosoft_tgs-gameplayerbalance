@@ -24,22 +24,10 @@ public record PlayerFormModel
 	[BsonRepresentation(BsonType.String)]
 	public PlayerFormSource Source { get; set; }
 	/// <summary>
-	/// The game provider identifier
-	/// </summary>
-	[BsonElement("game_provider_id")]
-	[BsonRepresentation(BsonType.String)]
-	public Guid GameProviderId { get; set; } = default!;
-	/// <summary>
 	/// The game provider code
 	/// </summary>
 	[BsonElement("game_provider_code")]
 	public string GameProviderCode { get; set; } = default!;
-	/// <summary>
-	/// The brand identifier
-	/// </summary>
-	[BsonElement("brand_id")]
-	[BsonRepresentation(BsonType.String)]
-	public Guid BrandId { get; set; }
 	/// <summary>
 	/// The brand code
 	/// </summary>

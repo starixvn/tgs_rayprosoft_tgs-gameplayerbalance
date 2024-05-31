@@ -18,7 +18,7 @@ public class ImportFormQueuedMessageHandler(
 
 		return service.ExecuteAsync(
 			command: new ImportFormQueuedCommand(
-				Id: data.Id),
+				Id: data.FormId),
 			cancellationToken: cancellationToken);
 	}
 }

@@ -2,7 +2,5 @@
 
 public interface IBrandRepository
 {
-	ValueTask<Guid> GetIdAsync(
-		string code,
-		CancellationToken cancellationToken = default);
+	ValueTask<Models.BrandInfo> GetAsync(string code, CancellationToken cancellationToken = default);
 }

@@ -1,4 +1,4 @@
-﻿using Tgs.GameCommand.Client;
+﻿using Microsoft.EntityFrameworkCore;
 using Tgs.GameFundTransfer.Client;
 using Tgs.GamePlayerBalance;
 using Tgs.GamePlayerBalance.Core;
@@ -10,9 +10,9 @@ public static class ServiceCollectionExtensions
 {
 	public static IServiceCollection AddGamePlayerBalance(
 		this IServiceCollection services,
+		Action<IServiceProvider, DbContextOptionsBuilder> dbContextOptions,
 		Action<MongoDBOptions, IServiceProvider> mongoDBconfigure,
 		Action<IPAddressOptions, IServiceProvider> ipAddressOptions,
-		Action<GameCommandClientOptions, IServiceProvider> gameCommandClientOptions,
 		Action<GameProvidersClientOptions, IServiceProvider> gameProvidersClientOptions,
 		Action<GameFundTransferClientOptions, IServiceProvider> gameFundTransferClientOptions)
 		=> services
@@ -20,12 +20,11 @@ public static class ServiceCollectionExtensions
 		.Configure(mongoDBconfigure)
 		.Services
 		.AddSingleton<MongoDBConnectionManager>()
-		.AddMemoryCache()
 		.AddGamePlayerBalanceCore(
 			ipAddressOptions,
-			gameCommandClientOptions,
 			gameProvidersClientOptions,
 			gameFundTransferClientOptions)
 		.AddGamePlayerBalanceRepositories(
+			dbContextOptions: dbContextOptions,
 			(sp) => sp.GetRequiredService<MongoDBConnectionManager>().MongoDatabase);
 }

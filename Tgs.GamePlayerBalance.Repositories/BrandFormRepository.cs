@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using Tgs.GamePlayerBalance.Core;
 using Tgs.GamePlayerBalance.Core.Extensions;
@@ -8,15 +8,11 @@ using Tgs.GamePlayerBalance.Repositories.Models;
 namespace Tgs.GamePlayerBalance.Repositories;
 
 internal class BrandFormRepository(
+	ILogger<BrandFormRepository> logger,
 	IMongoDatabase database,
 	ISnowflakeWork snowflake) : IBrandFormRepository
 {
-	public async ValueTask<long> AddAsync(
-		Guid gameProviderId,
-		string gameProviderCode,
-		Guid brandId,
-		string brandCode,
-		CancellationToken cancellationToken = default)
+	public async ValueTask<long> AddAsync(string gameProviderCode, string brandCode, CancellationToken cancellationToken = default)
 	{
 		var id = snowflake.GetId();
 
@@ -25,9 +21,7 @@ internal class BrandFormRepository(
 		var document = new BrandFormModel
 		{
 			Id = id,
-			GameProviderId = gameProviderId,
 			GameProviderCode = gameProviderCode,
-			BrandId = brandId,
 			BrandCode = brandCode,
 			State = BrandFormState.Queued,
 			Status = $"{BrandFormState.Queued}...",
@@ -36,18 +30,15 @@ internal class BrandFormRepository(
 			ExpireOn = null
 		};
 
-		await collection
-			 .InsertOneAsync(
-				 document: document,
-				 cancellationToken: cancellationToken)
-			 .ConfigureAwait(false);
+		await collection.InsertOneAsync(
+			document: document,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 
 		return id;
 	}
 
-	public async ValueTask<BrandForm?> GetAsync(
-		long id,
-		CancellationToken cancellationToken = default)
+	public async ValueTask<BrandForm?> GetAsync(long id, CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
@@ -58,25 +49,21 @@ internal class BrandFormRepository(
 			Skip = 0,
 			Limit = 1
 		};
-		var datas = await collection
-					.FindAsync(
-						filter: filter,
-						options: options,
-						cancellationToken: cancellationToken)
-					.ConfigureAwait(false);
+		var datas = await collection.FindAsync(
+			filter: filter,
+			options: options,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 
-		var data = await datas
-						.FirstOrDefaultAsync(
-							cancellationToken: cancellationToken)
-						.ConfigureAwait(false);
+		var data = await datas.FirstOrDefaultAsync(
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 
 		return data == null
 			? null
 			: new BrandForm(
 				Id: data.Id,
-				GameProviderId: data.GameProviderId,
 				GameProviderCode: data.GameProviderCode,
-				BrandId: data.BrandId,
 				BrandCode: data.BrandCode,
 				State: data.State,
 				Status: data.Status,
@@ -87,96 +74,72 @@ internal class BrandFormRepository(
 				ExpireOn: data.ExpireOn);
 	}
 
-	public async ValueTask InitializeAsync(
-		CancellationToken cancellationToken = default)
+	public async ValueTask InitializeAsync(CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
-		await GameProviderId_IndexAsync(
-			collection: collection,
-			cancellationToken: cancellationToken).ConfigureAwait(false);
-
-		await GameProviderCode_IndexAsync(
-			collection: collection,
-			cancellationToken: cancellationToken).ConfigureAwait(false);
-
-		await BrandId_IndexAsync(
-			collection: collection,
-			cancellationToken: cancellationToken).ConfigureAwait(false);
-
-		await BrandCode_IndexAsync(
-			collection: collection,
-			cancellationToken: cancellationToken).ConfigureAwait(false);
-
-		await State_IndexAsync(
-			collection: collection,
-			cancellationToken: cancellationToken).ConfigureAwait(false);
-
-		await CreatedOn_IndexAsync(
-			collection: collection,
-			cancellationToken: cancellationToken).ConfigureAwait(false);
-
-		await ExpireOn_IndexAsync(
-			collection: collection,
-			cancellationToken: cancellationToken).ConfigureAwait(false);
-	}
-
-	public async IAsyncEnumerable<BrandForm> QueryAsync(
-		Guid brandId,
-		BrandFormState? state,
-		int pageSize = 100,
-	   [EnumeratorCancellation] CancellationToken cancellationToken = default)
-	{
-		var collection = GetCollection();
-
-		var filter = QueryFilter(
-			brandId,
-			state);
-
-		var sort = Builders<BrandFormModel>
-			.Sort
-			.Descending(x => x.Id);
-
-		var options = new FindOptions<BrandFormModel>
-		{
-			Sort = sort,
-			Limit = pageSize,
-		};
-		var asyncCursor = await collection
-					.FindAsync(
-						filter: filter,
-						options: options,
-						cancellationToken: cancellationToken)
-					.ConfigureAwait(false);
-
-		while (await asyncCursor
-				.MoveNextAsync(
-					cancellationToken: cancellationToken)
-				.ConfigureAwait(false))
-		{
-			foreach (var current in asyncCursor.Current)
+		var tasks = new Task[]{
+			Task.Run(async () =>
 			{
-				yield return new BrandForm(
-					current.Id,
-					current.GameProviderId,
-					current.GameProviderCode,
-					current.BrandId,
-					current.BrandCode,
-					current.State,
-					current.Status,
-					current.CreatedOn,
-					current.UpdateOn,
-					current.StartOn,
-					current.EndOn,
-					current.ExpireOn);
-			}
-		}
+				try
+				{
+					await GameProviderCode_IndexAsync( collection: collection,   cancellationToken: cancellationToken).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_Unique");
+				}
+			}, cancellationToken: cancellationToken),
+			Task.Run(async () =>
+			{
+				try
+				{
+					await BrandCode_IndexAsync( collection: collection,   cancellationToken: cancellationToken).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_ExpireOn");
+				}
+			}, cancellationToken: cancellationToken),
+			Task.Run(async () =>
+			{
+				try
+				{
+					 await State_IndexAsync( collection: collection,   cancellationToken: cancellationToken).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_ExpireOn");
+				}
+			}, cancellationToken: cancellationToken),
+			Task.Run(async () =>
+			{
+				try
+				{
+					  await CreatedOn_IndexAsync( collection: collection,   cancellationToken: cancellationToken).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_ExpireOn");
+				}
+			}, cancellationToken: cancellationToken),
+			Task.Run(async () =>
+			{
+				try
+				{
+					 await ExpireOn_IndexAsync( collection: collection,   cancellationToken: cancellationToken).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_ExpireOn");
+				}
+			}, cancellationToken: cancellationToken),
+		};
+
+		await Task.WhenAll(tasks).ConfigureAwait(false);
 	}
 
-	public async ValueTask UpdateCompleteAsync(
-		long id,
-		string status = "success",
-		CancellationToken cancellationToken = default)
+	public async ValueTask UpdateCompleteAsync(long id, string status = "success", CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
@@ -189,18 +152,14 @@ internal class BrandFormRepository(
 			.Set(s => s.UpdateOn, DateTime.UtcNow)
 			.Set(s => s.ExpireOn, DateTime.UtcNow.AddDays(7));
 
-		_ = await collection
-			 .UpdateOneAsync(
-				filter: filter,
-				update: update,
-				cancellationToken: cancellationToken)
-			 .ConfigureAwait(false);
+		_ = await collection.UpdateOneAsync(
+			filter: filter,
+			update: update,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 	}
 
-	public async ValueTask UpdateFailedAsync(
-		long id,
-		string status = "fail",
-		CancellationToken cancellationToken = default)
+	public async ValueTask UpdateFailedAsync(long id, string status = "fail", CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
@@ -213,17 +172,14 @@ internal class BrandFormRepository(
 			.Set(s => s.UpdateOn, DateTime.UtcNow)
 			.Set(s => s.ExpireOn, DateTime.UtcNow.AddDays(7));
 
-		_ = await collection
-			 .UpdateOneAsync(
-				filter: filter,
-				update: update,
-				cancellationToken: cancellationToken)
-			 .ConfigureAwait(false);
+		_ = await collection.UpdateOneAsync(
+			filter: filter,
+			update: update,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 	}
 
-	public async ValueTask UpdateProcessingAsync(
-		long id,
-		CancellationToken cancellationToken = default)
+	public async ValueTask UpdateProcessingAsync(long id, CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
@@ -235,17 +191,14 @@ internal class BrandFormRepository(
 			.Set(s => s.StartOn, DateTime.UtcNow)
 			.Set(s => s.UpdateOn, DateTime.UtcNow);
 
-		_ = await collection
-		.UpdateOneAsync(
+		_ = await collection.UpdateOneAsync(
 			filter: filter,
 			update: update,
 			cancellationToken: cancellationToken)
-		.ConfigureAwait(false);
+			.ConfigureAwait(false);
 	}
 
-	private static async Task BrandCode_IndexAsync(
-		IMongoCollection<BrandFormModel> collection,
-		CancellationToken cancellationToken = default)
+	private static async Task BrandCode_IndexAsync(IMongoCollection<BrandFormModel> collection, CancellationToken cancellationToken = default)
 	{
 		var index = Builders<BrandFormModel>.IndexKeys
 			.Ascending(m => m.BrandCode);
@@ -262,28 +215,7 @@ internal class BrandFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task BrandId_IndexAsync(
-		IMongoCollection<BrandFormModel> collection,
-		CancellationToken cancellationToken = default)
-	{
-		var index = Builders<BrandFormModel>.IndexKeys
-			.Ascending(m => m.BrandId);
-
-		var createIndexOptions = new CreateIndexOptions
-		{
-			Name = $"ix_brand_id"
-		};
-		var createIndexModel = new CreateIndexModel<BrandFormModel>(index, createIndexOptions);
-
-		_ = await collection.Indexes.CreateOneAsync(
-			model: createIndexModel,
-			cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
-	}
-
-	private static async Task CreatedOn_IndexAsync(
-		IMongoCollection<BrandFormModel> collection,
-		CancellationToken cancellationToken = default)
+	private static async Task CreatedOn_IndexAsync(IMongoCollection<BrandFormModel> collection, CancellationToken cancellationToken = default)
 	{
 		var index = Builders<BrandFormModel>.IndexKeys
 			.Ascending(m => m.CreatedOn);
@@ -300,9 +232,7 @@ internal class BrandFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task ExpireOn_IndexAsync(
-		IMongoCollection<BrandFormModel> collection,
-		CancellationToken cancellationToken = default)
+	private static async Task ExpireOn_IndexAsync(IMongoCollection<BrandFormModel> collection, CancellationToken cancellationToken = default)
 	{
 		var index = Builders<BrandFormModel>.IndexKeys
 			.Ascending(m => m.ExpireOn);
@@ -320,9 +250,7 @@ internal class BrandFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task GameProviderCode_IndexAsync(
-		IMongoCollection<BrandFormModel> collection,
-		CancellationToken cancellationToken = default)
+	private static async Task GameProviderCode_IndexAsync(IMongoCollection<BrandFormModel> collection, CancellationToken cancellationToken = default)
 	{
 		var index = Builders<BrandFormModel>.IndexKeys
 			.Ascending(m => m.GameProviderCode);
@@ -339,43 +267,7 @@ internal class BrandFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task GameProviderId_IndexAsync(
-		IMongoCollection<BrandFormModel> collection,
-		CancellationToken cancellationToken = default)
-	{
-		var index = Builders<BrandFormModel>.IndexKeys
-			.Ascending(m => m.GameProviderId);
-
-		var createIndexOptions = new CreateIndexOptions
-		{
-			Name = $"ix_game_provider_id"
-		};
-		var createIndexModel = new CreateIndexModel<BrandFormModel>(index, createIndexOptions);
-
-		_ = await collection.Indexes.CreateOneAsync(
-			model: createIndexModel,
-			cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
-	}
-
-	private static FilterDefinition<BrandFormModel> QueryFilter(
-		Guid brandId,
-		BrandFormState? state)
-	{
-		var builder = Builders<BrandFormModel>.Filter;
-
-		var filter = builder.Eq(x => x.BrandId, brandId);
-		if (state.HasValue)
-		{
-			filter &= builder.Eq(x => x.State, state);
-		}
-
-		return filter;
-	}
-
-	private static async Task State_IndexAsync(
-		IMongoCollection<BrandFormModel> collection,
-		CancellationToken cancellationToken = default)
+	private static async Task State_IndexAsync(IMongoCollection<BrandFormModel> collection, CancellationToken cancellationToken = default)
 	{
 		var index = Builders<BrandFormModel>.IndexKeys
 			.Ascending(m => m.State);

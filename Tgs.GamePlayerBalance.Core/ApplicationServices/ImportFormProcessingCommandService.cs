@@ -19,13 +19,13 @@ internal class ImportFormProcessingCommandService(
 		if (form == null)
 		{
 			logger.LogError("This brand form does not exist.({id})", command.Id);
-			throw new Exception($"This brand form does not exist.({command.Id})");
+			throw new Exception($"This import form does not exist.({command.Id})");
 		}
 
 		if (form.State != ImportFormState.Processing)
 		{
 			logger.LogError("The brand form status is not processing.({id})", command.Id);
-			throw new Exception($"The brand form status is not processing.({command.Id})");
+			throw new Exception($"The import form status is not processing.({command.Id})");
 		}
 
 		try
@@ -49,7 +49,7 @@ internal class ImportFormProcessingCommandService(
 			}
 
 			await importFormRepository.UpdateCompleteAsync(
-				id: command.Id,
+				id: form.Id,
 				cancellationToken: cancellationToken)
 				.ConfigureAwait(false);
 		}

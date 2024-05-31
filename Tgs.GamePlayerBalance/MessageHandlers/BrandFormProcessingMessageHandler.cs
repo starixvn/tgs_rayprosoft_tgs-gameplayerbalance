@@ -18,7 +18,7 @@ public class BrandFormProcessingMessageHandler(
 
 		return service.ExecuteAsync(
 			command: new BrandFormProcessingCommand(
-				Id: data.Id),
+				Id: data.FormId),
 			cancellationToken: cancellationToken);
 	}
 }

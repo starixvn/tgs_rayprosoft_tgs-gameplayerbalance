@@ -2,7 +2,6 @@
 
 public record ImportForm(
 	long Id,
-	Guid GameProviderId,
 	string GameProviderCode,
 	ImportFormState State,
 	string Status,

@@ -18,7 +18,7 @@ public class ImportFormProcessingMessageHandler(
 
 		return service.ExecuteAsync(
 			command: new ImportFormProcessingCommand(
-				Id: data.Id),
+				Id: data.FormId),
 			cancellationToken: cancellationToken);
 	}
 }

@@ -18,7 +18,7 @@ public class PlayerFormQueuedMessageHandler(
 
 		return dispatcher.PushCommandAsync(
 			command: new PlayerFormQueuedCommand(
-				Id: data.Id),
+				Id: data.FormId),
 			cancellationToken: cancellationToken);
 	}
 }
