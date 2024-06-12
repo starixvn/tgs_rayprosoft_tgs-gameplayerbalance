@@ -195,11 +195,9 @@ internal class PlayerFormRepository(
 				Result: current.Result == null
 				? null
 				: new PlayerFormFundResult(
-				current.Result.State,
-				current.Result.Message,
 					current.Result.FundTransactionId,
 					current.Result.TransactionId,
-					current.Result.ExternalTransactionId));
+					current.Result.ExternalOrderId));
 			}
 		}
 	}
@@ -247,11 +245,9 @@ internal class PlayerFormRepository(
 				Result: data.Result == null
 				? null
 				: new PlayerFormFundResult(
-					data.Result.State,
-					data.Result.Message,
 					data.Result.FundTransactionId,
 					data.Result.TransactionId,
-					data.Result.ExternalTransactionId));
+					data.Result.ExternalOrderId));
 	}
 
 	public async ValueTask<long?> ImportGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default)
@@ -404,11 +400,9 @@ internal class PlayerFormRepository(
 				Result: current.Result == null
 				? null
 				: new PlayerFormFundResult(
-				current.Result.State,
-				current.Result.Message,
 					current.Result.FundTransactionId,
 					current.Result.TransactionId,
-					current.Result.ExternalTransactionId));
+					current.Result.ExternalOrderId));
 			}
 		}
 	}
@@ -500,17 +494,15 @@ internal class PlayerFormRepository(
 		await Task.WhenAll(tasks).ConfigureAwait(false);
 	}
 
-	public async ValueTask UpdateCompleteAsync(long id, StateCode resultStateCode, string resultMessage, Guid resultFundTransactionId, Guid resultTransactionId, string resultExternalTransactionId, string status = "success", CancellationToken cancellationToken = default)
+	public async ValueTask UpdateCompleteAsync(long id, Guid resultFundTransactionId, Guid resultTransactionId, string resultExternalOrderId, string status = "success", CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
 		var result = new PlayerFormFundResultModel
 		{
-			State = resultStateCode,
-			Message = resultMessage,
 			FundTransactionId = resultFundTransactionId,
 			TransactionId = resultTransactionId,
-			ExternalTransactionId = resultExternalTransactionId
+			ExternalOrderId = resultExternalOrderId
 		};
 
 		var builder = Builders<PlayerFormModel>.Filter;

@@ -18,10 +18,8 @@ internal class FundsTransferInGetService(
 			.ConfigureAwait(false);
 
 		return new FundsTransferInResult(
-			StateCode: reply.StateCode,
-			Message: reply.Message,
 			FundTransactionId: reply.FundTransactionId,
 			TransactionId: reply.TransactionId,
-			ExternalTransactionId: reply.ExternalTransactionId);
+			ExternalOrderId: reply.ExternalOrderId);
 	}
 }

@@ -9,7 +9,7 @@ internal class PlayerFundRepository(
 {
 	public async ValueTask<PlayerFundResult> FundInZeroResultAsync(string gameProviderCode, string playerCode, Guid walletId, string currencyCode, CancellationToken cancellationToken = default)
 	{
-		var reply = await client.FundInZeroResultAsync(
+		var reply = await client.FundTransferInOneClickAsync(
 			gameProviderCode: gameProviderCode,
 			playerCode: playerCode,
 			walletId: walletId,
@@ -18,10 +18,8 @@ internal class PlayerFundRepository(
 			.ConfigureAwait(false);
 
 		return new PlayerFundResult(
-			StateCode: reply.State,
-			Message: reply.Message,
 			FundTransactionId: reply.FundTransactionId.ToGuid(),
 			TransactionId: reply.TransactionId.ToGuid(),
-			ExternalTransactionId: reply.ExternalTransactionId);
+			ExternalOrderId: reply.ExternalOrderId);
 	}
 }
