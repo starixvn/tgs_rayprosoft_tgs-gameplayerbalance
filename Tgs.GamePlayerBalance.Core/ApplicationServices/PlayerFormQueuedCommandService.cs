@@ -58,11 +58,9 @@ internal class PlayerFormQueuedCommandService(
 
 				await repository.UpdateCompleteAsync(
 					id: command.Id,
-					resultStateCode: result.StateCode,
-					resultMessage: result.Message,
 					resultFundTransactionId: result.FundTransactionId,
 					resultTransactionId: result.TransactionId,
-					resultExternalTransactionId: result.ExternalTransactionId,
+					resultExternalOrderId: result.ExternalOrderId,
 					cancellationToken: cancellationToken)
 					.ConfigureAwait(false);
 			}
