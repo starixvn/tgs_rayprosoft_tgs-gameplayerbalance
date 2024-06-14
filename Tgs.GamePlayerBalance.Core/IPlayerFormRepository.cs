@@ -23,7 +23,7 @@ public interface IPlayerFormRepository
 
 	ValueTask InitializeAsync(CancellationToken cancellationToken = default);
 
-	ValueTask UpdateCompleteAsync(long id, Guid resultFundTransactionId, Guid resultTransactionId, string resultExternalOrderId, string status = "success", CancellationToken cancellationToken = default);
+	ValueTask UpdateCompleteAsync(long id, Guid fundTransactionId, string cashTransactionId, Guid cashRespTransactionId,string gameTransactionId, string gameRespTransactionId, string status = "success", CancellationToken cancellationToken = default);
 
 	ValueTask UpdateCompleteAsync(long id, string status = "success", CancellationToken cancellationToken = default);
 

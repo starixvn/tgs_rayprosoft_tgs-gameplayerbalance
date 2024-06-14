@@ -9,9 +9,14 @@ public record PlayerFormFundResultModel
 	[BsonElement("fund_transaction_id")]
 	[BsonRepresentation(BsonType.String)]
 	public Guid FundTransactionId { get; init; }
-	[BsonElement("transaction_id")]
+	[BsonElement("cash_transaction_id")]
 	[BsonRepresentation(BsonType.String)]
-	public Guid TransactionId { get; init; }
-	[BsonElement("external_order_id")]
-	public string ExternalOrderId { get; init; } = default!;
+	public string CashTransactionId { get; init; } = default!;
+	[BsonElement("cash_resp_transaction_id")]
+	[BsonRepresentation(BsonType.String)]
+	public Guid CashRespTransactionId { get; init; }
+	[BsonElement("game_transaction_id")]
+	public string GameTransactionId { get; init; } = default!;
+	[BsonElement("game_resp_transaction_id")]
+	public string GameRespTransactionId { get; init; } = default!;
 }
