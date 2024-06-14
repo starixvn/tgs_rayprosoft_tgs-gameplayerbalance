@@ -7,8 +7,7 @@ namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 internal class PlayerFormQueuedCommandService(
 	ILogger<PlayerFormQueuedCommandService> logger,
 	IGameFundTransferClient gameFundTransferClient,
-	IPlayerFormRepository repository,
-	IGetService<FundsTransferInQuery, FundsTransferInResult> service) : ICommandService<PlayerFormQueuedCommand>
+	IPlayerFormRepository repository) : ICommandService<PlayerFormQueuedCommand>
 {
 	public async ValueTask ExecuteAsync(PlayerFormQueuedCommand command, CancellationToken cancellationToken = default)
 	{
@@ -44,23 +43,21 @@ internal class PlayerFormQueuedCommandService(
 
 			if (playerBalance.FreeBalance > 0)
 			{
-				var query = new FundsTransferInQuery(
-					form.GameProviderCode,
-					BrandCode: form.BrandCode,
-					PlayerCode: form.PlayerCode,
-					WalletId: form.WalletId,
-					CurrencyCode: form.CurrencyCode);
-
-				var result = await service.GetAsync(
-					query: query,
+				var result = await gameFundTransferClient.FundTransferInOneClickAsync(
+					gameProviderCode: form.GameProviderCode,
+					playerCode: form.PlayerCode,
+					walletId: form.WalletId,
+					currencyCode: form.CurrencyCode,
 					cancellationToken: cancellationToken)
 					.ConfigureAwait(false);
 
 				await repository.UpdateCompleteAsync(
 					id: command.Id,
-					resultFundTransactionId: result.FundTransactionId,
-					resultTransactionId: result.TransactionId,
-					resultExternalOrderId: result.ExternalOrderId,
+					fundTransactionId: result.FundTransactionId,
+					cashTransactionId: result.CashTransactionId,
+					cashRespTransactionId: result.CashRespTransactionId,
+					gameTransactionId: result.GameTransactionId,
+					gameRespTransactionId: result.GameRespTransactionId,
 					cancellationToken: cancellationToken)
 					.ConfigureAwait(false);
 			}

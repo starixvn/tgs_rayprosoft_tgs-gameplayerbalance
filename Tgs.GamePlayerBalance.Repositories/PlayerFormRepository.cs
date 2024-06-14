@@ -195,9 +195,11 @@ internal class PlayerFormRepository(
 				Result: current.Result == null
 				? null
 				: new PlayerFormFundResult(
-					current.Result.FundTransactionId,
-					current.Result.TransactionId,
-					current.Result.ExternalOrderId));
+					FundTransactionId: current.Result.FundTransactionId,
+					CashTransactionId: current.Result.CashTransactionId,
+					CashRespTransactionId: current.Result.CashRespTransactionId,
+					GameTransactionId: current.Result.GameTransactionId,
+					GameRespTransactionId: current.Result.GameRespTransactionId));
 			}
 		}
 	}
@@ -245,9 +247,11 @@ internal class PlayerFormRepository(
 				Result: data.Result == null
 				? null
 				: new PlayerFormFundResult(
-					data.Result.FundTransactionId,
-					data.Result.TransactionId,
-					data.Result.ExternalOrderId));
+					FundTransactionId: data.Result.FundTransactionId,
+					CashTransactionId: data.Result.CashTransactionId,
+					CashRespTransactionId: data.Result.CashRespTransactionId,
+					GameTransactionId: data.Result.GameTransactionId,
+					GameRespTransactionId: data.Result.GameRespTransactionId));
 	}
 
 	public async ValueTask<long?> ImportGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default)
@@ -400,9 +404,11 @@ internal class PlayerFormRepository(
 				Result: current.Result == null
 				? null
 				: new PlayerFormFundResult(
-					current.Result.FundTransactionId,
-					current.Result.TransactionId,
-					current.Result.ExternalOrderId));
+					FundTransactionId: current.Result.FundTransactionId,
+					CashTransactionId: current.Result.CashTransactionId,
+					CashRespTransactionId: current.Result.CashRespTransactionId,
+					GameTransactionId: current.Result.GameTransactionId,
+					GameRespTransactionId: current.Result.GameRespTransactionId));
 			}
 		}
 	}
@@ -494,15 +500,17 @@ internal class PlayerFormRepository(
 		await Task.WhenAll(tasks).ConfigureAwait(false);
 	}
 
-	public async ValueTask UpdateCompleteAsync(long id, Guid resultFundTransactionId, Guid resultTransactionId, string resultExternalOrderId, string status = "success", CancellationToken cancellationToken = default)
+	public async ValueTask UpdateCompleteAsync(long id, Guid fundTransactionId, string cashTransactionId, Guid cashRespTransactionId, string gameTransactionId, string gameRespTransactionId, string status = "success", CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
 		var result = new PlayerFormFundResultModel
 		{
-			FundTransactionId = resultFundTransactionId,
-			TransactionId = resultTransactionId,
-			ExternalOrderId = resultExternalOrderId
+			FundTransactionId = fundTransactionId,
+			CashTransactionId = cashTransactionId,
+			CashRespTransactionId = cashRespTransactionId,
+			GameTransactionId = gameTransactionId,
+			GameRespTransactionId = gameRespTransactionId
 		};
 
 		var builder = Builders<PlayerFormModel>.Filter;
