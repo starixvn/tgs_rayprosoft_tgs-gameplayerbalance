@@ -11,6 +11,7 @@ variables:
 
 stages:
   - build
+  - test
   - publish
   - deploy-dev
   - deploy-staging
@@ -18,6 +19,11 @@ stages:
 
 build-code:
   extends: .build-code-template
+
+unit-test:
+  extends: .unit-test-template
+  script:
+    - dotnet test "**/bin/$BuildConfiguration/$Framework/*Test.dll" -l:'junit;LogFilePath=TestResults/TestResults.xml'
 
 push-docker-image:
   extends: .push-docker-image-template
