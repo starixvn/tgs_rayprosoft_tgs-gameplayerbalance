@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tgs.GamePlayerBalance.Commo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tgs.GamePlayerBalance", "Tgs.GamePlayerBalance\Tgs.GamePlayerBalance.csproj", "{208B1465-865A-4ED5-B4C1-1348C6450993}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tgs.GamePlayerBalance.Core.UnitTest", "Tgs.GamePlayerBalance.Core.UnitTest\Tgs.GamePlayerBalance.Core.UnitTest.csproj", "{DB86CDAC-E17C-4FC9-B608-A2D5C988B818}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{208B1465-865A-4ED5-B4C1-1348C6450993}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{208B1465-865A-4ED5-B4C1-1348C6450993}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{208B1465-865A-4ED5-B4C1-1348C6450993}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB86CDAC-E17C-4FC9-B608-A2D5C988B818}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB86CDAC-E17C-4FC9-B608-A2D5C988B818}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB86CDAC-E17C-4FC9-B608-A2D5C988B818}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB86CDAC-E17C-4FC9-B608-A2D5C988B818}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
