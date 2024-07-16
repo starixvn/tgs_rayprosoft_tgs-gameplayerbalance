@@ -122,3 +122,9 @@ affinity:
           values:
           - game-gameplayerbalance
       topologyKey: kubernetes.io/hostname
+
+restart:
+  enabled: false
+  serviceAccount: game-gameplayerbalance-restarter
+  annotations: {}
+  schedule: 0 0 * * * 
