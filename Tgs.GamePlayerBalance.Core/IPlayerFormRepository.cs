@@ -1,5 +1,4 @@
-﻿using Tgs.GameFundTransfer.Protos;
-using Tgs.GamePlayerBalance.Core.Models;
+﻿using Tgs.GamePlayerBalance.Core.Models;
 
 namespace Tgs.GamePlayerBalance.Core;
 

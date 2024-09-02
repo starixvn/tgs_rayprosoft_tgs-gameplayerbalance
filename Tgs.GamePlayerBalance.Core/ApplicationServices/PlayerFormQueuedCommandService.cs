@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Text.Json.Nodes;
+using Microsoft.Extensions.Logging;
 using Tgs.GameFundTransfer.Client;
 using Tgs.ServiceUtility;
 
@@ -35,21 +36,24 @@ internal class PlayerFormQueuedCommandService(
 
 		try
 		{
-			var playerBalance = await gameFundTransferClient.FundBalanceAsync(
-				gameProviderCode: form.GameProviderCode,
+			var playerBalance = await gameFundTransferClient.FundTransferBalanceAsync(
 				playerCode: form.PlayerCode,
+				gameProviderCode: form.GameProviderCode,
 				cancellationToken: cancellationToken)
 				.ConfigureAwait(false);
 
 			if (playerBalance.FreeBalance > 0)
 			{
 				var result = await gameFundTransferClient.FundTransferInOneClickAsync(
-					gameProviderCode: form.GameProviderCode,
 					playerCode: form.PlayerCode,
-					walletId: form.WalletId,
-					currencyCode: form.CurrencyCode,
+					gameProviderCode: form.GameProviderCode,
 					cancellationToken: cancellationToken)
-					.ConfigureAwait(false);
+					.ConfigureAwait(false)
+					?? throw new ArgumentNullException(new JsonObject
+					{
+						["PlayerCode"] = form.PlayerCode,
+						["GameProviderCode"] = form.GameProviderCode
+					}.ToJsonString());
 
 				await repository.UpdateCompleteAsync(
 					id: command.Id,

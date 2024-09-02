@@ -15,7 +15,7 @@ data:
       },
       "GamePlayerBalanceConnectionStrings": {
         "GameProvidersClientBaseUrl": "http://game-gameproviders/",
-        "GameFundTransferClientBaseUrl": "http://game-gamefundtransfer:9090/"
+        "GameFundTransferClientBaseUrl": "http://game-gamefundtransfer/"
       }
     }
   otel-collector-config.yaml: |

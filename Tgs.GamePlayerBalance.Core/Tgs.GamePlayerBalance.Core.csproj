@@ -8,14 +8,14 @@
 
 	<ItemGroup>
 		<PackageReference Include="ExcelDataReader" Version="3.7.0" />
-		<PackageReference Include="MongoDB.Bson" Version="2.27.0" />
-		<PackageReference Include="MongoDB.Driver" Version="2.27.0" />
-		<PackageReference Include="MongoDB.Driver.Core" Version="2.27.0" />
+		<PackageReference Include="MongoDB.Bson" Version="2.28.0" />
+		<PackageReference Include="MongoDB.Driver" Version="2.28.0" />
+		<PackageReference Include="MongoDB.Driver.Core" Version="2.28.0" />
 		<PackageReference Include="Scrutor" Version="4.2.2" />
 		<PackageReference Include="Snowflake.Core" Version="2.0.0" />
 		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
-		<PackageReference Include="Tgs.GameFundTransfer.Client" Version="1.0.5" />
-		<PackageReference Include="Tgs.GameProviders.Client" Version="1.0.9" />
+		<PackageReference Include="Tgs.GameFundTransfer.Client" Version="1.0.7" />
+		<PackageReference Include="Tgs.GameProviders.Client" Version="1.0.11" />
 		<PackageReference Include="Tgs.MessageQueue.Nats.Serializers" Version="0.0.2" />
 		<PackageReference Include="TGS.ServiceUtility" Version="0.2.0" />
 	</ItemGroup>

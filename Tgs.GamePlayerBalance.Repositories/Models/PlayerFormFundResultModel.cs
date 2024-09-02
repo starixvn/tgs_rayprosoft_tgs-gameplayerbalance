@@ -1,6 +1,5 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using Tgs.GameFundTransfer.Protos;
 
 namespace Tgs.GamePlayerBalance.Repositories.Models;
 
