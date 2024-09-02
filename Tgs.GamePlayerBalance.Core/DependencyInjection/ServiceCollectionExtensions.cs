@@ -1,26 +1,14 @@
 ﻿using System.Reflection;
-using Tgs.GameFundTransfer.Client;
 using Tgs.GamePlayerBalance.Core;
-using Tgs.GameProviders.Client;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
 	public static IServiceCollection AddGamePlayerBalanceCore(
-		this IServiceCollection services,
-		 Action<IPAddressOptions, IServiceProvider> ipAddressOptions,
-		Action<GameProvidersClientOptions, IServiceProvider> gameProvidersClientOptions,
-		Action<GameFundTransferClientOptions, IServiceProvider> gameFundTransferClientOptions)
+		this IServiceCollection services)
 		=> services
-		.AddOptions<IPAddressOptions>()
-		.Configure(ipAddressOptions)
-		.Services
-		.RegisterAllServiceUtilityTypes(
-			Assembly.GetExecutingAssembly(),
-			ServiceLifetime.Transient)
-		.AddGameProvidersClient(gameProvidersClientOptions)
-		.AddGameFundTransferClient(gameFundTransferClientOptions)
+		.RegisterAllServiceUtilityTypes(Assembly.GetExecutingAssembly(), ServiceLifetime.Transient)
 		.AddSingleton<IPlayerFormQueuedDispatcher, PlayerFormQueuedDispatcher>()
 		.AddSingleton<ISnowflakeWork, SnowflakeWork>();
 }

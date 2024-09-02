@@ -1,12 +1,10 @@
 ﻿using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
-using Tgs.GameFundTransfer.Protos;
 using Tgs.GamePlayerBalance.Core;
 using Tgs.GamePlayerBalance.Core.Extensions;
 using Tgs.GamePlayerBalance.Core.Models;
 using Tgs.GamePlayerBalance.Repositories.Models;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Tgs.GamePlayerBalance.Repositories;
 

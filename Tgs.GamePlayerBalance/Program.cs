@@ -4,13 +4,16 @@ using System.Net.Sockets;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using NATS.Client.Core;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Tgs.GamePlayerBalance;
 using Tgs.GamePlayerBalance.Common;
+using Tgs.GamePlayerBalance.Core;
 using Tgs.GamePlayerBalance.MessageHandlers;
+using Tgs.GameProviders.Client;
 using Tgs.MessageQueue.Nats.Serializers;
 
 var filterInstrumentations = new[] { "html", "ico", "png", "jpg" };
@@ -53,33 +56,41 @@ builder.Services.AddSwaggerGen(c =>
 	}
 });
 
-builder.Services.AddGamePlayerBalance(
+builder.Services
+	.AddOptions<MongoDBOptions>()
+	.Configure((MongoDBOptions options, IServiceProvider sp) =>
+	{
+		var configuration = sp.GetRequiredService<IConfiguration>();
+		options.ConnectionString = configuration.GetConnectionString("Mongo")!;
+	})
+	.Services
+	.AddOptions<IPAddressOptions>()
+	.Configure((IPAddressOptions options, IServiceProvider sp) =>
+	{
+		var configuration = sp.GetRequiredService<IConfiguration>();
+		options.IPAddress = builder.Configuration.GetSection("POD_IP").Value
+		?? Dns.GetHostEntry(Dns.GetHostName()).AddressList.Where(ip => ip.AddressFamily == AddressFamily.InterNetwork).Single().ToString();
+	})
+	.Services
+	.AddSingleton<MongoDBConnectionManager>()
+	.AddGameProvidersClient((options, sp) =>
+	{
+		var configuration = sp.GetRequiredService<IConfiguration>();
+		options.BaseUrl = configuration.GetValue<Uri>("GamePlayerBalanceConnectionStrings:GameProvidersClientBaseUrl")!;
+	})
+	.AddGameFundTransferClient(httpClientBuilder => httpClientBuilder.ConfigureHttpClient((sp, http) =>
+	{
+		var config = sp.GetRequiredService<IConfiguration>();
+		http.BaseAddress = config.GetValue<Uri>("GamePlayerBalanceConnectionStrings:GameProvidersClientBaseUrl");
+	}))
+	.AddGamePlayerBalanceCore()
+	.AddGamePlayerBalanceRepositories(
 	(sp, dbBuilder) =>
 	{
 		var config = sp.GetRequiredService<IConfiguration>();
 		_ = dbBuilder.UseNpgsql(config.GetConnectionString("Tgs"));
 	},
-	(options, sp) =>
-	{
-		var configuration = sp.GetRequiredService<IConfiguration>();
-		options.ConnectionString = configuration.GetConnectionString("Mongo")!;
-	},
-	(options, sp) =>
-	{
-		var configuration = sp.GetRequiredService<IConfiguration>();
-		options.IPAddress = builder.Configuration.GetSection("POD_IP").Value
-		?? Dns.GetHostEntry(Dns.GetHostName()).AddressList.Where(ip => ip.AddressFamily == AddressFamily.InterNetwork).Single().ToString();
-	},
-	(options, sp) =>
-	{
-		var configuration = sp.GetRequiredService<IConfiguration>();
-		options.BaseUrl = configuration.GetValue<Uri>("GamePlayerBalanceConnectionStrings:GameProvidersClientBaseUrl")!;
-	},
-	(options, sp) =>
-	{
-		var configuration = sp.GetRequiredService<IConfiguration>();
-		options.BaseUrl = configuration.GetValue<Uri>("GamePlayerBalanceConnectionStrings:GameFundTransferClientBaseUrl")!;
-	});
+	(sp) => sp.GetRequiredService<MongoDBConnectionManager>().MongoDatabase);
 
 // HostedService
 builder.Services.AddHostedService<InitializeHostedService>();
