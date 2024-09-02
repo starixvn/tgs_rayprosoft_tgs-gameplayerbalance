@@ -81,7 +81,7 @@ builder.Services
 	.AddGameFundTransferClient(httpClientBuilder => httpClientBuilder.ConfigureHttpClient((sp, http) =>
 	{
 		var config = sp.GetRequiredService<IConfiguration>();
-		http.BaseAddress = config.GetValue<Uri>("GamePlayerBalanceConnectionStrings:GameProvidersClientBaseUrl");
+		http.BaseAddress = config.GetValue<Uri>("GamePlayerBalanceConnectionStrings:GameFundTransferClientBaseUrl");
 	}))
 	.AddGamePlayerBalanceCore()
 	.AddGamePlayerBalanceRepositories(
