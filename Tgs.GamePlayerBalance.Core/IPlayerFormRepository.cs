@@ -20,6 +20,18 @@ public interface IPlayerFormRepository
 
 	IAsyncEnumerable<PlayerForm> ImportQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, CancellationToken cancellationToken = default);
 
+	ValueTask<long?> BrandTimeGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default);
+
+	IAsyncEnumerable<long> BrandTimePlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, CancellationToken cancellationToken = default);
+
+	IAsyncEnumerable<PlayerForm> BrandTimeQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, CancellationToken cancellationToken = default);
+
+	ValueTask<long?> GameProviderTimeGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default);
+
+	IAsyncEnumerable<long> GameProviderTimePlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, CancellationToken cancellationToken = default);
+
+	IAsyncEnumerable<PlayerForm> GameProviderTimeQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, CancellationToken cancellationToken = default);
+
 	ValueTask InitializeAsync(CancellationToken cancellationToken = default);
 
 	ValueTask UpdateCompleteAsync(long id, Guid fundTransactionId, string cashTransactionId, Guid cashRespTransactionId,string gameTransactionId, string gameRespTransactionId, string status = "success", CancellationToken cancellationToken = default);

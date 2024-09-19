@@ -4,7 +4,6 @@ using System.Net.Sockets;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using NATS.Client.Core;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -13,7 +12,6 @@ using Tgs.GamePlayerBalance;
 using Tgs.GamePlayerBalance.Common;
 using Tgs.GamePlayerBalance.Core;
 using Tgs.GamePlayerBalance.MessageHandlers;
-using Tgs.GameProviders.Client;
 using Tgs.MessageQueue.Nats.Serializers;
 
 var filterInstrumentations = new[] { "html", "ico", "png", "jpg" };
@@ -84,6 +82,11 @@ builder.Services
 		http.BaseAddress = config.GetValue<Uri>("GamePlayerBalanceConnectionStrings:GameFundTransferClientBaseUrl");
 	}))
 	.AddGamePlayerBalanceCore()
+	.AddGameFundClient(httpClientBuilder => httpClientBuilder.ConfigureHttpClient((sp, http) =>
+	{
+		var config = sp.GetRequiredService<IConfiguration>();
+		http.BaseAddress = config.GetValue<Uri>("GamePlayerBalanceConnectionStrings:GameFundClientBaseUrl");
+	}))
 	.AddGamePlayerBalanceRepositories(
 	(sp, dbBuilder) =>
 	{
@@ -111,7 +114,11 @@ builder.Services
 		.AddHandler<BrandFormProcessingMessageHandler>(GamePlayerBalanceNatsConst.BrandFormProcessing, GamePlayerBalanceNatsConst.BrandFormProcessing)
 		.AddHandler<ImportFormQueuedMessageHandler>(GamePlayerBalanceNatsConst.ImportFormQueued, GamePlayerBalanceNatsConst.ImportFormQueued)
 		.AddHandler<ImportFormProcessingMessageHandler>(GamePlayerBalanceNatsConst.ImportFormProcessing, GamePlayerBalanceNatsConst.ImportFormProcessing)
-		.AddHandler<PlayerFormQueuedMessageHandler>(GamePlayerBalanceNatsConst.PlayerFormQueued, GamePlayerBalanceNatsConst.PlayerFormQueued))
+		.AddHandler<PlayerFormQueuedMessageHandler>(GamePlayerBalanceNatsConst.PlayerFormQueued, GamePlayerBalanceNatsConst.PlayerFormQueued)
+		.AddHandler<BrandTimeFormQueuedMessageHandler>(GamePlayerBalanceNatsConst.BrandTimeFormQueued, GamePlayerBalanceNatsConst.BrandTimeFormQueued)
+		.AddHandler<BrandTimeFormProcessingMessageHandler>(GamePlayerBalanceNatsConst.BrandTimeFormProcessing, GamePlayerBalanceNatsConst.BrandTimeFormProcessing)
+		.AddHandler<GameProviderTimeFormQueuedMessageHandler>(GamePlayerBalanceNatsConst.GameProviderTimeFormQueued, GamePlayerBalanceNatsConst.GameProviderTimeFormQueued)
+		.AddHandler<GameProviderTimeFormProcessingMessageHandler>(GamePlayerBalanceNatsConst.GameProviderTimeFormProcessing, GamePlayerBalanceNatsConst.GameProviderTimeFormProcessing))
 	.ClearAllExchanges()
 	.AddNatsGlobPatternExchange(GamePlayerBalanceNatsConst.BrandFormByAwcAelotto)
 	.AddNatsGlobPatternExchange(GamePlayerBalanceNatsConst.BrandFormByAwcAws)
@@ -120,7 +127,9 @@ builder.Services
 	.AddNatsGlobPatternExchange(GamePlayerBalanceNatsConst.BrandFormProcessing)
 	.AddNatsGlobPatternExchange(GamePlayerBalanceNatsConst.ImportFormQueued)
 	.AddNatsGlobPatternExchange(GamePlayerBalanceNatsConst.ImportFormProcessing)
-	.AddNatsGlobPatternExchange(GamePlayerBalanceNatsConst.PlayerFormQueued);
+	.AddNatsGlobPatternExchange(GamePlayerBalanceNatsConst.PlayerFormQueued)
+	.AddNatsGlobPatternExchange(GamePlayerBalanceNatsConst.BrandTimeFormQueued)
+	.AddNatsGlobPatternExchange(GamePlayerBalanceNatsConst.BrandTimeFormProcessing);
 
 builder.Services
 	.AddOpenTelemetry()

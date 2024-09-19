@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
+    <PackageReference Include="Tgs.GameFund.Client" Version="0.0.7" />
   </ItemGroup>
 
 </Project>
