@@ -2,7 +2,7 @@
 
 namespace Tgs.GamePlayerBalance.Core;
 
-public interface IBrandTimeFormRepository
+public interface IFundTraceBrandFormRepository
 {
 	ValueTask<long> AddAsync(string gameProviderCode, string brandCode, IEnumerable<string> players, CancellationToken cancellationToken = default);
 

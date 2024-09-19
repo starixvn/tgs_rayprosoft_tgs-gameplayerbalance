@@ -6,15 +6,15 @@ using Valhalla.MessageQueue;
 
 namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
-internal class BrandTimeFormAddCommandService(
-	ILogger<BrandTimeFormAddCommandService> logger,
+internal class FundTraceBrandFormAddCommandService(
+	ILogger<FundTraceBrandFormAddCommandService> logger,
 	IBrandRepository brandRepository,
 	IGameProviderRepository gameProviderRepository,
-	IBrandTimeFormRepository brandTimeFormRepository,
+	IFundTraceBrandFormRepository brandTimeFormRepository,
 	IGameFundTransferTraceRepository gameFundTransferTraceRepository,
-	IMessageSender messageSender) : ICommandService<BrandTimeFormAddCommand>
+	IMessageSender messageSender) : ICommandService<FundTraceBrandFormAddCommand>
 {
-	public async ValueTask ExecuteAsync(BrandTimeFormAddCommand command, CancellationToken cancellationToken = default)
+	public async ValueTask ExecuteAsync(FundTraceBrandFormAddCommand command, CancellationToken cancellationToken = default)
 	{
 		var brandInfo = await brandRepository.GetAsync(
 			code: command.BrandCode,

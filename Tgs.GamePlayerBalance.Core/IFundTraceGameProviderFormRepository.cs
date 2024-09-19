@@ -2,7 +2,7 @@
 
 namespace Tgs.GamePlayerBalance.Core;
 
-public interface IGameProviderTimeFormRepository
+public interface IFundTraceGameProviderFormRepository
 {
 	ValueTask<long> AddAsync(string gameProviderCode, IEnumerable<string> players, CancellationToken cancellationToken = default);
 

@@ -7,17 +7,17 @@ namespace Tgs.GamePlayerBalance.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class BrandTimeFormsController : ControllerBase
+public class FundTraceBrandFormsController : ControllerBase
 {
-	[HttpPost(Name = "BrandTimeFormAdd")]
-	public ValueTask BrandTimeFormAddAsync(
-		[FromServices] ICommandService<BrandTimeFormAddCommand> service,
-		BrandTimeFormAddViewModel source)
+	[HttpPost(Name = "FundTraceBrandFormAdd")]
+	public ValueTask FundTraceBrandFormAddAsync(
+		[FromServices] ICommandService<FundTraceBrandFormAddCommand> service,
+		FundTraceBrandFormAddViewModel source)
 		=> service.ExecuteAsync(
-			command: new BrandTimeFormAddCommand(
+			command: new FundTraceBrandFormAddCommand(
 				GameProviderCode: source.GameProviderCode,
 				BrandCode: source.BrandCode,
-				StartTime: source.StartTime,
-				EndTime: source.EndTime),
+				StartTime: null,
+				EndTime: null),
 			cancellationToken: HttpContext.RequestAborted);
 }

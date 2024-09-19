@@ -10,7 +10,7 @@ namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 internal class GameProviderTimeFormQueuedCommandService(
 	ILogger<GameProviderTimeFormQueuedCommandService> logger,
 	IPlayerRepository playerRepository,
-	IGameProviderTimeFormRepository gameProviderTimeFormRepository,
+	IFundTraceGameProviderFormRepository gameProviderTimeFormRepository,
 	IPlayerFormRepository playerFormRepository,
 	ISnowflakeWork snowflake,
 	IMessageSender messageSender) : ICommandService<GameProviderTimeFormQueuedCommand>

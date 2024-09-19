@@ -6,14 +6,14 @@ using Valhalla.MessageQueue;
 
 namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
-internal class GameProviderTimeFormAddCommandService(
-	ILogger<GameProviderTimeFormAddCommandService> logger,
+internal class FundTraceGameProviderFormAddCommandService(
+	ILogger<FundTraceGameProviderFormAddCommandService> logger,
 	IGameProviderRepository gameProviderRepository,
-	IGameProviderTimeFormRepository gameProviderTimeFormRepository,
+	IFundTraceGameProviderFormRepository gameProviderTimeFormRepository,
 	IGameFundTransferTraceRepository gameFundTransferTraceRepository,
-	IMessageSender messageSender) : ICommandService<GameProviderTimeFormAddCommand>
+	IMessageSender messageSender) : ICommandService<FundTraceGameProviderFormAddCommand>
 {
-	public async ValueTask ExecuteAsync(GameProviderTimeFormAddCommand command, CancellationToken cancellationToken = default)
+	public async ValueTask ExecuteAsync(FundTraceGameProviderFormAddCommand command, CancellationToken cancellationToken = default)
 	{
 		var gameProviderInfo = await gameProviderRepository.GetAsync(
 			code: command.GameProviderCode,

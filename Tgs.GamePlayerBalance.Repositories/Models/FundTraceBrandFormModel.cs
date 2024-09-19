@@ -5,8 +5,8 @@ using Tgs.GamePlayerBalance.Core;
 
 namespace Tgs.GamePlayerBalance.Repositories.Models;
 
-[Table("gameprovider_time_forms")]
-public record GameProviderTimeFormModel
+[Table("fundtrace_brand_forms")]
+public record class FundTraceBrandFormModel
 {
 	[BsonId]
 	[BsonRepresentation(BsonType.Int64)]
@@ -15,15 +15,12 @@ public record GameProviderTimeFormModel
 	[BsonElement("game_provider_code")]
 	public string GameProviderCode { get; set; } = default!;
 
-	[BsonElement("start_time")]
-	public DateTime StartTime { get; set; }
-
-	[BsonElement("end_time")]
-	public DateTime EndTime { get; set; }
+	[BsonElement("brand_code")]
+	public string BrandCode { get; set; } = default!;
 
 	[BsonElement("state")]
 	[BsonRepresentation(BsonType.String)]
-	public GameProviderTimeFormState State { get; set; }
+	public BrandTimeFormState State { get; set; }
 
 	[BsonElement("status")]
 	[BsonRepresentation(BsonType.String)]
@@ -32,7 +29,7 @@ public record GameProviderTimeFormModel
 
 	[BsonElement("players")]
 	[BsonIgnoreIfNull]
-	public IEnumerable<GameProviderTimeFormPlayerModel> Players { get; set; } = default!;
+	public IEnumerable<FundTraceBrandFormPlayerModel> Players { get; set; } = default!;
 
 	[BsonElement("created_on")]
 	public DateTime CreatedOn { get; set; }

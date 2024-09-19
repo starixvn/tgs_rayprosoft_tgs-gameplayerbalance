@@ -1,7 +1,7 @@
 ﻿namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
-public record class BrandTimeFormAddCommand(
+public record class FundTraceBrandFormAddCommand(
 	string GameProviderCode,
 	string BrandCode,
-	DateTimeOffset StartTime,
-	DateTimeOffset EndTime);
+	DateTimeOffset? StartTime,
+	DateTimeOffset? EndTime);

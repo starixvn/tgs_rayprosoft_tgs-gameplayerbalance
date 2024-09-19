@@ -4,8 +4,6 @@ public record class BrandTimeForm(
 	long Id,
 	string GameProviderCode,
 	string BrandCode,
-	DateTime StartTime,
-	DateTime EndTime,
 	BrandTimeFormState State,
 	string Status,
 	IEnumerable<BrandTimeFormPlayer> Players,

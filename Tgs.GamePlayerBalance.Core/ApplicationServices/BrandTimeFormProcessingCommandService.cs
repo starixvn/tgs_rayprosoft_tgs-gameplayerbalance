@@ -5,7 +5,7 @@ namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
 internal class BrandTimeFormProcessingCommandService(
 	ILogger<BrandTimeFormProcessingCommandService> logger,
-	IBrandTimeFormRepository brandTimeFormRepository,
+	IFundTraceBrandFormRepository brandTimeFormRepository,
 	IPlayerFormRepository playerFormRepository,
 	ICommandService<BrandTimeFormProcessingPublishCommand> service) : ICommandService<BrandTimeFormProcessingCommand>
 {

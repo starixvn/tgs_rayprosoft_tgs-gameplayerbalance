@@ -5,7 +5,7 @@ namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
 internal class GameProviderTimeFormProcessingCommandService(
 	ILogger<GameProviderTimeFormProcessingCommandService> logger,
-	IGameProviderTimeFormRepository gameProviderTimeFormRepository,
+	IFundTraceGameProviderFormRepository gameProviderTimeFormRepository,
 	IPlayerFormRepository playerFormRepository,
 	ICommandService<GameProviderTimeFormProcessingPublishCommand> service) : ICommandService<GameProviderTimeFormProcessingCommand>
 {

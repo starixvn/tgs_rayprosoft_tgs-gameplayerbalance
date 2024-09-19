@@ -5,8 +5,8 @@ namespace Tgs.GamePlayerBalance;
 public sealed class InitializeHostedService(
 	IBrandFormRepository brandFormRepository,
 	IPlayerFormRepository playerFormRepository,
-	IGameProviderTimeFormRepository gameProviderTimeFormRepository,
-	IBrandTimeFormRepository brandTimeFormRepository,
+	IFundTraceGameProviderFormRepository gameProviderTimeFormRepository,
+	IFundTraceBrandFormRepository brandTimeFormRepository,
 	IImportFormRepository importFormRepository,
 	ISnowflakeWork snowflakeWork) : IHostedService
 {

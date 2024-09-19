@@ -7,10 +7,10 @@ using Tgs.GamePlayerBalance.Repositories.Models;
 
 namespace Tgs.GamePlayerBalance.Repositories;
 
-internal class GameProviderTimeFormRepository(
-	ILogger<GameProviderTimeFormRepository> logger,
+internal class FundTraceGameProviderFormRepository(
+	ILogger<FundTraceGameProviderFormRepository> logger,
 	IMongoDatabase database,
-	ISnowflakeWork snowflake) : IGameProviderTimeFormRepository
+	ISnowflakeWork snowflake) : IFundTraceGameProviderFormRepository
 {
 	public async ValueTask<long> AddAsync(string gameProviderCode, IEnumerable<string> players, CancellationToken cancellationToken = default)
 	{
@@ -18,12 +18,12 @@ internal class GameProviderTimeFormRepository(
 
 		var collection = GetCollection();
 
-		var formPlayers = players.Select(player => new GameProviderTimeFormPlayerModel
+		var formPlayers = players.Select(player => new FundTraceGameProviderFormPlayerModel
 		{
 			PlayerCode = player
 		});
 
-		var document = new GameProviderTimeFormModel
+		var document = new FundTraceGameProviderFormModel
 		{
 			Id = id,
 			GameProviderCode = gameProviderCode,
@@ -47,9 +47,9 @@ internal class GameProviderTimeFormRepository(
 	{
 		var collection = GetCollection();
 
-		var builder = Builders<GameProviderTimeFormModel>.Filter;
+		var builder = Builders<FundTraceGameProviderFormModel>.Filter;
 		var filter = builder.Eq(x => x.Id, id);
-		var options = new FindOptions<GameProviderTimeFormModel>
+		var options = new FindOptions<FundTraceGameProviderFormModel>
 		{
 			Skip = 0,
 			Limit = 1
@@ -69,8 +69,6 @@ internal class GameProviderTimeFormRepository(
 			: new GameProviderTimeForm(
 				Id: data.Id,
 				GameProviderCode: data.GameProviderCode,
-				StartTime: data.StartTime,
-				EndTime: data.EndTime,
 				State: data.State,
 				Status: data.Status,
 				Players: data.Players.Select(x => new GameProviderTimeFormPlayer(x.PlayerCode)),
@@ -95,28 +93,6 @@ internal class GameProviderTimeFormRepository(
 				catch (Exception ex)
 				{
 					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_Unique");
-				}
-			}, cancellationToken: cancellationToken),
-			Task.Run(async () =>
-			{
-				try
-				{
-					await StartTime_IndexAsync( collection: collection,   cancellationToken: cancellationToken).ConfigureAwait(false);
-				}
-				catch (Exception ex)
-				{
-					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_StartTime");
-				}
-			}, cancellationToken: cancellationToken),
-			Task.Run(async () =>
-			{
-				try
-				{
-					await EndTime_IndexAsync( collection: collection,   cancellationToken: cancellationToken).ConfigureAwait(false);
-				}
-				catch (Exception ex)
-				{
-					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_EndTime");
 				}
 			}, cancellationToken: cancellationToken),
 			Task.Run(async () =>
@@ -161,9 +137,9 @@ internal class GameProviderTimeFormRepository(
 	{
 		var collection = GetCollection();
 
-		var builder = Builders<GameProviderTimeFormModel>.Filter;
+		var builder = Builders<FundTraceGameProviderFormModel>.Filter;
 		var filter = builder.Eq(x => x.Id, id);
-		var update = Builders<GameProviderTimeFormModel>.Update
+		var update = Builders<FundTraceGameProviderFormModel>.Update
 			.Set(s => s.State, GameProviderTimeFormState.Complete)
 			.Set(s => s.Status, status)
 			.Set(s => s.EndOn, DateTime.UtcNow)
@@ -181,9 +157,9 @@ internal class GameProviderTimeFormRepository(
 	{
 		var collection = GetCollection();
 
-		var builder = Builders<GameProviderTimeFormModel>.Filter;
+		var builder = Builders<FundTraceGameProviderFormModel>.Filter;
 		var filter = builder.Eq(x => x.Id, id);
-		var update = Builders<GameProviderTimeFormModel>.Update
+		var update = Builders<FundTraceGameProviderFormModel>.Update
 			.Set(s => s.State, GameProviderTimeFormState.Failed)
 			.Set(s => s.Status, status)
 			.Set(s => s.EndOn, DateTime.UtcNow)
@@ -201,9 +177,9 @@ internal class GameProviderTimeFormRepository(
 	{
 		var collection = GetCollection();
 
-		var builder = Builders<GameProviderTimeFormModel>.Filter;
+		var builder = Builders<FundTraceGameProviderFormModel>.Filter;
 		var filter = builder.Eq(x => x.Id, id);
-		var update = Builders<GameProviderTimeFormModel>.Update
+		var update = Builders<FundTraceGameProviderFormModel>.Update
 			.Set(s => s.State, GameProviderTimeFormState.Processing)
 			.Set(s => s.Status, $"{GameProviderTimeFormState.Processing}...")
 			.Set(s => s.StartOn, DateTime.UtcNow)
@@ -216,50 +192,16 @@ internal class GameProviderTimeFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task StartTime_IndexAsync(IMongoCollection<GameProviderTimeFormModel> collection, CancellationToken cancellationToken = default)
+	private static async Task CreatedOn_IndexAsync(IMongoCollection<FundTraceGameProviderFormModel> collection, CancellationToken cancellationToken = default)
 	{
-		var index = Builders<GameProviderTimeFormModel>.IndexKeys
-			.Ascending(m => m.StartTime);
-
-		var createIndexOptions = new CreateIndexOptions
-		{
-			Name = $"ix_start_time"
-		};
-		var createIndexModel = new CreateIndexModel<GameProviderTimeFormModel>(index, createIndexOptions);
-
-		_ = await collection.Indexes.CreateOneAsync(
-			model: createIndexModel,
-			cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
-	}
-
-	private static async Task EndTime_IndexAsync(IMongoCollection<GameProviderTimeFormModel> collection, CancellationToken cancellationToken = default)
-	{
-		var index = Builders<GameProviderTimeFormModel>.IndexKeys
-			.Ascending(m => m.EndTime);
-
-		var createIndexOptions = new CreateIndexOptions
-		{
-			Name = $"ix_end_time"
-		};
-		var createIndexModel = new CreateIndexModel<GameProviderTimeFormModel>(index, createIndexOptions);
-
-		_ = await collection.Indexes.CreateOneAsync(
-			model: createIndexModel,
-			cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
-	}
-
-	private static async Task CreatedOn_IndexAsync(IMongoCollection<GameProviderTimeFormModel> collection, CancellationToken cancellationToken = default)
-	{
-		var index = Builders<GameProviderTimeFormModel>.IndexKeys
+		var index = Builders<FundTraceGameProviderFormModel>.IndexKeys
 			.Ascending(m => m.CreatedOn);
 
 		var createIndexOptions = new CreateIndexOptions
 		{
 			Name = $"ix_created_on"
 		};
-		var createIndexModel = new CreateIndexModel<GameProviderTimeFormModel>(index, createIndexOptions);
+		var createIndexModel = new CreateIndexModel<FundTraceGameProviderFormModel>(index, createIndexOptions);
 
 		_ = await collection.Indexes.CreateOneAsync(
 			model: createIndexModel,
@@ -267,9 +209,9 @@ internal class GameProviderTimeFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task ExpireOn_IndexAsync(IMongoCollection<GameProviderTimeFormModel> collection, CancellationToken cancellationToken = default)
+	private static async Task ExpireOn_IndexAsync(IMongoCollection<FundTraceGameProviderFormModel> collection, CancellationToken cancellationToken = default)
 	{
-		var index = Builders<GameProviderTimeFormModel>.IndexKeys
+		var index = Builders<FundTraceGameProviderFormModel>.IndexKeys
 			.Ascending(m => m.ExpireOn);
 
 		var createIndexOptions = new CreateIndexOptions
@@ -277,7 +219,7 @@ internal class GameProviderTimeFormRepository(
 			ExpireAfter = TimeSpan.FromSeconds(1),
 			Name = $"ix_expire_on"
 		};
-		var createIndexModel = new CreateIndexModel<GameProviderTimeFormModel>(index, createIndexOptions);
+		var createIndexModel = new CreateIndexModel<FundTraceGameProviderFormModel>(index, createIndexOptions);
 
 		_ = await collection.Indexes.CreateOneAsync(
 			model: createIndexModel,
@@ -285,16 +227,16 @@ internal class GameProviderTimeFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task GameProviderCode_IndexAsync(IMongoCollection<GameProviderTimeFormModel> collection, CancellationToken cancellationToken = default)
+	private static async Task GameProviderCode_IndexAsync(IMongoCollection<FundTraceGameProviderFormModel> collection, CancellationToken cancellationToken = default)
 	{
-		var index = Builders<GameProviderTimeFormModel>.IndexKeys
+		var index = Builders<FundTraceGameProviderFormModel>.IndexKeys
 			.Ascending(m => m.GameProviderCode);
 
 		var createIndexOptions = new CreateIndexOptions
 		{
 			Name = $"ix_game_provider_code"
 		};
-		var createIndexModel = new CreateIndexModel<GameProviderTimeFormModel>(index, createIndexOptions);
+		var createIndexModel = new CreateIndexModel<FundTraceGameProviderFormModel>(index, createIndexOptions);
 
 		_ = await collection.Indexes.CreateOneAsync(
 			model: createIndexModel,
@@ -302,16 +244,16 @@ internal class GameProviderTimeFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task State_IndexAsync(IMongoCollection<GameProviderTimeFormModel> collection, CancellationToken cancellationToken = default)
+	private static async Task State_IndexAsync(IMongoCollection<FundTraceGameProviderFormModel> collection, CancellationToken cancellationToken = default)
 	{
-		var index = Builders<GameProviderTimeFormModel>.IndexKeys
+		var index = Builders<FundTraceGameProviderFormModel>.IndexKeys
 			.Ascending(m => m.State);
 
 		var createIndexOptions = new CreateIndexOptions
 		{
 			Name = $"ix_state"
 		};
-		var createIndexModel = new CreateIndexModel<GameProviderTimeFormModel>(index, createIndexOptions);
+		var createIndexModel = new CreateIndexModel<FundTraceGameProviderFormModel>(index, createIndexOptions);
 
 		_ = await collection.Indexes.CreateOneAsync(
 			model: createIndexModel,
@@ -319,6 +261,6 @@ internal class GameProviderTimeFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private IMongoCollection<GameProviderTimeFormModel> GetCollection()
-		=> database.GetCollection<GameProviderTimeFormModel>(typeof(GameProviderTimeFormModel).GetTableName());
+	private IMongoCollection<FundTraceGameProviderFormModel> GetCollection()
+		=> database.GetCollection<FundTraceGameProviderFormModel>(typeof(FundTraceGameProviderFormModel).GetTableName());
 }
