@@ -411,14 +411,14 @@ internal class PlayerFormRepository(
 		}
 	}
 
-	public async ValueTask<long?> BrandTimeGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default)
+	public async ValueTask<long?> FundTraceBrandGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
 		var builder = Builders<PlayerFormModel>.Filter;
 		var sort = Builders<PlayerFormModel>.Sort.Ascending(x => x.Id);
 		var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
-					builder.Eq(x => x.Source, PlayerFormSource.BrandTime) &
+					builder.Eq(x => x.Source, PlayerFormSource.FundTraceBrand) &
 					builder.Eq(x => x.State, state);
 
 		var options = new FindOptions<PlayerFormModel>
@@ -441,7 +441,7 @@ internal class PlayerFormRepository(
 			cancellationToken: cancellationToken)?.Id;
 	}
 
-	public async IAsyncEnumerable<long> BrandTimePlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+	public async IAsyncEnumerable<long> FundTraceBrandPlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, [EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
@@ -449,7 +449,7 @@ internal class PlayerFormRepository(
 		{
 			Id = x.FormId,
 			ExpansionFormId = x.ExpansionFormId,
-			Source = PlayerFormSource.BrandTime,
+			Source = PlayerFormSource.FundTraceBrand,
 			GameProviderCode = x.GameProviderCode,
 			BrandCode = x.BrandCode,
 			PlayerCode = x.PlayerCode,
@@ -502,14 +502,14 @@ internal class PlayerFormRepository(
 		}
 	}
 
-	public async IAsyncEnumerable<PlayerForm> BrandTimeQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+	public async IAsyncEnumerable<PlayerForm> FundTraceBrandQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, [EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
 		var builder = Builders<PlayerFormModel>.Filter;
 		var sort = Builders<PlayerFormModel>.Sort.Ascending(x => x.Id);
 		var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
-					builder.Eq(x => x.Source, PlayerFormSource.BrandTime) &
+					builder.Eq(x => x.Source, PlayerFormSource.FundTraceBrand) &
 					builder.Eq(x => x.State, state) &
 					builder.Gt(x => x.Id, id);
 
@@ -558,14 +558,14 @@ internal class PlayerFormRepository(
 		}
 	}
 
-	public async ValueTask<long?> GameProviderTimeGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default)
+	public async ValueTask<long?> FundTraceGameProviderGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
 		var builder = Builders<PlayerFormModel>.Filter;
 		var sort = Builders<PlayerFormModel>.Sort.Ascending(x => x.Id);
 		var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
-					builder.Eq(x => x.Source, PlayerFormSource.GameProviderTime) &
+					builder.Eq(x => x.Source, PlayerFormSource.FundTraceGameProvider) &
 					builder.Eq(x => x.State, state);
 
 		var options = new FindOptions<PlayerFormModel>
@@ -588,7 +588,7 @@ internal class PlayerFormRepository(
 			cancellationToken: cancellationToken)?.Id;
 	}
 
-	public async IAsyncEnumerable<long> GameProviderTimePlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+	public async IAsyncEnumerable<long> FundTraceGameProviderPlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, [EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
@@ -596,7 +596,7 @@ internal class PlayerFormRepository(
 		{
 			Id = x.FormId,
 			ExpansionFormId = x.ExpansionFormId,
-			Source = PlayerFormSource.GameProviderTime,
+			Source = PlayerFormSource.FundTraceGameProvider,
 			GameProviderCode = x.GameProviderCode,
 			BrandCode = x.BrandCode,
 			PlayerCode = x.PlayerCode,
@@ -649,14 +649,14 @@ internal class PlayerFormRepository(
 		}
 	}
 
-	public async IAsyncEnumerable<PlayerForm> GameProviderTimeQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+	public async IAsyncEnumerable<PlayerForm> FundTraceGameProviderQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, [EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
 		var builder = Builders<PlayerFormModel>.Filter;
 		var sort = Builders<PlayerFormModel>.Sort.Ascending(x => x.Id);
 		var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
-					builder.Eq(x => x.Source, PlayerFormSource.GameProviderTime) &
+					builder.Eq(x => x.Source, PlayerFormSource.FundTraceGameProvider) &
 					builder.Eq(x => x.State, state) &
 					builder.Gt(x => x.Id, id);
 

@@ -1,11 +1,12 @@
 ﻿namespace Tgs.GamePlayerBalance.Core.Models;
 
-public record class GameProviderTimeForm(
+public record class FundTraceBrandForm(
 	long Id,
 	string GameProviderCode,
-	GameProviderTimeFormState State,
+	string BrandCode,
+	FundTraceBrandFormState State,
 	string Status,
-	IEnumerable<GameProviderTimeFormPlayer> Players,
+	IEnumerable<FundTraceBrandFormPlayer> Players,
 	DateTime CreatedOn,
 	DateTime UpdateOn,
 	DateTime? StartOn,

@@ -6,7 +6,7 @@ public interface IFundTraceGameProviderFormRepository
 {
 	ValueTask<long> AddAsync(string gameProviderCode, IEnumerable<string> players, CancellationToken cancellationToken = default);
 
-	ValueTask<GameProviderTimeForm?> GetAsync(long id, CancellationToken cancellationToken = default);
+	ValueTask<FundTraceGameProviderForm?> GetAsync(long id, CancellationToken cancellationToken = default);
 
 	ValueTask InitializeAsync(CancellationToken cancellationToken = default);
 

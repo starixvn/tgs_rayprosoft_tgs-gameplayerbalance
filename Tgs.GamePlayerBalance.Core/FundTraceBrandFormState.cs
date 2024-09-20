@@ -1,6 +1,6 @@
 ﻿namespace Tgs.GamePlayerBalance.Core;
 
-public enum GameProviderTimeFormState
+public enum FundTraceBrandFormState
 {
 	Queued = 0,
 	Processing = 1,

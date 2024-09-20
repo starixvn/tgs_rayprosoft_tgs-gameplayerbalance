@@ -3,17 +3,17 @@ using Tgs.ServiceUtility;
 
 namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
-internal class BrandTimeFormProcessingCommandService(
-	ILogger<BrandTimeFormProcessingCommandService> logger,
-	IFundTraceBrandFormRepository brandTimeFormRepository,
+internal class FundTraceBrandFormProcessingCommandService(
+	ILogger<FundTraceBrandFormProcessingCommandService> logger,
+	IFundTraceBrandFormRepository fundTraceBrandFormRepository,
 	IPlayerFormRepository playerFormRepository,
-	ICommandService<BrandTimeFormProcessingPublishCommand> service) : ICommandService<BrandTimeFormProcessingCommand>
+	ICommandService<FundTraceBrandFormProcessingPublishCommand> service) : ICommandService<FundTraceBrandFormProcessingCommand>
 {
 	public async ValueTask ExecuteAsync(
-		BrandTimeFormProcessingCommand command,
+		FundTraceBrandFormProcessingCommand command,
 		CancellationToken cancellationToken = default)
 	{
-		var form = await brandTimeFormRepository.GetAsync(
+		var form = await fundTraceBrandFormRepository.GetAsync(
 			id: command.Id,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
@@ -24,7 +24,7 @@ internal class BrandTimeFormProcessingCommandService(
 			throw new Exception($"This brand time form does not exist.({command.Id})");
 		}
 
-		if (form.State != BrandTimeFormState.Processing)
+		if (form.State != FundTraceBrandFormState.Processing)
 		{
 			logger.LogError("The brand time form status is not processing.({id})", command.Id);
 			throw new Exception($"The brand time form status is not processing.({command.Id})");
@@ -32,7 +32,7 @@ internal class BrandTimeFormProcessingCommandService(
 
 		try
 		{
-			var filterId = await playerFormRepository.BrandTimeGetFirstIdAsync(
+			var filterId = await playerFormRepository.FundTraceBrandGetFirstIdAsync(
 				expansionFormId: form.Id,
 				state: PlayerFormState.Queued,
 				cancellationToken: cancellationToken)
@@ -43,14 +43,14 @@ internal class BrandTimeFormProcessingCommandService(
 			{
 				filterId--;
 				await service.ExecuteAsync(
-					command: new BrandTimeFormProcessingPublishCommand(
+					command: new FundTraceBrandFormProcessingPublishCommand(
 						ExpansionFormId: form.Id,
 						FilterId: filterId),
 					cancellationToken: cancellationToken)
 					.ConfigureAwait(false);
 			}
 
-			await brandTimeFormRepository.UpdateCompleteAsync(
+			await fundTraceBrandFormRepository.UpdateCompleteAsync(
 				id: command.Id,
 				cancellationToken: cancellationToken)
 				.ConfigureAwait(false);
@@ -59,7 +59,7 @@ internal class BrandTimeFormProcessingCommandService(
 		{
 			logger.LogError(ex, "An unknown error occurred.({id})", command.Id);
 
-			await brandTimeFormRepository.UpdateFailedAsync(
+			await fundTraceBrandFormRepository.UpdateFailedAsync(
 				id: command.Id,
 				status: ex.Message,
 				cancellationToken: cancellationToken)

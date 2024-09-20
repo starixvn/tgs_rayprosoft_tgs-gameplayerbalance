@@ -1,4 +1,4 @@
 ﻿namespace Tgs.GamePlayerBalance.Core.Models;
 
-public record class BrandTimeFormPlayer(
+public record class FundTraceGameProviderFormPlayer(
 	string PlayerCode);

@@ -7,13 +7,13 @@ using Valhalla.MessageQueue;
 
 namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
-internal class GameProviderTimeFormProcessingPublishCommandService(
-	ILogger<GameProviderTimeFormProcessingPublishCommandService> logger,
+internal class FundTraceBrandFormProcessingPublishCommandService(
+	ILogger<FundTraceBrandFormProcessingPublishCommandService> logger,
 	IPlayerFormRepository playerFormRepository,
-	IMessageSender messageSender) : ICommandService<GameProviderTimeFormProcessingPublishCommand>
+	IMessageSender messageSender) : ICommandService<FundTraceBrandFormProcessingPublishCommand>
 {
 	public async ValueTask ExecuteAsync(
-		GameProviderTimeFormProcessingPublishCommand command,
+		FundTraceBrandFormProcessingPublishCommand command,
 		CancellationToken cancellationToken = default)
 	{
 		var pageSize = 50;
@@ -21,7 +21,7 @@ internal class GameProviderTimeFormProcessingPublishCommandService(
 
 		while (id > 0)
 		{
-			var playerForms = await playerFormRepository.GameProviderTimeQueryAsync(
+			var playerForms = await playerFormRepository.FundTraceBrandQueryAsync(
 				expansionFormId: command.ExpansionFormId,
 				state: PlayerFormState.Queued,
 				id: id,

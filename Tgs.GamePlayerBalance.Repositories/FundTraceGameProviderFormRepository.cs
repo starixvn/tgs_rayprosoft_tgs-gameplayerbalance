@@ -27,8 +27,8 @@ internal class FundTraceGameProviderFormRepository(
 		{
 			Id = id,
 			GameProviderCode = gameProviderCode,
-			State = GameProviderTimeFormState.Queued,
-			Status = $"{GameProviderTimeFormState.Queued}...",
+			State = FundTraceGameProviderFormState.Queued,
+			Status = $"{FundTraceGameProviderFormState.Queued}...",
 			Players = formPlayers,
 			CreatedOn = DateTime.UtcNow,
 			UpdateOn = DateTime.UtcNow,
@@ -43,7 +43,7 @@ internal class FundTraceGameProviderFormRepository(
 		return id;
 	}
 
-	public async ValueTask<GameProviderTimeForm?> GetAsync(long id, CancellationToken cancellationToken = default)
+	public async ValueTask<FundTraceGameProviderForm?> GetAsync(long id, CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
@@ -66,12 +66,12 @@ internal class FundTraceGameProviderFormRepository(
 
 		return data == null
 			? null
-			: new GameProviderTimeForm(
+			: new FundTraceGameProviderForm(
 				Id: data.Id,
 				GameProviderCode: data.GameProviderCode,
 				State: data.State,
 				Status: data.Status,
-				Players: data.Players.Select(x => new GameProviderTimeFormPlayer(x.PlayerCode)),
+				Players: data.Players.Select(x => new FundTraceGameProviderFormPlayer(x.PlayerCode)),
 				CreatedOn: data.CreatedOn,
 				UpdateOn: data.UpdateOn,
 				StartOn: data.StartOn,
@@ -140,7 +140,7 @@ internal class FundTraceGameProviderFormRepository(
 		var builder = Builders<FundTraceGameProviderFormModel>.Filter;
 		var filter = builder.Eq(x => x.Id, id);
 		var update = Builders<FundTraceGameProviderFormModel>.Update
-			.Set(s => s.State, GameProviderTimeFormState.Complete)
+			.Set(s => s.State, FundTraceGameProviderFormState.Complete)
 			.Set(s => s.Status, status)
 			.Set(s => s.EndOn, DateTime.UtcNow)
 			.Set(s => s.UpdateOn, DateTime.UtcNow)
@@ -160,7 +160,7 @@ internal class FundTraceGameProviderFormRepository(
 		var builder = Builders<FundTraceGameProviderFormModel>.Filter;
 		var filter = builder.Eq(x => x.Id, id);
 		var update = Builders<FundTraceGameProviderFormModel>.Update
-			.Set(s => s.State, GameProviderTimeFormState.Failed)
+			.Set(s => s.State, FundTraceGameProviderFormState.Failed)
 			.Set(s => s.Status, status)
 			.Set(s => s.EndOn, DateTime.UtcNow)
 			.Set(s => s.UpdateOn, DateTime.UtcNow)
@@ -180,8 +180,8 @@ internal class FundTraceGameProviderFormRepository(
 		var builder = Builders<FundTraceGameProviderFormModel>.Filter;
 		var filter = builder.Eq(x => x.Id, id);
 		var update = Builders<FundTraceGameProviderFormModel>.Update
-			.Set(s => s.State, GameProviderTimeFormState.Processing)
-			.Set(s => s.Status, $"{GameProviderTimeFormState.Processing}...")
+			.Set(s => s.State, FundTraceGameProviderFormState.Processing)
+			.Set(s => s.Status, $"{FundTraceGameProviderFormState.Processing}...")
 			.Set(s => s.StartOn, DateTime.UtcNow)
 			.Set(s => s.UpdateOn, DateTime.UtcNow);
 

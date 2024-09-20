@@ -9,7 +9,7 @@ namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 internal class FundTraceGameProviderFormAddCommandService(
 	ILogger<FundTraceGameProviderFormAddCommandService> logger,
 	IGameProviderRepository gameProviderRepository,
-	IFundTraceGameProviderFormRepository gameProviderTimeFormRepository,
+	IFundTraceGameProviderFormRepository fundTraceGameProviderFormRepository,
 	IGameFundTransferTraceRepository gameFundTransferTraceRepository,
 	IMessageSender messageSender) : ICommandService<FundTraceGameProviderFormAddCommand>
 {
@@ -26,27 +26,27 @@ internal class FundTraceGameProviderFormAddCommandService(
 			endTime: command.EndTime,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
-		var id = await gameProviderTimeFormRepository.AddAsync(
+		var id = await fundTraceGameProviderFormRepository.AddAsync(
 			gameProviderCode: gameProviderInfo.GameProviderCode,
 			players: playerCodes,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 
-		var data = new GameProviderTimeFormModelRequest
+		var data = new FundTraceGameProviderFormModelRequest
 		{
 			GameProviderCode = gameProviderInfo.GameProviderCode,
 			FormId = id
 		};
 
 		await messageSender.PublishAsync(
-			subject: GamePlayerBalanceNatsConst.GameProviderTimeFormQueued,
+			subject: GamePlayerBalanceNatsConst.FundTraceGameProviderFormQueued,
 			data: data,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 
 		logger.LogInformation("LogOn:{logOn} Subject:{subject} Information Request:{data}",
 			DateTime.Now.ToString("o"),
-			GamePlayerBalanceNatsConst.GameProviderTimeFormQueued,
+			GamePlayerBalanceNatsConst.FundTraceGameProviderFormQueued,
 			data);
 	}
 }

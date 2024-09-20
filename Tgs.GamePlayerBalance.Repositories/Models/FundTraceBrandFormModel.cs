@@ -20,7 +20,7 @@ public record class FundTraceBrandFormModel
 
 	[BsonElement("state")]
 	[BsonRepresentation(BsonType.String)]
-	public BrandTimeFormState State { get; set; }
+	public FundTraceBrandFormState State { get; set; }
 
 	[BsonElement("status")]
 	[BsonRepresentation(BsonType.String)]

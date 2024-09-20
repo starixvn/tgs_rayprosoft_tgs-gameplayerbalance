@@ -28,8 +28,8 @@ internal class FundTraceBrandFormRepository(
 			Id = id,
 			GameProviderCode = gameProviderCode,
 			BrandCode = brandCode,
-			State = BrandTimeFormState.Queued,
-			Status = $"{BrandTimeFormState.Queued}...",
+			State = FundTraceBrandFormState.Queued,
+			Status = $"{FundTraceBrandFormState.Queued}...",
 			Players = formPlayers,
 			CreatedOn = DateTime.UtcNow,
 			UpdateOn = DateTime.UtcNow,
@@ -44,7 +44,7 @@ internal class FundTraceBrandFormRepository(
 		return id;
 	}
 
-	public async ValueTask<BrandTimeForm?> GetAsync(long id, CancellationToken cancellationToken = default)
+	public async ValueTask<FundTraceBrandForm?> GetAsync(long id, CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
@@ -67,13 +67,13 @@ internal class FundTraceBrandFormRepository(
 
 		return data == null
 			? null
-			: new BrandTimeForm(
+			: new FundTraceBrandForm(
 				Id: data.Id,
 				GameProviderCode: data.GameProviderCode,
 				BrandCode: data.BrandCode,
 				State: data.State,
 				Status: data.Status,
-				Players: data.Players.Select(x => new BrandTimeFormPlayer(x.PlayerCode)),
+				Players: data.Players.Select(x => new FundTraceBrandFormPlayer(x.PlayerCode)),
 				CreatedOn: data.CreatedOn,
 				UpdateOn: data.UpdateOn,
 				StartOn: data.StartOn,
@@ -153,7 +153,7 @@ internal class FundTraceBrandFormRepository(
 		var builder = Builders<FundTraceBrandFormModel>.Filter;
 		var filter = builder.Eq(x => x.Id, id);
 		var update = Builders<FundTraceBrandFormModel>.Update
-			.Set(s => s.State, BrandTimeFormState.Complete)
+			.Set(s => s.State, FundTraceBrandFormState.Complete)
 			.Set(s => s.Status, status)
 			.Set(s => s.EndOn, DateTime.UtcNow)
 			.Set(s => s.UpdateOn, DateTime.UtcNow)
@@ -173,7 +173,7 @@ internal class FundTraceBrandFormRepository(
 		var builder = Builders<FundTraceBrandFormModel>.Filter;
 		var filter = builder.Eq(x => x.Id, id);
 		var update = Builders<FundTraceBrandFormModel>.Update
-			.Set(s => s.State, BrandTimeFormState.Failed)
+			.Set(s => s.State, FundTraceBrandFormState.Failed)
 			.Set(s => s.Status, status)
 			.Set(s => s.EndOn, DateTime.UtcNow)
 			.Set(s => s.UpdateOn, DateTime.UtcNow)
@@ -193,8 +193,8 @@ internal class FundTraceBrandFormRepository(
 		var builder = Builders<FundTraceBrandFormModel>.Filter;
 		var filter = builder.Eq(x => x.Id, id);
 		var update = Builders<FundTraceBrandFormModel>.Update
-			.Set(s => s.State, BrandTimeFormState.Processing)
-			.Set(s => s.Status, $"{BrandTimeFormState.Processing}...")
+			.Set(s => s.State, FundTraceBrandFormState.Processing)
+			.Set(s => s.Status, $"{FundTraceBrandFormState.Processing}...")
 			.Set(s => s.StartOn, DateTime.UtcNow)
 			.Set(s => s.UpdateOn, DateTime.UtcNow);
 

@@ -20,17 +20,17 @@ public interface IPlayerFormRepository
 
 	IAsyncEnumerable<PlayerForm> ImportQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, CancellationToken cancellationToken = default);
 
-	ValueTask<long?> BrandTimeGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default);
+	ValueTask<long?> FundTraceBrandGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default);
 
-	IAsyncEnumerable<long> BrandTimePlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, CancellationToken cancellationToken = default);
+	IAsyncEnumerable<long> FundTraceBrandPlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, CancellationToken cancellationToken = default);
 
-	IAsyncEnumerable<PlayerForm> BrandTimeQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, CancellationToken cancellationToken = default);
+	IAsyncEnumerable<PlayerForm> FundTraceBrandQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, CancellationToken cancellationToken = default);
 
-	ValueTask<long?> GameProviderTimeGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default);
+	ValueTask<long?> FundTraceGameProviderGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default);
 
-	IAsyncEnumerable<long> GameProviderTimePlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, CancellationToken cancellationToken = default);
+	IAsyncEnumerable<long> FundTraceGameProviderPlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, CancellationToken cancellationToken = default);
 
-	IAsyncEnumerable<PlayerForm> GameProviderTimeQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, CancellationToken cancellationToken = default);
+	IAsyncEnumerable<PlayerForm> FundTraceGameProviderQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, CancellationToken cancellationToken = default);
 
 	ValueTask InitializeAsync(CancellationToken cancellationToken = default);
 

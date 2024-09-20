@@ -1,5 +1,5 @@
 ﻿namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
-public record class GameProviderTimeFormProcessingPublishCommand(
+public record class FundTraceBrandFormProcessingPublishCommand(
 	long ExpansionFormId,
 	long FilterId);

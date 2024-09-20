@@ -5,11 +5,11 @@ using Valhalla.MessageQueue;
 
 namespace Tgs.GamePlayerBalance.MessageHandlers;
 
-public class BrandTimeFormProcessingMessageHandler(
-	ILogger<BrandTimeFormProcessingMessageHandler> logger,
-	ICommandService<BrandTimeFormProcessingCommand> service) : IMessageHandler<BrandTimeFormModelRequest>
+public class FundTraceBrandFormQueuedMessageHandler(
+	ILogger<FundTraceBrandFormQueuedMessageHandler> logger,
+	ICommandService<FundTraceBrandFormQueuedCommand> service) : IMessageHandler<FundTraceBrandFormModelRequest>
 {
-	public ValueTask HandleAsync(string subject, BrandTimeFormModelRequest data, IEnumerable<MessageHeaderValue>? headerValues, CancellationToken cancellationToken = default)
+	public ValueTask HandleAsync(string subject, FundTraceBrandFormModelRequest data, IEnumerable<MessageHeaderValue>? headerValues, CancellationToken cancellationToken = default)
 	{
 		logger.LogInformation("LogOn:{logOn} Subject:{subject} Mesaage:This message has been received.({data})",
 			DateTime.Now.ToString("o"),
@@ -17,7 +17,7 @@ public class BrandTimeFormProcessingMessageHandler(
 			data);
 
 		return service.ExecuteAsync(
-			command: new BrandTimeFormProcessingCommand(
+			command: new FundTraceBrandFormQueuedCommand(
 				Id: data.FormId),
 			cancellationToken: cancellationToken);
 	}

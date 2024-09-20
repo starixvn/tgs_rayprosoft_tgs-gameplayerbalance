@@ -17,7 +17,7 @@ public record FundTraceGameProviderFormModel
 
 	[BsonElement("state")]
 	[BsonRepresentation(BsonType.String)]
-	public GameProviderTimeFormState State { get; set; }
+	public FundTraceGameProviderFormState State { get; set; }
 
 	[BsonElement("status")]
 	[BsonRepresentation(BsonType.String)]
