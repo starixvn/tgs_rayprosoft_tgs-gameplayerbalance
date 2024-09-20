@@ -20,6 +20,18 @@ public interface IPlayerFormRepository
 
 	IAsyncEnumerable<PlayerForm> ImportQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, CancellationToken cancellationToken = default);
 
+	ValueTask<long?> FundTraceBrandGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default);
+
+	IAsyncEnumerable<long> FundTraceBrandPlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, CancellationToken cancellationToken = default);
+
+	IAsyncEnumerable<PlayerForm> FundTraceBrandQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, CancellationToken cancellationToken = default);
+
+	ValueTask<long?> FundTraceGameProviderGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default);
+
+	IAsyncEnumerable<long> FundTraceGameProviderPlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, CancellationToken cancellationToken = default);
+
+	IAsyncEnumerable<PlayerForm> FundTraceGameProviderQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, CancellationToken cancellationToken = default);
+
 	ValueTask InitializeAsync(CancellationToken cancellationToken = default);
 
 	ValueTask UpdateCompleteAsync(long id, Guid fundTransactionId, string cashTransactionId, Guid cashRespTransactionId,string gameTransactionId, string gameRespTransactionId, string status = "success", CancellationToken cancellationToken = default);

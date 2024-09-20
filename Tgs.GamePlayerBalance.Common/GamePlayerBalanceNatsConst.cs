@@ -9,5 +9,12 @@ public class GamePlayerBalanceNatsConst
 	public const string BrandFormQueued = "game.playerbalance.brand.form.queued";
 	public const string ImportFormProcessing = "game.playerbalance.import.form.processing";
 	public const string ImportFormQueued = "game.playerbalance.import.form.queued";
+
+	public const string FundTraceBrandFormProcessing = "game.playerbalance.fundtrace.brand.form.processing";
+	public const string FundTraceBrandFormQueued = "game.playerbalance.fundtrace.brand.form.queued";
+
+	public const string FundTraceGameProviderFormProcessing = "game.playerbalance.fundtrace.gameprovider.form.processing";
+	public const string FundTraceGameProviderFormQueued = "game.playerbalance.fundtrace.gameprovider.form.queued";
+
 	public const string PlayerFormQueued = "game.playerbalance.player.form.queued";
 }

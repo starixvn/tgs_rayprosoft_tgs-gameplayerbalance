@@ -411,6 +411,300 @@ internal class PlayerFormRepository(
 		}
 	}
 
+	public async ValueTask<long?> FundTraceBrandGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default)
+	{
+		var collection = GetCollection();
+
+		var builder = Builders<PlayerFormModel>.Filter;
+		var sort = Builders<PlayerFormModel>.Sort.Ascending(x => x.Id);
+		var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
+					builder.Eq(x => x.Source, PlayerFormSource.FundTraceBrand) &
+					builder.Eq(x => x.State, state);
+
+		var options = new FindOptions<PlayerFormModel>
+		{
+			Limit = 1,
+			Sort = sort
+		};
+		var asyncCursor = await collection.FindAsync(
+			filter: filter,
+			options: options,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
+
+		return (await collection.FindAsync(
+			filter: filter,
+			options: options,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false))
+			.FirstOrDefault(
+			cancellationToken: cancellationToken)?.Id;
+	}
+
+	public async IAsyncEnumerable<long> FundTraceBrandPlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+	{
+		var collection = GetCollection();
+
+		var documents = source.Select(x => new PlayerFormModel
+		{
+			Id = x.FormId,
+			ExpansionFormId = x.ExpansionFormId,
+			Source = PlayerFormSource.FundTraceBrand,
+			GameProviderCode = x.GameProviderCode,
+			BrandCode = x.BrandCode,
+			PlayerCode = x.PlayerCode,
+			Username = x.Username,
+			WalletId = x.WalletId,
+			CurrencyCode = x.CurrencyCode,
+			State = PlayerFormState.Queued,
+			Status = $"{PlayerFormState.Queued}...",
+			CreatedOn = DateTime.UtcNow,
+			UpdateOn = DateTime.UtcNow,
+			ExpireOn = null
+		});
+
+		var options = new InsertManyOptions
+		{
+			IsOrdered = false,
+		};
+
+		try
+		{
+			await collection.InsertManyAsync(
+				documents: documents,
+				options: options,
+				cancellationToken: cancellationToken)
+				.ConfigureAwait(false);
+		}
+		catch (MongoBulkWriteException mongoBulkWrite)
+		{
+			logger.LogError(mongoBulkWrite, "Batch add error occurred");
+
+			foreach (var item in source)
+			{
+				if (mongoBulkWrite.WriteErrors.Where(x => x.Message.Contains(item.PlayerCode, StringComparison.OrdinalIgnoreCase)).Any())
+				{
+					logger.LogError("remove existing players.({playerCode})", item.PlayerCode);
+
+					documents = documents.Where(x => !x.PlayerCode.Equals(item.PlayerCode));
+				}
+			}
+		}
+
+		if (!documents.Any())
+		{
+			yield break;
+		}
+
+		foreach (var document in documents)
+		{
+			yield return document.Id;
+		}
+	}
+
+	public async IAsyncEnumerable<PlayerForm> FundTraceBrandQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+	{
+		var collection = GetCollection();
+
+		var builder = Builders<PlayerFormModel>.Filter;
+		var sort = Builders<PlayerFormModel>.Sort.Ascending(x => x.Id);
+		var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
+					builder.Eq(x => x.Source, PlayerFormSource.FundTraceBrand) &
+					builder.Eq(x => x.State, state) &
+					builder.Gt(x => x.Id, id);
+
+		var options = new FindOptions<PlayerFormModel>
+		{
+			Limit = pageSize,
+			Sort = sort
+		};
+		var asyncCursor = await collection.FindAsync(
+			filter: filter,
+			options: options,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
+
+		while (await asyncCursor.MoveNextAsync(
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false))
+		{
+			foreach (var current in asyncCursor.Current)
+			{
+				yield return new PlayerForm(
+				Id: current.Id,
+				ExpansionFormId: current.ExpansionFormId,
+				GameProviderCode: current.GameProviderCode,
+				BrandCode: current.BrandCode,
+				PlayerCode: current.PlayerCode,
+				Username: current.Username,
+				WalletId: current.WalletId,
+				CurrencyCode: current.CurrencyCode,
+				State: current.State,
+				Status: current.Status,
+				CreatedOn: current.CreatedOn,
+				UpdateOn: current.UpdateOn,
+				StartOn: current.StartOn,
+				EndOn: current.EndOn,
+				ExpireOn: current.ExpireOn,
+				Result: current.Result == null
+				? null
+				: new PlayerFormFundResult(
+					FundTransactionId: current.Result.FundTransactionId,
+					CashTransactionId: current.Result.CashTransactionId,
+					CashRespTransactionId: current.Result.CashRespTransactionId,
+					GameTransactionId: current.Result.GameTransactionId,
+					GameRespTransactionId: current.Result.GameRespTransactionId));
+			}
+		}
+	}
+
+	public async ValueTask<long?> FundTraceGameProviderGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default)
+	{
+		var collection = GetCollection();
+
+		var builder = Builders<PlayerFormModel>.Filter;
+		var sort = Builders<PlayerFormModel>.Sort.Ascending(x => x.Id);
+		var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
+					builder.Eq(x => x.Source, PlayerFormSource.FundTraceGameProvider) &
+					builder.Eq(x => x.State, state);
+
+		var options = new FindOptions<PlayerFormModel>
+		{
+			Limit = 1,
+			Sort = sort
+		};
+		var asyncCursor = await collection.FindAsync(
+			filter: filter,
+			options: options,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
+
+		return (await collection.FindAsync(
+			filter: filter,
+			options: options,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false))
+			.FirstOrDefault(
+			cancellationToken: cancellationToken)?.Id;
+	}
+
+	public async IAsyncEnumerable<long> FundTraceGameProviderPlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+	{
+		var collection = GetCollection();
+
+		var documents = source.Select(x => new PlayerFormModel
+		{
+			Id = x.FormId,
+			ExpansionFormId = x.ExpansionFormId,
+			Source = PlayerFormSource.FundTraceGameProvider,
+			GameProviderCode = x.GameProviderCode,
+			BrandCode = x.BrandCode,
+			PlayerCode = x.PlayerCode,
+			Username = x.Username,
+			WalletId = x.WalletId,
+			CurrencyCode = x.CurrencyCode,
+			State = PlayerFormState.Queued,
+			Status = $"{PlayerFormState.Queued}...",
+			CreatedOn = DateTime.UtcNow,
+			UpdateOn = DateTime.UtcNow,
+			ExpireOn = null
+		});
+
+		var options = new InsertManyOptions
+		{
+			IsOrdered = false,
+		};
+
+		try
+		{
+			await collection.InsertManyAsync(
+				documents: documents,
+				options: options,
+				cancellationToken: cancellationToken)
+				.ConfigureAwait(false);
+		}
+		catch (MongoBulkWriteException mongoBulkWrite)
+		{
+			logger.LogError(mongoBulkWrite, "Batch add error occurred");
+
+			foreach (var item in source)
+			{
+				if (mongoBulkWrite.WriteErrors.Where(x => x.Message.Contains(item.PlayerCode, StringComparison.OrdinalIgnoreCase)).Any())
+				{
+					logger.LogError("remove existing players.({playerCode})", item.PlayerCode);
+
+					documents = documents.Where(x => !x.PlayerCode.Equals(item.PlayerCode));
+				}
+			}
+		}
+
+		if (!documents.Any())
+		{
+			yield break;
+		}
+
+		foreach (var document in documents)
+		{
+			yield return document.Id;
+		}
+	}
+
+	public async IAsyncEnumerable<PlayerForm> FundTraceGameProviderQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+	{
+		var collection = GetCollection();
+
+		var builder = Builders<PlayerFormModel>.Filter;
+		var sort = Builders<PlayerFormModel>.Sort.Ascending(x => x.Id);
+		var filter = builder.Eq(x => x.ExpansionFormId, expansionFormId) &
+					builder.Eq(x => x.Source, PlayerFormSource.FundTraceGameProvider) &
+					builder.Eq(x => x.State, state) &
+					builder.Gt(x => x.Id, id);
+
+		var options = new FindOptions<PlayerFormModel>
+		{
+			Limit = pageSize,
+			Sort = sort
+		};
+		var asyncCursor = await collection.FindAsync(
+			filter: filter,
+			options: options,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
+
+		while (await asyncCursor.MoveNextAsync(
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false))
+		{
+			foreach (var current in asyncCursor.Current)
+			{
+				yield return new PlayerForm(
+				Id: current.Id,
+				ExpansionFormId: current.ExpansionFormId,
+				GameProviderCode: current.GameProviderCode,
+				BrandCode: current.BrandCode,
+				PlayerCode: current.PlayerCode,
+				Username: current.Username,
+				WalletId: current.WalletId,
+				CurrencyCode: current.CurrencyCode,
+				State: current.State,
+				Status: current.Status,
+				CreatedOn: current.CreatedOn,
+				UpdateOn: current.UpdateOn,
+				StartOn: current.StartOn,
+				EndOn: current.EndOn,
+				ExpireOn: current.ExpireOn,
+				Result: current.Result == null
+				? null
+				: new PlayerFormFundResult(
+					FundTransactionId: current.Result.FundTransactionId,
+					CashTransactionId: current.Result.CashTransactionId,
+					CashRespTransactionId: current.Result.CashRespTransactionId,
+					GameTransactionId: current.Result.GameTransactionId,
+					GameRespTransactionId: current.Result.GameRespTransactionId));
+			}
+		}
+	}
+
 	public async ValueTask InitializeAsync(CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
