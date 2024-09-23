@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using PhoenixToolkits.Protobuf.ExtendTypes;
 using Tgs.GamePlayerBalance.Common;
 using Tgs.GamePlayerBalance.Common.Protos;
 using Tgs.ServiceUtility;
@@ -6,14 +7,14 @@ using Valhalla.MessageQueue;
 
 namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
-internal class FundTraceGameProviderFormAddCommandService(
-	ILogger<FundTraceGameProviderFormAddCommandService> logger,
+internal class FundTraceFormAddCommandService(
+	ILogger<FundTraceFormAddCommandService> logger,
 	IGameProviderRepository gameProviderRepository,
-	IFundTraceGameProviderFormRepository fundTraceGameProviderFormRepository,
+	IFundTraceFormRepository fundTraceFormRepository,
 	IGameFundTransferTraceRepository gameFundTransferTraceRepository,
-	IMessageSender messageSender) : ICommandService<FundTraceGameProviderFormAddCommand>
+	IMessageSender messageSender) : ICommandService<FundTraceFormAddCommand>
 {
-	public async ValueTask ExecuteAsync(FundTraceGameProviderFormAddCommand command, CancellationToken cancellationToken = default)
+	public async ValueTask ExecuteAsync(FundTraceFormAddCommand command, CancellationToken cancellationToken = default)
 	{
 		var gameProviderInfo = await gameProviderRepository.GetAsync(
 			code: command.GameProviderCode,
@@ -21,32 +22,32 @@ internal class FundTraceGameProviderFormAddCommandService(
 			.ConfigureAwait(false);
 		var playerCodes = await gameFundTransferTraceRepository.QueryPlayerCodeAsync(
 			gameProviderCode: command.GameProviderCode,
-			brandCode: null,
+			brandCode: command.BrandCode,
 			startTime: command.StartTime,
 			endTime: command.EndTime,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
-		var id = await fundTraceGameProviderFormRepository.AddAsync(
+		var id = await fundTraceFormRepository.AddAsync(
 			gameProviderCode: gameProviderInfo.GameProviderCode,
 			players: playerCodes,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 
-		var data = new FundTraceGameProviderFormModelRequest
+		var data = new FundTraceFormModelRequest
 		{
 			GameProviderCode = gameProviderInfo.GameProviderCode,
-			FormId = id
+			FormId = id,
 		};
 
 		await messageSender.PublishAsync(
-			subject: GamePlayerBalanceNatsConst.FundTraceGameProviderFormQueued,
+			subject: GamePlayerBalanceNatsConst.FundTraceFormQueued,
 			data: data,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 
 		logger.LogInformation("LogOn:{logOn} Subject:{subject} Information Request:{data}",
 			DateTime.Now.ToString("o"),
-			GamePlayerBalanceNatsConst.FundTraceGameProviderFormQueued,
+			GamePlayerBalanceNatsConst.FundTraceFormQueued,
 			data);
 	}
 }

@@ -14,23 +14,17 @@ public interface IPlayerFormRepository
 
 	ValueTask<PlayerForm?> GetAsync(long id, CancellationToken cancellationToken = default);
 
+	ValueTask<long?> FundTraceGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default);
+
+	IAsyncEnumerable<long> FundTracePlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, CancellationToken cancellationToken = default);
+
+	IAsyncEnumerable<PlayerForm> FundTraceQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, CancellationToken cancellationToken = default);
+
 	ValueTask<long?> ImportGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default);
 
 	IAsyncEnumerable<long> ImportPlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, CancellationToken cancellationToken = default);
 
 	IAsyncEnumerable<PlayerForm> ImportQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, CancellationToken cancellationToken = default);
-
-	ValueTask<long?> FundTraceBrandGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default);
-
-	IAsyncEnumerable<long> FundTraceBrandPlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, CancellationToken cancellationToken = default);
-
-	IAsyncEnumerable<PlayerForm> FundTraceBrandQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, CancellationToken cancellationToken = default);
-
-	ValueTask<long?> FundTraceGameProviderGetFirstIdAsync(long expansionFormId, PlayerFormState state, CancellationToken cancellationToken = default);
-
-	IAsyncEnumerable<long> FundTraceGameProviderPlayerFormAddAsync(IEnumerable<PlayerFormAdd> source, CancellationToken cancellationToken = default);
-
-	IAsyncEnumerable<PlayerForm> FundTraceGameProviderQueryAsync(long expansionFormId, PlayerFormState state, long id, int pageSize = 1000, CancellationToken cancellationToken = default);
 
 	ValueTask InitializeAsync(CancellationToken cancellationToken = default);
 

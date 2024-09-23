@@ -7,36 +7,36 @@ using Valhalla.MessageQueue;
 
 namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
-internal class FundTraceBrandFormQueuedCommandService(
-	ILogger<FundTraceBrandFormQueuedCommandService> logger,
+internal class FundTraceFormQueuedCommandService(
+	ILogger<FundTraceFormQueuedCommandService> logger,
 	IPlayerRepository playerRepository,
-	IFundTraceBrandFormRepository fundTraceBrandFormRepository,
+	IFundTraceFormRepository fundTraceFormRepository,
 	IPlayerFormRepository playerFormRepository,
 	ISnowflakeWork snowflake,
-	IMessageSender messageSender) : ICommandService<FundTraceBrandFormQueuedCommand>
+	IMessageSender messageSender) : ICommandService<FundTraceFormQueuedCommand>
 {
 	public async ValueTask ExecuteAsync(
-		FundTraceBrandFormQueuedCommand command,
+		FundTraceFormQueuedCommand command,
 		CancellationToken cancellationToken = default)
 	{
-		var form = await fundTraceBrandFormRepository.GetAsync(
+		var form = await fundTraceFormRepository.GetAsync(
 			id: command.Id,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 
 		if (form == null)
 		{
-			logger.LogError("This brand time form does not exist.({id})", command.Id);
-			throw new Exception($"This brand time form does not exist.({command.Id})");
+			logger.LogError("This fund trace form does not exist.({id})", command.Id);
+			throw new Exception($"This fund trace form does not exist.({command.Id})");
 		}
 
-		if (form.State != FundTraceBrandFormState.Queued)
+		if (form.State != FundTraceFormState.Queued)
 		{
-			logger.LogError("The brand time form status is not queued.({id})", command.Id);
-			throw new Exception($"The brand time form status is not queued.({command.Id})");
+			logger.LogError("The fund trace form status is not queued.({id})", command.Id);
+			throw new Exception($"The fund trace form status is not queued.({command.Id})");
 		}
 
-		await fundTraceBrandFormRepository.UpdateProcessingAsync(
+		await fundTraceFormRepository.UpdateProcessingAsync(
 			id: form.Id,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
@@ -71,7 +71,7 @@ internal class FundTraceBrandFormQueuedCommandService(
 		{
 			if (playerFormAdds.Count != 0)
 			{
-				var formIds = await playerFormRepository.FundTraceBrandPlayerFormAddAsync(
+				var formIds = await playerFormRepository.FundTracePlayerFormAddAsync(
 					playerFormAdds,
 					cancellationToken)
 					.ToArrayAsync(
@@ -84,20 +84,20 @@ internal class FundTraceBrandFormQueuedCommandService(
 			logger.LogError(ex, "An unknown error occurred.({id})", form.Id);
 		}
 
-		var data = new FundTraceBrandFormModelRequest
+		var data = new FundTraceFormModelRequest
 		{
 			FormId = form.Id
 		};
 
 		await messageSender.PublishAsync(
-			subject: GamePlayerBalanceNatsConst.FundTraceBrandFormProcessing,
+			subject: GamePlayerBalanceNatsConst.FundTraceFormProcessing,
 			data: data,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 
 		logger.LogInformation("LogOn:{logOn} Subject:{subject} Information Request:{data}",
 			DateTime.Now.ToString("o"),
-			GamePlayerBalanceNatsConst.FundTraceBrandFormProcessing,
+			GamePlayerBalanceNatsConst.FundTraceFormProcessing,
 			data);
 	}
 }

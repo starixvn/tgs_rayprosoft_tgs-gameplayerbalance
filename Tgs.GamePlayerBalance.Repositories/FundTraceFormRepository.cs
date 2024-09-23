@@ -7,10 +7,10 @@ using Tgs.GamePlayerBalance.Repositories.Models;
 
 namespace Tgs.GamePlayerBalance.Repositories;
 
-internal class FundTraceGameProviderFormRepository(
-	ILogger<FundTraceGameProviderFormRepository> logger,
+internal class FundTraceFormRepository(
+	ILogger<FundTraceFormRepository> logger,
 	IMongoDatabase database,
-	ISnowflakeWork snowflake) : IFundTraceGameProviderFormRepository
+	ISnowflakeWork snowflake) : IFundTraceFormRepository
 {
 	public async ValueTask<long> AddAsync(string gameProviderCode, IEnumerable<string> players, CancellationToken cancellationToken = default)
 	{
@@ -18,17 +18,17 @@ internal class FundTraceGameProviderFormRepository(
 
 		var collection = GetCollection();
 
-		var formPlayers = players.Select(player => new FundTraceGameProviderFormPlayerModel
+		var formPlayers = players.Select(player => new FundTraceFormPlayerModel
 		{
 			PlayerCode = player
 		});
 
-		var document = new FundTraceGameProviderFormModel
+		var document = new FundTraceFormModel
 		{
 			Id = id,
 			GameProviderCode = gameProviderCode,
-			State = FundTraceGameProviderFormState.Queued,
-			Status = $"{FundTraceGameProviderFormState.Queued}...",
+			State = FundTraceFormState.Queued,
+			Status = $"{FundTraceFormState.Queued}...",
 			Players = formPlayers,
 			CreatedOn = DateTime.UtcNow,
 			UpdateOn = DateTime.UtcNow,
@@ -43,13 +43,13 @@ internal class FundTraceGameProviderFormRepository(
 		return id;
 	}
 
-	public async ValueTask<FundTraceGameProviderForm?> GetAsync(long id, CancellationToken cancellationToken = default)
+	public async ValueTask<FundTraceForm?> GetAsync(long id, CancellationToken cancellationToken = default)
 	{
 		var collection = GetCollection();
 
-		var builder = Builders<FundTraceGameProviderFormModel>.Filter;
+		var builder = Builders<FundTraceFormModel>.Filter;
 		var filter = builder.Eq(x => x.Id, id);
-		var options = new FindOptions<FundTraceGameProviderFormModel>
+		var options = new FindOptions<FundTraceFormModel>
 		{
 			Skip = 0,
 			Limit = 1
@@ -66,12 +66,12 @@ internal class FundTraceGameProviderFormRepository(
 
 		return data == null
 			? null
-			: new FundTraceGameProviderForm(
+			: new FundTraceForm(
 				Id: data.Id,
 				GameProviderCode: data.GameProviderCode,
 				State: data.State,
 				Status: data.Status,
-				Players: data.Players.Select(x => new FundTraceGameProviderFormPlayer(x.PlayerCode)),
+				Players: data.Players.Select(x => new FundTraceFormPlayer(x.PlayerCode)),
 				CreatedOn: data.CreatedOn,
 				UpdateOn: data.UpdateOn,
 				StartOn: data.StartOn,
@@ -137,10 +137,10 @@ internal class FundTraceGameProviderFormRepository(
 	{
 		var collection = GetCollection();
 
-		var builder = Builders<FundTraceGameProviderFormModel>.Filter;
+		var builder = Builders<FundTraceFormModel>.Filter;
 		var filter = builder.Eq(x => x.Id, id);
-		var update = Builders<FundTraceGameProviderFormModel>.Update
-			.Set(s => s.State, FundTraceGameProviderFormState.Complete)
+		var update = Builders<FundTraceFormModel>.Update
+			.Set(s => s.State, FundTraceFormState.Complete)
 			.Set(s => s.Status, status)
 			.Set(s => s.EndOn, DateTime.UtcNow)
 			.Set(s => s.UpdateOn, DateTime.UtcNow)
@@ -157,10 +157,10 @@ internal class FundTraceGameProviderFormRepository(
 	{
 		var collection = GetCollection();
 
-		var builder = Builders<FundTraceGameProviderFormModel>.Filter;
+		var builder = Builders<FundTraceFormModel>.Filter;
 		var filter = builder.Eq(x => x.Id, id);
-		var update = Builders<FundTraceGameProviderFormModel>.Update
-			.Set(s => s.State, FundTraceGameProviderFormState.Failed)
+		var update = Builders<FundTraceFormModel>.Update
+			.Set(s => s.State, FundTraceFormState.Failed)
 			.Set(s => s.Status, status)
 			.Set(s => s.EndOn, DateTime.UtcNow)
 			.Set(s => s.UpdateOn, DateTime.UtcNow)
@@ -177,11 +177,11 @@ internal class FundTraceGameProviderFormRepository(
 	{
 		var collection = GetCollection();
 
-		var builder = Builders<FundTraceGameProviderFormModel>.Filter;
+		var builder = Builders<FundTraceFormModel>.Filter;
 		var filter = builder.Eq(x => x.Id, id);
-		var update = Builders<FundTraceGameProviderFormModel>.Update
-			.Set(s => s.State, FundTraceGameProviderFormState.Processing)
-			.Set(s => s.Status, $"{FundTraceGameProviderFormState.Processing}...")
+		var update = Builders<FundTraceFormModel>.Update
+			.Set(s => s.State, FundTraceFormState.Processing)
+			.Set(s => s.Status, $"{FundTraceFormState.Processing}...")
 			.Set(s => s.StartOn, DateTime.UtcNow)
 			.Set(s => s.UpdateOn, DateTime.UtcNow);
 
@@ -192,16 +192,16 @@ internal class FundTraceGameProviderFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task CreatedOn_IndexAsync(IMongoCollection<FundTraceGameProviderFormModel> collection, CancellationToken cancellationToken = default)
+	private static async Task CreatedOn_IndexAsync(IMongoCollection<FundTraceFormModel> collection, CancellationToken cancellationToken = default)
 	{
-		var index = Builders<FundTraceGameProviderFormModel>.IndexKeys
+		var index = Builders<FundTraceFormModel>.IndexKeys
 			.Ascending(m => m.CreatedOn);
 
 		var createIndexOptions = new CreateIndexOptions
 		{
 			Name = $"ix_created_on"
 		};
-		var createIndexModel = new CreateIndexModel<FundTraceGameProviderFormModel>(index, createIndexOptions);
+		var createIndexModel = new CreateIndexModel<FundTraceFormModel>(index, createIndexOptions);
 
 		_ = await collection.Indexes.CreateOneAsync(
 			model: createIndexModel,
@@ -209,9 +209,9 @@ internal class FundTraceGameProviderFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task ExpireOn_IndexAsync(IMongoCollection<FundTraceGameProviderFormModel> collection, CancellationToken cancellationToken = default)
+	private static async Task ExpireOn_IndexAsync(IMongoCollection<FundTraceFormModel> collection, CancellationToken cancellationToken = default)
 	{
-		var index = Builders<FundTraceGameProviderFormModel>.IndexKeys
+		var index = Builders<FundTraceFormModel>.IndexKeys
 			.Ascending(m => m.ExpireOn);
 
 		var createIndexOptions = new CreateIndexOptions
@@ -219,7 +219,7 @@ internal class FundTraceGameProviderFormRepository(
 			ExpireAfter = TimeSpan.FromSeconds(1),
 			Name = $"ix_expire_on"
 		};
-		var createIndexModel = new CreateIndexModel<FundTraceGameProviderFormModel>(index, createIndexOptions);
+		var createIndexModel = new CreateIndexModel<FundTraceFormModel>(index, createIndexOptions);
 
 		_ = await collection.Indexes.CreateOneAsync(
 			model: createIndexModel,
@@ -227,16 +227,16 @@ internal class FundTraceGameProviderFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task GameProviderCode_IndexAsync(IMongoCollection<FundTraceGameProviderFormModel> collection, CancellationToken cancellationToken = default)
+	private static async Task GameProviderCode_IndexAsync(IMongoCollection<FundTraceFormModel> collection, CancellationToken cancellationToken = default)
 	{
-		var index = Builders<FundTraceGameProviderFormModel>.IndexKeys
+		var index = Builders<FundTraceFormModel>.IndexKeys
 			.Ascending(m => m.GameProviderCode);
 
 		var createIndexOptions = new CreateIndexOptions
 		{
 			Name = $"ix_game_provider_code"
 		};
-		var createIndexModel = new CreateIndexModel<FundTraceGameProviderFormModel>(index, createIndexOptions);
+		var createIndexModel = new CreateIndexModel<FundTraceFormModel>(index, createIndexOptions);
 
 		_ = await collection.Indexes.CreateOneAsync(
 			model: createIndexModel,
@@ -244,16 +244,16 @@ internal class FundTraceGameProviderFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private static async Task State_IndexAsync(IMongoCollection<FundTraceGameProviderFormModel> collection, CancellationToken cancellationToken = default)
+	private static async Task State_IndexAsync(IMongoCollection<FundTraceFormModel> collection, CancellationToken cancellationToken = default)
 	{
-		var index = Builders<FundTraceGameProviderFormModel>.IndexKeys
+		var index = Builders<FundTraceFormModel>.IndexKeys
 			.Ascending(m => m.State);
 
 		var createIndexOptions = new CreateIndexOptions
 		{
 			Name = $"ix_state"
 		};
-		var createIndexModel = new CreateIndexModel<FundTraceGameProviderFormModel>(index, createIndexOptions);
+		var createIndexModel = new CreateIndexModel<FundTraceFormModel>(index, createIndexOptions);
 
 		_ = await collection.Indexes.CreateOneAsync(
 			model: createIndexModel,
@@ -261,6 +261,6 @@ internal class FundTraceGameProviderFormRepository(
 			.ConfigureAwait(false);
 	}
 
-	private IMongoCollection<FundTraceGameProviderFormModel> GetCollection()
-		=> database.GetCollection<FundTraceGameProviderFormModel>(typeof(FundTraceGameProviderFormModel).GetTableName());
+	private IMongoCollection<FundTraceFormModel> GetCollection()
+		=> database.GetCollection<FundTraceFormModel>(typeof(FundTraceFormModel).GetTableName());
 }

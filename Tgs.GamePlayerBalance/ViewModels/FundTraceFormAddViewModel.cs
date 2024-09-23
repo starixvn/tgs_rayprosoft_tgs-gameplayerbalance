@@ -2,10 +2,12 @@
 
 namespace Tgs.GamePlayerBalance.ViewModels;
 
-public record class FundTraceGameProviderFormAddViewModel
+public record class FundTraceFormAddViewModel
 {
 	[Required]
 	public string GameProviderCode { get; init; } = default!;
+
+	public string? BrandCode { get; init; }
 
 	public DateTimeOffset? StartTime { get; init; }
 

@@ -5,8 +5,7 @@ namespace Tgs.GamePlayerBalance;
 public sealed class InitializeHostedService(
 	IBrandFormRepository brandFormRepository,
 	IPlayerFormRepository playerFormRepository,
-	IFundTraceGameProviderFormRepository fundTraceGameProviderFormRepository,
-	IFundTraceBrandFormRepository fundTraceBrandFormRepository,
+	IFundTraceFormRepository fundTraceFormRepository,
 	IImportFormRepository importFormRepository,
 	ISnowflakeWork snowflakeWork) : IHostedService
 {
@@ -16,8 +15,7 @@ public sealed class InitializeHostedService(
 		{
 			Task.Run(()=>brandFormRepository.InitializeAsync(cancellationToken)),
 			Task.Run(()=>importFormRepository.InitializeAsync(cancellationToken)),
-			Task.Run(()=>fundTraceBrandFormRepository.InitializeAsync(cancellationToken)),
-			Task.Run(()=>fundTraceGameProviderFormRepository.InitializeAsync(cancellationToken)),
+			Task.Run(()=>fundTraceFormRepository.InitializeAsync(cancellationToken)),
 			Task.Run(()=>playerFormRepository.InitializeAsync(cancellationToken)),
 			Task.Run(()=>snowflakeWork.GetId())
 		};
