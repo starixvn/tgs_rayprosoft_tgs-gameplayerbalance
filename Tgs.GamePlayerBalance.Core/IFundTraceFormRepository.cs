@@ -4,7 +4,7 @@ namespace Tgs.GamePlayerBalance.Core;
 
 public interface IFundTraceFormRepository
 {
-	ValueTask<long> AddAsync(string gameProviderCode, IEnumerable<string> players, CancellationToken cancellationToken = default);
+	ValueTask<long> AddAsync(string gameProviderCode, string? brandCode, DateTimeOffset? startTime, DateTimeOffset? endTime, CancellationToken cancellationToken = default);
 
 	ValueTask<FundTraceForm?> GetAsync(long id, CancellationToken cancellationToken = default);
 

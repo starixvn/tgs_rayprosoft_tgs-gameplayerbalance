@@ -12,6 +12,7 @@ internal class FundTraceFormQueuedCommandService(
 	IPlayerRepository playerRepository,
 	IFundTraceFormRepository fundTraceFormRepository,
 	IPlayerFormRepository playerFormRepository,
+	IGameFundTransferTraceRepository gameFundTransferTraceRepository,
 	ISnowflakeWork snowflake,
 	IMessageSender messageSender) : ICommandService<FundTraceFormQueuedCommand>
 {
@@ -41,18 +42,26 @@ internal class FundTraceFormQueuedCommandService(
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 
+		var playerCodes = await gameFundTransferTraceRepository.QueryPlayerCodeAsync(
+			gameProviderCode: form.GameProviderCode,
+			brandCode: form.BrandCode,
+			startTime: form.StartTime,
+			endTime: form.EndTime,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
+
 		var playerFormAdds = new List<PlayerFormAdd>();
 
-		foreach (var player in form.Players)
+		foreach (var playerCode in playerCodes)
 		{
 			var playerInfo = await playerRepository.GetAsync(
-				playerCode: player.PlayerCode,
+				playerCode: playerCode,
 				cancellationToken: cancellationToken)
 				.ConfigureAwait(false);
 
 			if (playerInfo == null)
 			{
-				logger.LogError("This player does not exist.({playerCode})", player.PlayerCode);
+				logger.LogError("This player does not exist.({playerCode})", playerCode);
 				continue;
 			}
 
@@ -86,6 +95,8 @@ internal class FundTraceFormQueuedCommandService(
 
 		var data = new FundTraceFormModelRequest
 		{
+			GameProviderCode = form.GameProviderCode,
+			BrandCode = form.BrandCode ?? string.Empty,
 			FormId = form.Id
 		};
 

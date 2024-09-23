@@ -3,9 +3,11 @@
 public record class FundTraceForm(
 	long Id,
 	string GameProviderCode,
+	string? BrandCode,
+	DateTimeOffset? StartTime,
+	DateTimeOffset? EndTime,
 	FundTraceFormState State,
 	string Status,
-	IEnumerable<FundTraceFormPlayer> Players,
 	DateTime CreatedOn,
 	DateTime UpdateOn,
 	DateTime? StartOn,

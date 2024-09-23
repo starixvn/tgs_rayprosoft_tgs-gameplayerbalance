@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using PhoenixToolkits.Protobuf.ExtendTypes;
 using Tgs.GamePlayerBalance.Common;
 using Tgs.GamePlayerBalance.Common.Protos;
 using Tgs.ServiceUtility;
@@ -10,32 +9,32 @@ namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 internal class FundTraceFormAddCommandService(
 	ILogger<FundTraceFormAddCommandService> logger,
 	IGameProviderRepository gameProviderRepository,
+	IBrandRepository brandRepository,
 	IFundTraceFormRepository fundTraceFormRepository,
-	IGameFundTransferTraceRepository gameFundTransferTraceRepository,
 	IMessageSender messageSender) : ICommandService<FundTraceFormAddCommand>
 {
 	public async ValueTask ExecuteAsync(FundTraceFormAddCommand command, CancellationToken cancellationToken = default)
 	{
+		var brandInfo = command.BrandCode is { Length: > 0 } ? await brandRepository.GetAsync(
+			code: command.BrandCode,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false) : null;
 		var gameProviderInfo = await gameProviderRepository.GetAsync(
 			code: command.GameProviderCode,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
-		var playerCodes = await gameFundTransferTraceRepository.QueryPlayerCodeAsync(
+		var id = await fundTraceFormRepository.AddAsync(
 			gameProviderCode: command.GameProviderCode,
 			brandCode: command.BrandCode,
 			startTime: command.StartTime,
 			endTime: command.EndTime,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
-		var id = await fundTraceFormRepository.AddAsync(
-			gameProviderCode: gameProviderInfo.GameProviderCode,
-			players: playerCodes,
-			cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
 
 		var data = new FundTraceFormModelRequest
 		{
 			GameProviderCode = gameProviderInfo.GameProviderCode,
+			BrandCode = brandInfo?.BrandCode ?? string.Empty,
 			FormId = id,
 		};
 

@@ -15,6 +15,15 @@ public record class FundTraceFormModel
 	[BsonElement("game_provider_code")]
 	public string GameProviderCode { get; set; } = default!;
 
+	[BsonElement("brand_code")]
+	public string BrandCode { get; set; } = default!;
+
+	[BsonElement("start_time")]
+	public DateTimeOffset StartTime { get; set; }
+
+	[BsonElement("end_time")]
+	public DateTimeOffset EndTime { get; set; }
+
 	[BsonElement("state")]
 	[BsonRepresentation(BsonType.String)]
 	public FundTraceFormState State { get; set; }
@@ -23,10 +32,6 @@ public record class FundTraceFormModel
 	[BsonRepresentation(BsonType.String)]
 	[BsonIgnoreIfNull]
 	public string Status { get; set; } = default!;
-
-	[BsonElement("players")]
-	[BsonIgnoreIfNull]
-	public IEnumerable<FundTraceFormPlayerModel> Players { get; set; } = default!;
 
 	[BsonElement("created_on")]
 	public DateTime CreatedOn { get; set; }

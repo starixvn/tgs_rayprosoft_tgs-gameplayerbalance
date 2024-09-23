@@ -12,24 +12,21 @@ internal class FundTraceFormRepository(
 	IMongoDatabase database,
 	ISnowflakeWork snowflake) : IFundTraceFormRepository
 {
-	public async ValueTask<long> AddAsync(string gameProviderCode, IEnumerable<string> players, CancellationToken cancellationToken = default)
+	public async ValueTask<long> AddAsync(string gameProviderCode, string? brandCode, DateTimeOffset? startTime, DateTimeOffset? endTime, CancellationToken cancellationToken = default)
 	{
 		var id = snowflake.GetId();
 
 		var collection = GetCollection();
 
-		var formPlayers = players.Select(player => new FundTraceFormPlayerModel
-		{
-			PlayerCode = player
-		});
-
 		var document = new FundTraceFormModel
 		{
 			Id = id,
 			GameProviderCode = gameProviderCode,
+			BrandCode = brandCode ?? string.Empty,
+			StartTime = startTime?.ToUniversalTime() ?? DateTimeOffset.UnixEpoch,
+			EndTime = endTime?.ToUniversalTime() ?? DateTimeOffset.UnixEpoch,
 			State = FundTraceFormState.Queued,
 			Status = $"{FundTraceFormState.Queued}...",
-			Players = formPlayers,
 			CreatedOn = DateTime.UtcNow,
 			UpdateOn = DateTime.UtcNow,
 			ExpireOn = null
@@ -69,9 +66,11 @@ internal class FundTraceFormRepository(
 			: new FundTraceForm(
 				Id: data.Id,
 				GameProviderCode: data.GameProviderCode,
+				BrandCode: data.BrandCode is { Length: > 0 } ? data.BrandCode : null,
+				StartTime: data.StartTime > DateTimeOffset.UnixEpoch ? data.StartTime : null,
+				EndTime: data.EndTime > DateTimeOffset.UnixEpoch ? data.EndTime : null,
 				State: data.State,
 				Status: data.Status,
-				Players: data.Players.Select(x => new FundTraceFormPlayer(x.PlayerCode)),
 				CreatedOn: data.CreatedOn,
 				UpdateOn: data.UpdateOn,
 				StartOn: data.StartOn,
@@ -93,6 +92,17 @@ internal class FundTraceFormRepository(
 				catch (Exception ex)
 				{
 					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_Unique");
+				}
+			}, cancellationToken: cancellationToken),
+			Task.Run(async () =>
+			{
+				try
+				{
+					 await BrandCode_IndexAsync( collection: collection,   cancellationToken: cancellationToken).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "LogOn:{logOn} Message:This index creation failed.{index}",  DateTime.Now.ToString("u"),"Index_BrandCode");
 				}
 			}, cancellationToken: cancellationToken),
 			Task.Run(async () =>
@@ -235,6 +245,23 @@ internal class FundTraceFormRepository(
 		var createIndexOptions = new CreateIndexOptions
 		{
 			Name = $"ix_game_provider_code"
+		};
+		var createIndexModel = new CreateIndexModel<FundTraceFormModel>(index, createIndexOptions);
+
+		_ = await collection.Indexes.CreateOneAsync(
+			model: createIndexModel,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
+	}
+
+	private static async Task BrandCode_IndexAsync(IMongoCollection<FundTraceFormModel> collection, CancellationToken cancellationToken = default)
+	{
+		var index = Builders<FundTraceFormModel>.IndexKeys
+			.Ascending(m => m.BrandCode);
+
+		var createIndexOptions = new CreateIndexOptions
+		{
+			Name = $"ix_brand_code"
 		};
 		var createIndexModel = new CreateIndexModel<FundTraceFormModel>(index, createIndexOptions);
 
