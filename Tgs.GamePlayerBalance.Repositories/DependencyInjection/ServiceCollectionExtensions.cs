@@ -19,7 +19,6 @@ public static class ServiceCollectionExtensions
 		.AddTransient<IPlayerRepository, PlayerRepository>()
 		.AddTransient<IGameFundTransferTraceRepository, GameFundTransferTraceRepository>()
 		.AddTransient<IBrandFormRepository>((sp) => ActivatorUtilities.CreateInstance<BrandFormRepository>(sp, mongoDatabaseResolver(sp)))
-		.AddTransient<IFundTraceFormRepository>((sp) => ActivatorUtilities.CreateInstance<FundTraceFormRepository>(sp, mongoDatabaseResolver(sp)))
 		.AddTransient<IImportFormRepository>((sp) => ActivatorUtilities.CreateInstance<ImportFormRepository>(sp, mongoDatabaseResolver(sp)))
 		.AddTransient<IPlayerFormRepository>((sp) => ActivatorUtilities.CreateInstance<PlayerFormRepository>(sp, mongoDatabaseResolver(sp)));
 }

@@ -10,7 +10,7 @@ namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 internal class FundTraceFormQueuedCommandService(
 	ILogger<FundTraceFormQueuedCommandService> logger,
 	IPlayerRepository playerRepository,
-	IFundTraceFormRepository fundTraceFormRepository,
+	IBrandFormRepository brandFormRepository,
 	IPlayerFormRepository playerFormRepository,
 	IGameFundTransferTraceRepository gameFundTransferTraceRepository,
 	ISnowflakeWork snowflake,
@@ -20,7 +20,7 @@ internal class FundTraceFormQueuedCommandService(
 		FundTraceFormQueuedCommand command,
 		CancellationToken cancellationToken = default)
 	{
-		var form = await fundTraceFormRepository.GetAsync(
+		var form = await brandFormRepository.GetAsync(
 			id: command.Id,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
@@ -31,22 +31,22 @@ internal class FundTraceFormQueuedCommandService(
 			throw new Exception($"This fund trace form does not exist.({command.Id})");
 		}
 
-		if (form.State != FundTraceFormState.Queued)
+		if (form.State != BrandFormState.Queued)
 		{
 			logger.LogError("The fund trace form status is not queued.({id})", command.Id);
 			throw new Exception($"The fund trace form status is not queued.({command.Id})");
 		}
 
-		await fundTraceFormRepository.UpdateProcessingAsync(
+		await brandFormRepository.UpdateProcessingAsync(
 			id: form.Id,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 
 		var playerCodes = await gameFundTransferTraceRepository.QueryPlayerCodeAsync(
 			gameProviderCode: form.GameProviderCode,
-			brandCode: form.BrandCode,
-			startTime: form.StartTime,
-			endTime: form.EndTime,
+			brandCode: form.BrandCode is { Length: > 0 } ? form.BrandCode : null,
+			startTime: form.StartTime > DateTimeOffset.UnixEpoch ? form.StartTime : null,
+			endTime: form.EndTime > DateTimeOffset.UnixEpoch ? form.EndTime : null,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 

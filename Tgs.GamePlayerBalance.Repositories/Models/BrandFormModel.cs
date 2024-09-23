@@ -23,7 +23,18 @@ public record BrandFormModel
 	/// The brand code
 	/// </summary>
 	[BsonElement("brand_code")]
+	[BsonIgnoreIfNull]
 	public string BrandCode { get; set; } = default!;
+	/// <summary>
+	/// The start time
+	/// </summary>
+	[BsonElement("start_time")]
+	public DateTimeOffset StartTime { get; set; }
+	/// <summary>
+	/// The end time
+	/// </summary>
+	[BsonElement("end_time")]
+	public DateTimeOffset EndTime { get; set; }
 	/// <summary>
 	/// The state
 	/// </summary>

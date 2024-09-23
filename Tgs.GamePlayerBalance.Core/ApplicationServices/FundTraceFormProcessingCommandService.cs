@@ -5,7 +5,7 @@ namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
 internal class FundTraceFormProcessingCommandService(
 	ILogger<FundTraceFormProcessingCommandService> logger,
-	IFundTraceFormRepository fundTraceFormRepository,
+	IBrandFormRepository brandFormRepository,
 	IPlayerFormRepository playerFormRepository,
 	ICommandService<FundTraceFormProcessingPublishCommand> service) : ICommandService<FundTraceFormProcessingCommand>
 {
@@ -13,7 +13,7 @@ internal class FundTraceFormProcessingCommandService(
 		FundTraceFormProcessingCommand command,
 		CancellationToken cancellationToken = default)
 	{
-		var form = await fundTraceFormRepository.GetAsync(
+		var form = await brandFormRepository.GetAsync(
 			id: command.Id,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
@@ -24,7 +24,7 @@ internal class FundTraceFormProcessingCommandService(
 			throw new Exception($"This fund trace form does not exist.({command.Id})");
 		}
 
-		if (form.State != FundTraceFormState.Processing)
+		if (form.State != BrandFormState.Processing)
 		{
 			logger.LogError("The fund trace form status is not processing.({id})", command.Id);
 			throw new Exception($"The fund trace form status is not processing.({command.Id})");
@@ -50,7 +50,7 @@ internal class FundTraceFormProcessingCommandService(
 					.ConfigureAwait(false);
 			}
 
-			await fundTraceFormRepository.UpdateCompleteAsync(
+			await brandFormRepository.UpdateCompleteAsync(
 				id: command.Id,
 				cancellationToken: cancellationToken)
 				.ConfigureAwait(false);
@@ -59,7 +59,7 @@ internal class FundTraceFormProcessingCommandService(
 		{
 			logger.LogError(ex, "An unknown error occurred.({id})", command.Id);
 
-			await fundTraceFormRepository.UpdateFailedAsync(
+			await brandFormRepository.UpdateFailedAsync(
 				id: command.Id,
 				status: ex.Message,
 				cancellationToken: cancellationToken)

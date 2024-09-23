@@ -12,7 +12,7 @@ internal class BrandFormRepository(
 	IMongoDatabase database,
 	ISnowflakeWork snowflake) : IBrandFormRepository
 {
-	public async ValueTask<long> AddAsync(string gameProviderCode, string brandCode, CancellationToken cancellationToken = default)
+	public async ValueTask<long> AddAsync(string gameProviderCode, string brandCode, DateTimeOffset startTime, DateTimeOffset endTime, CancellationToken cancellationToken = default)
 	{
 		var id = snowflake.GetId();
 
@@ -23,6 +23,8 @@ internal class BrandFormRepository(
 			Id = id,
 			GameProviderCode = gameProviderCode,
 			BrandCode = brandCode,
+			StartTime = startTime,
+			EndTime = endTime,
 			State = BrandFormState.Queued,
 			Status = $"{BrandFormState.Queued}...",
 			CreatedOn = DateTime.UtcNow,
@@ -65,6 +67,8 @@ internal class BrandFormRepository(
 				Id: data.Id,
 				GameProviderCode: data.GameProviderCode,
 				BrandCode: data.BrandCode,
+				StartTime: data.StartTime,
+				EndTime: data.EndTime,
 				State: data.State,
 				Status: data.Status,
 				CreatedOn: data.CreatedOn,

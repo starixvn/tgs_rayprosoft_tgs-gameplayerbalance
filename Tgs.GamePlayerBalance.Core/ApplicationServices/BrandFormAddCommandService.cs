@@ -26,6 +26,8 @@ internal class BrandFormAddCommandService(
 		var id = await brandFormRepository.AddAsync(
 			gameProviderCode: gameProviderInfo.GameProviderCode,
 			brandCode: brandInfo.BrandCode,
+			startTime: DateTimeOffset.UnixEpoch,
+			endTime: DateTimeOffset.UnixEpoch,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 

@@ -10,7 +10,7 @@ internal class FundTraceFormAddCommandService(
 	ILogger<FundTraceFormAddCommandService> logger,
 	IGameProviderRepository gameProviderRepository,
 	IBrandRepository brandRepository,
-	IFundTraceFormRepository fundTraceFormRepository,
+	IBrandFormRepository brandFormRepository,
 	IMessageSender messageSender) : ICommandService<FundTraceFormAddCommand>
 {
 	public async ValueTask ExecuteAsync(FundTraceFormAddCommand command, CancellationToken cancellationToken = default)
@@ -23,11 +23,11 @@ internal class FundTraceFormAddCommandService(
 			code: command.GameProviderCode,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
-		var id = await fundTraceFormRepository.AddAsync(
+		var id = await brandFormRepository.AddAsync(
 			gameProviderCode: command.GameProviderCode,
-			brandCode: command.BrandCode,
-			startTime: command.StartTime,
-			endTime: command.EndTime,
+			brandCode: command.BrandCode is { Length: > 0 } ? command.BrandCode : string.Empty,
+			startTime: command.StartTime?.ToUniversalTime() ?? DateTimeOffset.UnixEpoch,
+			endTime: command.EndTime?.ToUniversalTime() ?? DateTimeOffset.UnixEpoch,
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
 

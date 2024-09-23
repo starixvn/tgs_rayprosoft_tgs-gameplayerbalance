@@ -4,7 +4,7 @@ namespace Tgs.GamePlayerBalance.Core;
 
 public interface IBrandFormRepository
 {
-	ValueTask<long> AddAsync(string gameProviderCode, string brandCode, CancellationToken cancellationToken = default);
+	ValueTask<long> AddAsync(string gameProviderCode, string brandCode, DateTimeOffset startTime, DateTimeOffset endTime, CancellationToken cancellationToken = default);
 
 	ValueTask<BrandForm?> GetAsync(long id, CancellationToken cancellationToken = default);
 
