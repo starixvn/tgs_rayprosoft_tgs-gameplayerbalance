@@ -1,3 +1,3 @@
 ﻿namespace Tgs.GamePlayerBalance.Core.ApplicationServices;
 
-public record class FundTraceBrandFormQueuedCommand(long Id);
+public record class FundTraceFormQueuedCommand(long Id);

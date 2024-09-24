@@ -1,6 +1,6 @@
 ﻿syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
+//import "google/protobuf/timestamp.proto";
 //import "phoenix/protobuf/guid.proto";
 //import "phoenix/protobuf/decimal.proto";
 
@@ -37,19 +37,10 @@ message BrandFormModelRequest {
     int64 form_id = 3;
 }
 
-message FundTraceBrandFormModelRequest {
+message FundTraceFormModelRequest {
     string game_provider_code = 1;
     string brand_code = 2;
-    google.protobuf.Timestamp start_time = 3;
-    google.protobuf.Timestamp end_time = 4;
-    int64 form_id = 5;
-}
-
-message FundTraceGameProviderFormModelRequest {
-    string game_provider_code = 1;
-    google.protobuf.Timestamp start_time = 2;
-    google.protobuf.Timestamp end_time = 3;
-    int64 form_id = 4;
+    int64 form_id = 3;
 }
 
 message ImportFormModelRequest {
